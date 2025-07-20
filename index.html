@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="meta.title">PF Creative AI Studio - Future of Video Creation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-purple': '#8b5cf6',
+                        'neon-pink': '#ec4899',
+                        'neon-blue': '#3b82f6',
+                        'dark-bg': '#0a0a0a',
+                        'dark-card': '#1a1a1a',
+                        'dark-border': '#2a2a2a'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+            100% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+        }
+        @keyframes slideUp {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            overflow-x: hidden;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(45deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-neon {
+            background: linear-gradient(45deg, #8b5cf6, #ec4899);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-neon:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Language Switcher Styles */
+        .language-switcher {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            min-width: 160px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .lang-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            display: block;
+            padding: 10px 16px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .lang-option:last-child {
+            border-bottom: none;
+        }
+        
+        .lang-option:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8b5cf6;
+        }
+        
+        .lang-option.active {
+            background: rgba(139, 92, 246, 0.3);
+            color: #8b5cf6;
+        }
+        
+        @media (max-width: 768px) {
+            .floating-orb {
+                display: none;
+            }
+            .lang-menu {
+                right: -20px;
+                min-width: 140px;
+            }
+        }
+    </style>
+</head>
+<body class="text-white font-sans">
+    <!-- Floating Background Orbs -->
+    <div class="floating-orb w-64 h-64 top-20 left-10" style="animation-delay: 0s;"></div>
+    <div class="floating-orb w-48 h-48 top-1/2 right-20" style="animation-delay: 2s;"></div>
+    <div class="floating-orb w-32 h-32 bottom-20 left-1/3" style="animation-delay: 4s;"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-2xl font-bold gradient-text">PF Creative AI Studio</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="hover:text-neon-purple transition-colors" data-i18n="nav.home">Home</a>
+                    <a href="#services" class="hover:text-neon-purple transition-colors" data-i18n="nav.services">Services</a>
+                    <a href="#generator" class="hover:text-neon-purple transition-colors" data-i18n="nav.generator">Script Generator</a>
+                    <a href="#contact" class="hover:text-neon-purple transition-colors" data-i18n="nav.contact">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Language Switcher -->
+                    <div class="language-switcher">
+                        <button class="lang-btn" id="langBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <span id="currentLang">EN</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 10l5 5 5-5z"/>
+                            </svg>
+                        </button>
+                        <div class="lang-menu" id="langMenu">
+                            <a href="#" class="lang-option active" data-lang="en">English</a>
+                            <a href="#" class="lang-option" data-lang="bm">Bahasa Malaysia</a>
+                            <a href="#" class="lang-option" data-lang="zh">中文</a>
+                        </div>
+                    </div>
+                    <button class="btn-neon px-6 py-2 rounded-full text-white font-semibold" data-i18n="nav.cta">
+                        Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative pt-20">
+        <div class="container mx-auto px-6 text-center">
+            <div class="animate-fade-in">
+                <h1 class="text-4xl md:text-8xl font-bold mb-6 gradient-text" data-i18n="hero.title1">
+                    Future of Video Creation
+                </h1>
+                <h2 class="text-3xl md:text-6xl font-bold mb-8" data-i18n="hero.title2">
+                    New Era
+                </h2>
+                <p class="text-lg md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto" data-i18n="hero.subtitle">
+                    Let AI be your personal director, combined with our innovative Veo 3 script system, create stunning video content
+                </p>
+                <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+                    <button class="btn-neon px-8 py-4 rounded-full text-xl font-semibold animate-glow" data-i18n="hero.cta1">
+                        Experience AI Video Creation
+                    </button>
+                    <button class="glass-effect px-8 py-4 rounded-full text-xl font-semibold border border-neon-purple hover:bg-neon-purple/20 transition-all" data-i18n="hero.cta2">
+                        Try Script Generator
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 gradient-text" data-i18n="services.title">Core Services</h2>
+                <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto" data-i18n="services.subtitle">
+                    We provide two revolutionary AI-driven services to amplify your creativity
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                <!-- Service 1: AI Video Production -->
+                <div class="service-card glass-effect p-8 rounded-2xl animate-slide-up">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-neon-purple to-neon-pink rounded-full flex items-center justify-center">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-bold mb-4 gradient-text" data-i18n="services.video.title">AI Video Production</h3>
+                        <p class="text-gray-300 text-base md:text-lg mb-6" data-i18n="services.video.description">
+                            Professional AI-driven video production service, from concept to finished product, one-stop solution
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-neon-purple rounded-full"></div>
+                            <span class="text-gray-300" data-i18n="services.video.feature1">Rapid generation of high-quality video content</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-neon-pink rounded-full"></div>
+                            <span class="text-gray-300" data-i18n="services.video.feature2">Personalized customization, brand-aligned</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-neon-blue rounded-full"></div>
+                            <span class="text-gray-300" data-i18n="services.video.feature3">Professional-grade post-production and optimization</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full btn-neon py-3 rounded-xl font-semibold" data-i18n="services.video.cta">
+                        Learn More
+                    </button>
+                </div>
+
+                <!-- Service 2: Veo 3 Script Design -->
+                <div class="service-card glass-effect p-8 rounded-2xl animate-slide-up" style="animation-delay: 0.2s;">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-neon-blue to-neon-purple rounded-full flex items-center justify-center">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-bold mb-4 gradient-text" data-i18n="services.script.title">Veo 3 Script Design</h3>
+                        <p class="text-gray-300 text-base md:text-lg mb-6" data-i18n="services.script.description">
+                            Innovative system generates complete scripts and prompts, ready to copy-paste into Veo 3
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-neon-blue rounded-full"></div>
+                            <span class="text-gray-300" data-i18n="services.script.feature1">One-click professional script generation</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-neon-purple rounded-full"></div>
+                            <span class="text-gray-300" data-i18n="services.script.feature2">Ready-to-use, no modifications needed</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-neon-pink rounded-full"></div>
+                            <span class="text-gray-300" data-i18n="services.script.feature3">Perfect compatibility with Veo 3 platform</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full btn-neon py-3 rounded-xl font-semibold" data-i18n="services.script.cta">
+                        Try Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Script Generator Section -->
+    <section id="generator" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 gradient-text" data-i18n="generator.title">Veo 3 Script Generator</h2>
+                <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto" data-i18n="generator.subtitle">
+                    Input your creative ideas, AI will generate the perfect Veo 3 script for you
+                </p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-effect p-6 md:p-12 rounded-2xl border border-neon-purple">
+                    <div class="grid md:grid-cols-2 gap-6 md:gap-8 mb-8">
+                        <div>
+                            <label class="block text-lg font-semibold text-gray-300 mb-3" data-i18n="generator.brand_label">Brand Name</label>
+                            <input type="text" id="brandName" 
+                                   class="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:border-neon-purple focus:outline-none transition-colors" 
+                                   data-i18n-placeholder="generator.brand_placeholder">
+                        </div>
+                        <div>
+                            <label class="block text-lg font-semibold text-gray-300 mb-3" data-i18n="generator.product_label">Product Name</label>
+                            <input type="text" id="productName" 
+                                   class="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:border-neon-purple focus:outline-none transition-colors" 
+                                   data-i18n-placeholder="generator.product_placeholder">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <label class="block text-lg font-semibold text-gray-300 mb-3" data-i18n="generator.audience_label">Target Audience</label>
+                        <textarea id="targetAudience" rows="4" 
+                                  class="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:border-neon-purple focus:outline-none transition-colors" 
+                                  data-i18n-placeholder="generator.audience_placeholder"></textarea>
+                    </div>
+
+                    <button id="generateBtn" class="w-full btn-neon py-4 rounded-xl text-xl font-semibold mb-8 animate-glow" data-i18n="generator.generate_btn">
+                        🚀 Generate My Veo 3 Script
+                    </button>
+
+                    <!-- Loading State -->
+                    <div id="loading" class="text-center hidden">
+                        <div class="inline-flex items-center space-x-3">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neon-purple"></div>
+                            <span class="text-xl text-gray-300" data-i18n="generator.loading">AI director is creating... Please wait a moment</span>
+                        </div>
+                    </div>
+
+                    <!-- Result Container -->
+                    <div id="result-container" class="glass-effect rounded-xl hidden">
+                        <div class="p-6 border-b border-dark-border flex justify-between items-center">
+                            <h3 class="text-2xl font-semibold gradient-text" data-i18n="generator.result_title">Your Exclusive Veo 3 Script</h3>
+                            <button id="copyBtn" class="bg-neon-purple hover:bg-neon-pink transition-colors px-6 py-2 rounded-lg font-semibold" data-i18n="generator.copy_btn">
+                                📋 Copy Script
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <pre id="result" class="bg-dark-bg p-6 rounded-lg text-sm overflow-x-auto max-h-96 border border-dark-border"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 relative">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 gradient-text" data-i18n="contact.title">Start Your AI Creation Journey</h2>
+            <p class="text-lg md:text-xl text-gray-300 mb-12 max-w-3xl mx-auto" data-i18n="contact.subtitle">
+                Ready to experience the future of video creation? Contact us for customized solutions from our professional team
+            </p>
+            
+            <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+                <button class="btn-neon px-8 py-4 rounded-full text-xl font-semibold" data-i18n="contact.cta1">
+                    Book Professional Consultation
+                </button>
+                <button class="glass-effect px-8 py-4 rounded-full text-xl font-semibold border border-neon-purple hover:bg-neon-purple/20 transition-all" data-i18n="contact.cta2">
+                    View Case Studies
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-dark-border">
+        <div class="container mx-auto px-6 text-center">
+            <div class="text-3xl font-bold gradient-text mb-4">PF Creative AI Studio</div>
+            <p class="text-gray-400 mb-6" data-i18n="footer.tagline">Future of Video Creation</p>
+            <div class="flex justify-center space-x-8 mb-6">
+                <a href="#" class="text-gray-400 hover:text-neon-purple transition-colors" data-i18n="footer.terms">Terms of Service</a>
+                <a href="#" class="text-gray-400 hover:text-neon-purple transition-colors" data-i18n="footer.privacy">Privacy Policy</a>
+                <a href="#" class="text-gray-400 hover:text-neon-purple transition-colors" data-i18n="footer.contact">Contact Us</a>
+            </div>
+            <p class="text-gray-500 text-sm" data-i18n="footer.copyright">&copy; 2025 PF Creative AI Studio. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="multilingual.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
