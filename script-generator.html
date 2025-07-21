@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Generator - PF Creative AI Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-white">PF Creative AI Studio</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-200" id="welcomeMessage">Welcome!</span>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="glass-effect rounded-2xl p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-bold text-white mb-4">Veo 3 Script Generator</h2>
+                <p class="text-gray-200 text-lg">Input your creative ideas, AI will generate the perfect Veo 3 script for you</p>
+            </div>
+
+            <!-- Script Generator Form -->
+            <div class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="brandName" class="block text-sm font-medium text-gray-200 mb-2">Brand Name</label>
+                        <input type="text" id="brandName" placeholder="e.g., Quantum Nuts"
+                            class="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="productName" class="block text-sm font-medium text-gray-200 mb-2">Product Name</label>
+                        <input type="text" id="productName" placeholder="e.g., Brain Booster Edition"
+                            class="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="targetAudience" class="block text-sm font-medium text-gray-200 mb-2">Target Audience</label>
+                    <textarea id="targetAudience" rows="4" placeholder="e.g., Students and professionals who need focus and clear thinking, health-conscious (20-40 years old)"
+                        class="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"></textarea>
+                </div>
+                
+                <div class="text-center">
+                    <button id="generateBtn" onclick="generateScript()"
+                        class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-4 px-8 rounded-lg hover:from-purple-600 hover:to-pink-600 transition duration-300 transform hover:scale-105 text-lg">
+                        🚀 Generate My Veo 3 Script
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="hidden text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                <p class="text-white mt-4">Generating your script...</p>
+            </div>
+
+            <!-- Result Container -->
+            <div id="resultContainer" class="hidden mt-8">
+                <div class="glass-effect rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-white">Generated Script</h3>
+                        <button id="copyBtn" onclick="copyScript()"
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-300">
+                            📋 Copy Script
+                        </button>
+                    </div>
+                    <div id="scriptResult" class="bg-black/30 rounded-lg p-4 text-gray-100 whitespace-pre-wrap font-mono text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        window.addEventListener('load', function() {
+            const token = localStorage.getItem('pf_auth_token');
+            const username = localStorage.getItem('pf_username');
+            
+            if (!token) {
+                // Redirect to login if not authenticated
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Display welcome message
+            if (username) {
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${username}!`;
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('pf_auth_token');
+            localStorage.removeItem('pf_username');
+            window.location.href = 'index.html';
+        }
+
+        async function generateScript() {
+            const brandName = document.getElementById('brandName').value;
+            const productName = document.getElementById('productName').value;
+            const targetAudience = document.getElementById('targetAudience').value;
+            
+            if (!brandName || !productName || !targetAudience) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('resultContainer');
+            const scriptResult = document.getElementById('scriptResult');
+            
+            // Show loading state
+            generateBtn.style.display = 'none';
+            loading.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            
+            try {
+                const projectInfo = `Brand Name: ${brandName}\nProduct Name: ${productName}\nTarget Audience: ${targetAudience}`;
+                
+                const response = await fetch('https://asia-southeast1-winged-pen-466506-d8.cloudfunctions.net/pfssystem-backend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('pf_auth_token')}`
+                    },
+                    body: JSON.stringify({
+                        project_info: projectInfo
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.result) {
+                    scriptResult.textContent = result.result;
+                    resultContainer.classList.remove('hidden');
+                } else {
+                    alert('Error generating script: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Connection error: ' + error.message);
+            }
+            
+            // Hide loading state
+            loading.classList.add('hidden');
+            generateBtn.style.display = 'inline-block';
+        }
+
+        function copyScript() {
+            const scriptText = document.getElementById('scriptResult').textContent;
+            navigator.clipboard.writeText(scriptText).then(function() {
+                const copyBtn = document.getElementById('copyBtn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
+

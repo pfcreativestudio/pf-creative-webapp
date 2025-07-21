@@ -1,252 +1,323 @@
-// Multilingual Support for PF Creative AI Studio
+// Multilingual support for PF Creative AI Studio
 const translations = {
     en: {
-        "meta.title": "PF Creative AI Studio - Future of Video Creation",
+        "head.title": "PF Creative AI Studio - The Director-Grade AI",
+        "nav.title": "PF Creative AI Studio",
         "nav.home": "Home",
         "nav.solution": "Solution",
         "nav.features": "Features",
         "nav.video": "Our Work",
         "nav.contact": "Contact",
         "nav.cta": "Get Started",
+        
         "hero.title1": "The Director-Grade AI.",
         "hero.title2": "Go Beyond Prompts, Get Production-Ready Scripts.",
         "hero.subtitle": "Stop wrestling with inconsistent AI outputs. Our advanced system delivers complete, multi-scene script packages with professional cinematography controls and error-prevention technology.",
         "hero.cta1": "See How It Works",
         "hero.cta2": "Try Director-Grade AI",
-        "services.title": "Core Services",
-        "services.subtitle": "We provide two revolutionary AI-driven services to amplify your creativity",
-        "services.video.title": "AI Video Production",
-        "services.video.description": "Professional AI-driven video production service, from concept to finished product, one-stop solution",
-        "services.video.feature1": "Rapid generation of high-quality video content",
-        "services.video.feature2": "Personalized customization, brand-aligned",
-        "services.video.feature3": "Professional-grade post-production and optimization",
-        "services.video.cta": "Learn More",
-        "services.script.title": "Veo 3 Script Design",
-        "services.script.description": "Innovative system generates complete scripts and prompts, ready to copy-paste into Veo 3",
-        "services.script.feature1": "One-click professional script generation",
-        "services.script.feature2": "Ready-to-use, no modifications needed",
-        "services.script.feature3": "Perfect compatibility with Veo 3 platform",
-        "services.script.cta": "Try Now",
-        "generator.title": "Veo 3 Script Generator",
-        "generator.subtitle": "Input your creative ideas, AI will generate the perfect Veo 3 script for you",
-        "generator.brand_label": "Brand Name",
-        "generator.brand_placeholder": "e.g., Quantum Nuts",
-        "generator.product_label": "Product Name",
-        "generator.product_placeholder": "e.g., Brain Booster Edition",
-        "generator.audience_label": "Target Audience",
-        "generator.audience_placeholder": "e.g., Students and professionals who need focus and clear thinking, health-conscious (20-40 years old)",
-        "generator.generate_btn": "🚀 Generate My Veo 3 Script",
-        "generator.loading": "AI director is creating... Please wait a moment",
-        "generator.result_title": "Your Exclusive Veo 3 Script",
-        "generator.copy_btn": "📋 Copy Script",
-        "contact.title": "Start Your AI Creation Journey",
-        "contact.subtitle": "Ready to experience the future of video creation? Contact us for customized solutions from our professional team",
-        "contact.cta1": "Book Professional Consultation",
-        "contact.cta2": "View Case Studies",
-        "footer.tagline": "Future of Video Creation",
+        
+        "solution.title1": "Stop Fixing AI Errors.",
+        "solution.title2": "Start Directing.",
+        "solution.subtitle": "Traditional AI video tools leave you frustrated with inconsistent results. Our Director-Grade AI eliminates common problems before they happen.",
+        
+        "problem1.title": "Problem: Inconsistent Characters",
+        "problem1.description": "Characters change appearance between scenes, breaking narrative continuity and making videos look unprofessional.",
+        "problem1.solution.title": "Our Solution: Advanced Production Strategies",
+        "problem1.solution.description": "The \"Faceless Expert\" and \"Single Scene Presenter\" techniques ensure visual consistency across all scenes.",
+        
+        "problem2.title": "Problem: Glitches & Visual Artifacts",
+        "problem2.description": "Mangled hands, extra fingers, unwanted text overlays, and other AI artifacts ruin professional presentations.",
+        "problem2.solution.title": "Our Solution: Comprehensive Negative Prompt Library",
+        "problem2.solution.description": "Automatically prevents common AI errors with our extensive database of negative prompts and quality controls.",
+        
+        "features.title": "Director-Grade Features",
+        "features.subtitle": "Professional tools that give you complete creative control over your AI video production",
+        
+        "feature1.title": "Production-Ready Blueprints",
+        "feature1.description": "Don't just get a prompt. Receive a complete, multi-scene script package that's ready for professional production.",
+        "feature1.item1": "Complete VEO Prompt Blueprint for every scene",
+        "feature1.item2": "Detailed shot descriptions and camera angles",
+        "feature1.item3": "Scene-by-scene narrative structure",
+        "feature1.item4": "Professional formatting for immediate use",
+        "feature1.example.title": "Example Output:",
+        "feature1.example.text": "\"Scene 1: Medium shot of confident presenter in modern office, natural lighting, camera slowly zooms in, professional attire, clean background...\"",
+        
+        "feature2.title": "Professional Creative Control",
+        "feature2.description": "Choose from a library of cinematic styles and define specific cinematography like a real director.",
+        "feature2.styles.title": "Cinematic Styles",
+        "feature2.styles.item1": "Film Noir",
+        "feature2.styles.item2": "Documentary",
+        "feature2.styles.item3": "Corporate",
+        "feature2.styles.item4": "Cinematic",
+        "feature2.controls.title": "Camera Controls",
+        "feature2.controls.item1": "Lens Choices",
+        "feature2.controls.item2": "Camera Movements",
+        "feature2.controls.item3": "Lighting Setup",
+        "feature2.controls.item4": "Shot Composition",
+        "feature2.item1": "Professional cinematography library",
+        "feature2.item2": "Customizable camera movements and angles",
+        "feature2.item3": "Industry-standard lighting techniques",
+        "feature2.item4": "Director-level creative control",
+        
+        "video.title": "See Director-Grade AI in Action",
+        "video.subtitle": "Experience the difference between amateur prompts and professional production",
+        "video.description": "Watch how our Director-Grade AI transforms simple ideas into production-ready video scripts",
+        
+        "cta.title": "Ready to Direct Like a Pro?",
+        "cta.subtitle": "Stop settling for amateur AI outputs. Get production-ready scripts that deliver professional results every time.",
+        "cta.button1": "Start Creating Director-Grade Scripts",
+        "cta.button2": "Book Professional Consultation",
+        "cta.join": "Join hundreds of creators who've upgraded to Director-Grade AI",
+        
+        "footer.copyright": "© 2024 PF Creative AI Studio. All rights reserved.",
         "footer.terms": "Terms of Service",
         "footer.privacy": "Privacy Policy",
         "footer.contact": "Contact Us",
-        "footer.copyright": "© 2025 PF Creative AI Studio. All Rights Reserved."
+        "footer.social": "Follow us on social media"
     },
+    
     bm: {
-        "meta.title": "PF Creative AI Studio - Masa Depan Penciptaan Video",
+        "head.title": "PF Creative AI Studio - AI Gred Pengarah",
+        "nav.title": "PF Creative AI Studio",
         "nav.home": "Utama",
         "nav.solution": "Penyelesaian",
         "nav.features": "Ciri-ciri",
         "nav.video": "Karya Kami",
         "nav.contact": "Hubungi",
-        "nav.cta": "Mulakan",
+        "nav.cta": "Mula Sekarang",
+        
         "hero.title1": "AI Gred Pengarah.",
-        "hero.title2": "Melampaui Gesaan, Dapatkan Skrip Sedia Pengeluaran.",
+        "hero.title2": "Melampaui Prompt, Dapatkan Skrip Siap Produksi.",
         "hero.subtitle": "Berhenti bergelut dengan output AI yang tidak konsisten. Sistem canggih kami menyampaikan pakej skrip multi-adegan lengkap dengan kawalan sinematografi profesional dan teknologi pencegahan ralat.",
         "hero.cta1": "Lihat Cara Ia Berfungsi",
         "hero.cta2": "Cuba AI Gred Pengarah",
-        "services.title": "Perkhidmatan Teras",
-        "services.subtitle": "Kami menyediakan dua perkhidmatan revolusioner yang didorong AI untuk meningkatkan kreativiti anda",
-        "services.video.title": "Pengeluaran Video AI",
-        "services.video.description": "Perkhidmatan pengeluaran video profesional yang didorong AI, dari konsep hingga produk siap, penyelesaian satu henti",
-        "services.video.feature1": "Penjanaan pantas kandungan video berkualiti tinggi",
-        "services.video.feature2": "Penyesuaian peribadi, selaras dengan jenama",
-        "services.video.feature3": "Pasca-pengeluaran dan pengoptimuman gred profesional",
-        "services.video.cta": "Ketahui Lebih Lanjut",
-        "services.script.title": "Reka Bentuk Skrip Veo 3",
-        "services.script.description": "Sistem inovatif menjana skrip dan gesaan lengkap, sedia untuk disalin-tampal ke dalam Veo 3",
-        "services.script.feature1": "Penjanaan skrip profesional satu klik",
-        "services.script.feature2": "Sedia guna, tiada pengubahsuaian diperlukan",
-        "services.script.feature3": "Keserasian sempurna dengan platform Veo 3",
-        "services.script.cta": "Cuba Sekarang",
-        "generator.title": "Penjana Skrip Veo 3",
-        "generator.subtitle": "Masukkan idea kreatif anda, AI akan menjana skrip Veo 3 yang sempurna untuk anda",
-        "generator.brand_label": "Nama Jenama",
-        "generator.brand_placeholder": "cth., Quantum Nuts",
-        "generator.product_label": "Nama Produk",
-        "generator.product_placeholder": "cth., Brain Booster Edition",
-        "generator.audience_label": "Sasaran Penonton",
-        "generator.audience_placeholder": "cth., Pelajar dan profesional yang memerlukan fokus dan pemikiran jernih, mementingkan kesihatan (20-40 tahun)",
-        "generator.generate_btn": "🚀 Jana Skrip Veo 3 Saya",
-        "generator.loading": "Pengarah AI sedang mencipta... Sila tunggu sebentar",
-        "generator.result_title": "Skrip Veo 3 Eksklusif Anda",
-        "generator.copy_btn": "📋 Salin Skrip",
-        "contact.title": "Mulakan Perjalanan Penciptaan AI Anda",
-        "contact.subtitle": "Bersedia untuk mengalami masa depan penciptaan video? Hubungi kami untuk penyelesaian tersuai daripada pasukan profesional kami",
-        "contact.cta1": "Tempah Perundingan Profesional",
-        "contact.cta2": "Lihat Kajian Kes",
-        "footer.tagline": "Masa Depan Penciptaan Video",
+        
+        "solution.title1": "Berhenti Membetulkan Ralat AI.",
+        "solution.title2": "Mula Mengarah.",
+        "solution.subtitle": "Alat video AI tradisional membuatkan anda kecewa dengan hasil yang tidak konsisten. AI Gred Pengarah kami menghapuskan masalah biasa sebelum ia berlaku.",
+        
+        "problem1.title": "Masalah: Watak Tidak Konsisten",
+        "problem1.description": "Watak berubah penampilan antara adegan, memecahkan kesinambungan naratif dan menjadikan video kelihatan tidak profesional.",
+        "problem1.solution.title": "Penyelesaian Kami: Strategi Produksi Lanjutan",
+        "problem1.solution.description": "Teknik \"Pakar Tanpa Wajah\" dan \"Penyampai Adegan Tunggal\" memastikan konsistensi visual merentas semua adegan.",
+        
+        "problem2.title": "Masalah: Gangguan & Artifak Visual",
+        "problem2.description": "Tangan yang rosak, jari tambahan, tindihan teks yang tidak diingini, dan artifak AI lain merosakkan persembahan profesional.",
+        "problem2.solution.title": "Penyelesaian Kami: Perpustakaan Prompt Negatif Komprehensif",
+        "problem2.solution.description": "Secara automatik mencegah ralat AI biasa dengan pangkalan data prompt negatif dan kawalan kualiti yang luas.",
+        
+        "features.title": "Ciri-ciri Gred Pengarah",
+        "features.subtitle": "Alat profesional yang memberikan anda kawalan kreatif penuh ke atas produksi video AI anda",
+        
+        "feature1.title": "Pelan Tindakan Siap Produksi",
+        "feature1.description": "Jangan hanya dapatkan prompt. Terima pakej skrip multi-adegan lengkap yang siap untuk produksi profesional.",
+        "feature1.item1": "Pelan Tindakan Prompt VEO Lengkap untuk setiap adegan",
+        "feature1.item2": "Penerangan tangkapan terperinci dan sudut kamera",
+        "feature1.item3": "Struktur naratif adegan demi adegan",
+        "feature1.item4": "Pemformatan profesional untuk kegunaan segera",
+        "feature1.example.title": "Contoh Output:",
+        "feature1.example.text": "\"Adegan 1: Tangkapan sederhana penyampai yakin di pejabat moden, pencahayaan semula jadi, kamera perlahan-lahan zum masuk, pakaian profesional, latar belakang bersih...\"",
+        
+        "feature2.title": "Kawalan Kreatif Profesional",
+        "feature2.description": "Pilih dari perpustakaan gaya sinematik dan tentukan sinematografi khusus seperti pengarah sebenar.",
+        "feature2.styles.title": "Gaya Sinematik",
+        "feature2.styles.item1": "Film Noir",
+        "feature2.styles.item2": "Dokumentari",
+        "feature2.styles.item3": "Korporat",
+        "feature2.styles.item4": "Sinematik",
+        "feature2.controls.title": "Kawalan Kamera",
+        "feature2.controls.item1": "Pilihan Lensa",
+        "feature2.controls.item2": "Pergerakan Kamera",
+        "feature2.controls.item3": "Persediaan Pencahayaan",
+        "feature2.controls.item4": "Komposisi Tangkapan",
+        "feature2.item1": "Perpustakaan sinematografi profesional",
+        "feature2.item2": "Pergerakan kamera dan sudut yang boleh disesuaikan",
+        "feature2.item3": "Teknik pencahayaan standard industri",
+        "feature2.item4": "Kawalan kreatif peringkat pengarah",
+        
+        "video.title": "Lihat AI Gred Pengarah dalam Tindakan",
+        "video.subtitle": "Alami perbezaan antara prompt amatur dan produksi profesional",
+        "video.description": "Tonton bagaimana AI Gred Pengarah kami mengubah idea mudah menjadi skrip video siap produksi",
+        
+        "cta.title": "Bersedia untuk Mengarah Seperti Pro?",
+        "cta.subtitle": "Berhenti berpuas hati dengan output AI amatur. Dapatkan skrip siap produksi yang memberikan hasil profesional setiap kali.",
+        "cta.button1": "Mula Mencipta Skrip Gred Pengarah",
+        "cta.button2": "Tempah Perundingan Profesional",
+        "cta.join": "Sertai beratus-ratus pencipta yang telah menaik taraf kepada AI Gred Pengarah",
+        
+        "footer.copyright": "© 2024 PF Creative AI Studio. Semua hak terpelihara.",
         "footer.terms": "Terma Perkhidmatan",
         "footer.privacy": "Dasar Privasi",
         "footer.contact": "Hubungi Kami",
-        "footer.copyright": "© 2025 PF Creative AI Studio. Hak Cipta Terpelihara."
+        "footer.social": "Ikuti kami di media sosial"
     },
+    
     zh: {
-        "meta.title": "PF Creative AI Studio - 视频创作的未来",
+        "head.title": "PF Creative AI Studio - 导演级AI",
+        "nav.title": "PF Creative AI Studio",
         "nav.home": "首页",
         "nav.solution": "解决方案",
         "nav.features": "功能特色",
         "nav.video": "我们的作品",
         "nav.contact": "联系我们",
         "nav.cta": "开始使用",
+        
         "hero.title1": "导演级AI。",
-        "hero.title2": "超越提示，获得制作就绪的脚本。",
-        "hero.subtitle": "停止与不一致的AI输出作斗争。我们的先进系统提供完整的多场景脚本包，具有专业的电影摄影控制和错误预防技术。",
+        "hero.title2": "超越提示词，获得制作就绪的脚本。",
+        "hero.subtitle": "停止与不一致的AI输出作斗争。我们的先进系统提供完整的多场景脚本包，配备专业的电影摄影控制和错误预防技术。",
         "hero.cta1": "了解工作原理",
         "hero.cta2": "试用导演级AI",
-        "services.title": "核心服务",
-        "services.subtitle": "我们提供两项革命性的AI驱动服务来放大您的创造力",
-        "services.video.title": "AI视频制作",
-        "services.video.description": "专业的AI驱动视频制作服务，从概念到成品，一站式解决方案",
-        "services.video.feature1": "快速生成高质量视频内容",
-        "services.video.feature2": "个性化定制，品牌一致",
-        "services.video.feature3": "专业级后期制作和优化",
-        "services.video.cta": "了解更多",
-        "services.script.title": "Veo 3脚本设计",
-        "services.script.description": "创新系统生成完整的脚本和提示，可直接复制粘贴到Veo 3",
-        "services.script.feature1": "一键专业脚本生成",
-        "services.script.feature2": "即用型，无需修改",
-        "services.script.feature3": "与Veo 3平台完美兼容",
-        "services.script.cta": "立即试用",
-        "generator.title": "Veo 3脚本生成器",
-        "generator.subtitle": "输入您的创意想法，AI将为您生成完美的Veo 3脚本",
-        "generator.brand_label": "品牌名称",
-        "generator.brand_placeholder": "例如：Quantum Nuts",
-        "generator.product_label": "产品名称",
-        "generator.product_placeholder": "例如：Brain Booster Edition",
-        "generator.audience_label": "目标受众",
-        "generator.audience_placeholder": "例如：需要专注和清晰思维、注重健康的学生和专业人士（20-40岁）",
-        "generator.generate_btn": "🚀 生成我的Veo 3脚本",
-        "generator.loading": "AI导演正在创作中... 请稍候片刻",
-        "generator.result_title": "您的专属Veo 3脚本",
-        "generator.copy_btn": "📋 复制脚本",
-        "contact.title": "开始您的AI创作之旅",
-        "contact.subtitle": "准备好体验视频创作的未来了吗？联系我们获取专业团队的定制解决方案",
-        "contact.cta1": "预约专业咨询",
-        "contact.cta2": "查看案例研究",
-        "footer.tagline": "视频创作的未来",
+        
+        "solution.title1": "停止修复AI错误。",
+        "solution.title2": "开始导演。",
+        "solution.subtitle": "传统的AI视频工具让您对不一致的结果感到沮丧。我们的导演级AI在问题发生之前就消除了常见问题。",
+        
+        "problem1.title": "问题：角色不一致",
+        "problem1.description": "角色在场景之间改变外观，破坏叙事连续性，使视频看起来不专业。",
+        "problem1.solution.title": "我们的解决方案：先进的制作策略",
+        "problem1.solution.description": "\"无脸专家\"和\"单场景演示者\"技术确保所有场景的视觉一致性。",
+        
+        "problem2.title": "问题：故障和视觉伪影",
+        "problem2.description": "扭曲的手、多余的手指、不需要的文字覆盖和其他AI伪影破坏了专业演示。",
+        "problem2.solution.title": "我们的解决方案：综合负面提示库",
+        "problem2.solution.description": "通过我们广泛的负面提示数据库和质量控制自动防止常见的AI错误。",
+        
+        "features.title": "导演级功能",
+        "features.subtitle": "专业工具让您完全掌控AI视频制作的创意控制",
+        
+        "feature1.title": "制作就绪蓝图",
+        "feature1.description": "不只是获得提示词。接收完整的多场景脚本包，为专业制作做好准备。",
+        "feature1.item1": "每个场景的完整VEO提示蓝图",
+        "feature1.item2": "详细的镜头描述和摄像机角度",
+        "feature1.item3": "逐场景叙事结构",
+        "feature1.item4": "专业格式化，可立即使用",
+        "feature1.example.title": "示例输出：",
+        "feature1.example.text": "\"场景1：现代办公室中自信演示者的中景镜头，自然光照，摄像机缓慢拉近，专业着装，干净背景...\"",
+        
+        "feature2.title": "专业创意控制",
+        "feature2.description": "从电影风格库中选择，像真正的导演一样定义特定的电影摄影。",
+        "feature2.styles.title": "电影风格",
+        "feature2.styles.item1": "黑色电影",
+        "feature2.styles.item2": "纪录片",
+        "feature2.styles.item3": "企业风格",
+        "feature2.styles.item4": "电影风格",
+        "feature2.controls.title": "摄像机控制",
+        "feature2.controls.item1": "镜头选择",
+        "feature2.controls.item2": "摄像机运动",
+        "feature2.controls.item3": "灯光设置",
+        "feature2.controls.item4": "镜头构图",
+        "feature2.item1": "专业电影摄影库",
+        "feature2.item2": "可定制的摄像机运动和角度",
+        "feature2.item3": "行业标准照明技术",
+        "feature2.item4": "导演级创意控制",
+        
+        "video.title": "观看导演级AI的实际应用",
+        "video.subtitle": "体验业余提示词与专业制作之间的差异",
+        "video.description": "观看我们的导演级AI如何将简单想法转化为制作就绪的视频脚本",
+        
+        "cta.title": "准备像专业人士一样导演？",
+        "cta.subtitle": "停止满足于业余AI输出。获得每次都能提供专业结果的制作就绪脚本。",
+        "cta.button1": "开始创建导演级脚本",
+        "cta.button2": "预约专业咨询",
+        "cta.join": "加入数百名已升级到导演级AI的创作者",
+        
+        "footer.copyright": "© 2024 PF Creative AI Studio. 保留所有权利。",
         "footer.terms": "服务条款",
         "footer.privacy": "隐私政策",
         "footer.contact": "联系我们",
-        "footer.copyright": "© 2025 PF Creative AI Studio. 保留所有权利。"
+        "footer.social": "在社交媒体上关注我们"
     }
 };
 
-class MultilingualManager {
-    constructor() {
-        this.currentLang = localStorage.getItem('preferred-language') || 'en';
-        this.init();
-    }
+let currentLanguage = 'en';
 
-    init() {
-        this.setupLanguageSwitcher();
-        this.updateLanguage(this.currentLang);
-    }
-
-    setupLanguageSwitcher() {
-        const langBtn = document.getElementById('langBtn');
-        const langMenu = document.getElementById('langMenu');
-        const langOptions = document.querySelectorAll('.lang-option');
-
+// Initialize language system
+document.addEventListener('DOMContentLoaded', function() {
+    // Load saved language preference
+    const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+    currentLanguage = savedLang;
+    
+    // Set up language button event listeners
+    const langBtn = document.getElementById('langBtn');
+    const langMenu = document.getElementById('langMenu');
+    const langOptions = document.querySelectorAll('.lang-option');
+    
+    if (langBtn && langMenu) {
         // Toggle language menu
-        langBtn.addEventListener('click', (e) => {
+        langBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             langMenu.classList.toggle('show');
+            langMenu.classList.toggle('hidden');
         });
-
+        
         // Close menu when clicking outside
-        document.addEventListener('click', () => {
+        document.addEventListener('click', function() {
             langMenu.classList.remove('show');
+            langMenu.classList.add('hidden');
         });
-
+        
         // Handle language selection
         langOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
+            option.addEventListener('click', function(e) {
                 e.preventDefault();
-                const selectedLang = option.getAttribute('data-lang');
-                this.updateLanguage(selectedLang);
+                const selectedLang = this.getAttribute('data-lang');
+                changeLanguage(selectedLang);
                 langMenu.classList.remove('show');
+                langMenu.classList.add('hidden');
             });
         });
     }
+    
+    // Apply initial language
+    changeLanguage(currentLanguage);
+});
 
-    updateLanguage(lang) {
-        if (!translations[lang]) return;
-
-        this.currentLang = lang;
-        localStorage.setItem('preferred-language', lang);
-
-        // Update current language display in button
-        const currentLangSpan = document.getElementById('currentLang');
-        const langMap = { en: 'EN', bm: 'BM', zh: '中文' };
-        if (currentLangSpan) {
-            currentLangSpan.textContent = langMap[lang];
+function changeLanguage(lang) {
+    if (!translations[lang]) {
+        console.error('Language not supported:', lang);
+        return;
+    }
+    
+    currentLanguage = lang;
+    localStorage.setItem('preferredLanguage', lang);
+    
+    // Update current language display
+    const currentLangSpan = document.getElementById('currentLang');
+    if (currentLangSpan) {
+        const langMap = {
+            'en': 'EN',
+            'bm': 'BM',
+            'zh': '中文'
+        };
+        currentLangSpan.textContent = langMap[lang] || 'EN';
+    }
+    
+    // Update active language option
+    const langOptions = document.querySelectorAll('.lang-option');
+    langOptions.forEach(option => {
+        option.classList.remove('active');
+        if (option.getAttribute('data-lang') === lang) {
+            option.classList.add('active');
         }
-
-        // Update active language option
-        document.querySelectorAll('.lang-option').forEach(option => {
-            option.classList.remove('active');
-            if (option.getAttribute('data-lang') === lang) {
-                option.classList.add('active');
+    });
+    
+    // Apply translations to all elements with data-i18n attribute
+    const elements = document.querySelectorAll('[data-i18n]');
+    elements.forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            if (element.tagName === 'TITLE') {
+                element.textContent = translations[lang][key];
+            } else {
+                element.textContent = translations[lang][key];
             }
-        });
-
-        // Update all translatable elements
-        this.translatePage(lang);
-    }
-
-    translatePage(lang) {
-        const translation = translations[lang];
-
-        // Update elements with data-i18n attribute
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            if (translation[key]) {
-                element.textContent = translation[key];
-            }
-        });
-
-        // Update placeholders
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-            const key = element.getAttribute('data-i18n-placeholder');
-            if (translation[key]) {
-                element.placeholder = translation[key];
-            }
-        });
-
-        // Update document title
-        if (translation['meta.title']) {
-            document.title = translation['meta.title'];
         }
-
-        // Update HTML lang attribute
-        document.documentElement.lang = lang === 'bm' ? 'ms' : lang;
-    }
-
-    getCurrentLanguage() {
-        return this.currentLang;
-    }
+    });
+    
+    console.log('Language changed to:', lang);
 }
 
-// Initialize multilingual support when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.multilingualManager = new MultilingualManager();
-});
+// Export for global access
+window.changeLanguage = changeLanguage;
+window.translations = translations;
 
