@@ -3,15 +3,16 @@ const translations = {
     en: {
         "meta.title": "PF Creative AI Studio - Future of Video Creation",
         "nav.home": "Home",
-        "nav.services": "Services",
-        "nav.generator": "Script Generator",
+        "nav.solution": "Solution",
+        "nav.features": "Features",
+        "nav.video": "Our Work",
         "nav.contact": "Contact",
         "nav.cta": "Get Started",
-        "hero.title1": "Future of Video Creation",
-        "hero.title2": "New Era",
-        "hero.subtitle": "Let AI be your personal director, combined with our innovative Veo 3 script system, create stunning video content",
-        "hero.cta1": "Experience AI Video Creation",
-        "hero.cta2": "Try Script Generator",
+        "hero.title1": "The Director-Grade AI.",
+        "hero.title2": "Go Beyond Prompts, Get Production-Ready Scripts.",
+        "hero.subtitle": "Stop wrestling with inconsistent AI outputs. Our advanced system delivers complete, multi-scene script packages with professional cinematography controls and error-prevention technology.",
+        "hero.cta1": "See How It Works",
+        "hero.cta2": "Try Director-Grade AI",
         "services.title": "Core Services",
         "services.subtitle": "We provide two revolutionary AI-driven services to amplify your creativity",
         "services.video.title": "AI Video Production",
@@ -51,15 +52,16 @@ const translations = {
     bm: {
         "meta.title": "PF Creative AI Studio - Masa Depan Penciptaan Video",
         "nav.home": "Utama",
-        "nav.services": "Perkhidmatan",
-        "nav.generator": "Penjana Skrip",
+        "nav.solution": "Penyelesaian",
+        "nav.features": "Ciri-ciri",
+        "nav.video": "Karya Kami",
         "nav.contact": "Hubungi",
         "nav.cta": "Mulakan",
-        "hero.title1": "Masa Depan Penciptaan Video",
-        "hero.title2": "Era Baharu",
-        "hero.subtitle": "Biarkan AI menjadi pengarah peribadi anda, digabungkan dengan sistem skrip Veo 3 yang inovatif, cipta kandungan video yang menakjubkan",
-        "hero.cta1": "Alami Penciptaan Video AI",
-        "hero.cta2": "Cuba Penjana Skrip",
+        "hero.title1": "AI Gred Pengarah.",
+        "hero.title2": "Melampaui Gesaan, Dapatkan Skrip Sedia Pengeluaran.",
+        "hero.subtitle": "Berhenti bergelut dengan output AI yang tidak konsisten. Sistem canggih kami menyampaikan pakej skrip multi-adegan lengkap dengan kawalan sinematografi profesional dan teknologi pencegahan ralat.",
+        "hero.cta1": "Lihat Cara Ia Berfungsi",
+        "hero.cta2": "Cuba AI Gred Pengarah",
         "services.title": "Perkhidmatan Teras",
         "services.subtitle": "Kami menyediakan dua perkhidmatan revolusioner yang didorong AI untuk meningkatkan kreativiti anda",
         "services.video.title": "Pengeluaran Video AI",
@@ -99,15 +101,16 @@ const translations = {
     zh: {
         "meta.title": "PF Creative AI Studio - 视频创作的未来",
         "nav.home": "首页",
-        "nav.services": "服务",
-        "nav.generator": "脚本生成器",
-        "nav.contact": "联系",
+        "nav.solution": "解决方案",
+        "nav.features": "功能特色",
+        "nav.video": "我们的作品",
+        "nav.contact": "联系我们",
         "nav.cta": "开始使用",
-        "hero.title1": "视频创作的未来",
-        "hero.title2": "新时代",
-        "hero.subtitle": "让AI成为您的私人导演，结合我们创新的Veo 3脚本系统，创造令人惊叹的视频内容",
-        "hero.cta1": "体验AI视频创作",
-        "hero.cta2": "试用脚本生成器",
+        "hero.title1": "导演级AI。",
+        "hero.title2": "超越提示，获得制作就绪的脚本。",
+        "hero.subtitle": "停止与不一致的AI输出作斗争。我们的先进系统提供完整的多场景脚本包，具有专业的电影摄影控制和错误预防技术。",
+        "hero.cta1": "了解工作原理",
+        "hero.cta2": "试用导演级AI",
         "services.title": "核心服务",
         "services.subtitle": "我们提供两项革命性的AI驱动服务来放大您的创造力",
         "services.video.title": "AI视频制作",
@@ -190,10 +193,12 @@ class MultilingualManager {
         this.currentLang = lang;
         localStorage.setItem('preferred-language', lang);
 
-        // Update current language display
+        // Update current language display in button
         const currentLangSpan = document.getElementById('currentLang');
         const langMap = { en: 'EN', bm: 'BM', zh: '中文' };
-        currentLangSpan.textContent = langMap[lang];
+        if (currentLangSpan) {
+            currentLangSpan.textContent = langMap[lang];
+        }
 
         // Update active language option
         document.querySelectorAll('.lang-option').forEach(option => {
