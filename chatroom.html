@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Director-Grade AI Studio - PF Creative</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-gold': '#f59e0b',
+                        'neon-pink': '#ec4899',
+                        'neon-purple': '#8b5cf6',
+                        'neon-blue': '#3b82f6'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'typing': 'typing 1.5s steps(40, end)',
+                        'blink': 'blink 1s infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .chat-container {
+            height: calc(100vh - 200px);
+            min-height: 500px;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            margin-left: auto;
+        }
+        
+        .ai-message {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            margin-right: auto;
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 18px;
+            margin-right: auto;
+            max-width: 80px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #8b5cf6;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes glow {
+            0% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+            100% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+        }
+        
+        .send-button {
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            transition: all 0.3s ease;
+        }
+        
+        .send-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+        
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-1 {
+            top: 10%;
+            left: 10%;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            animation-delay: 0s;
+        }
+        
+        .floating-2 {
+            top: 60%;
+            right: 15%;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, #8b5cf6, #3b82f6);
+            animation-delay: 2s;
+        }
+        
+        .floating-3 {
+            bottom: 20%;
+            left: 20%;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ec4899, #8b5cf6);
+            animation-delay: 4s;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            opacity: 0.8;
+        }
+        
+        .feature-highlight {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        
+        .quick-prompt {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .quick-prompt:hover {
+            background: rgba(245, 158, 11, 0.2);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-element floating-1"></div>
+    <div class="floating-element floating-2"></div>
+    <div class="floating-element floating-3"></div>
+    
+    <div class="min-h-screen p-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="glass-effect rounded-t-lg p-6 border-b border-white/10">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold gradient-text">Director-Grade AI Studio</h1>
+                        <p class="text-gray-400 text-sm mt-1">Professional Video Script Generation</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-green-400">AI Online</span>
+                        </div>
+                        <button id="logoutBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white text-sm transition duration-300">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-effect chat-container overflow-hidden flex flex-col">
+                <div id="messagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <div class="welcome-message">
+                        <div class="text-3xl mb-4">🎬</div>
+                        <h2 class="text-xl font-semibold gradient-text mb-2">Welcome to Director-Grade AI</h2>
+                        <p class="text-gray-400 mb-6">Your personal AI director is ready to create professional video scripts. Powered by Master Prompt System V12.4</p>
+                        
+                        <div class="feature-highlight">
+                            <h3 class="font-semibold text-white mb-2">✨ What I can help you with:</h3>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• Complete VEO Prompt Blueprints for every scene</li>
+                                <li>• Professional cinematography and camera controls</li>
+                                <li>• Advanced production strategies for consistency</li>
+                                <li>• Comprehensive negative prompt libraries</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <p class="text-sm text-gray-400 mb-3">Quick Start Prompts:</p>
+                            <div class="flex flex-wrap justify-center">
+                                <span class="quick-prompt" onclick="chatroom.sendQuickPrompt('Create a professional product demo video script')">Product Demo</span>
+                                <span class="quick-prompt" onclick="chatroom.sendQuickPrompt('Generate a corporate presentation script')">Corporate Video</span>
+                                <span class="quick-prompt" onclick="chatroom.sendQuickPrompt('Create an educational tutorial script')">Tutorial Script</span>
+                                <span class="quick-prompt" onclick="chatroom.sendQuickPrompt('Design a brand story video script')">Brand Story</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="typingIndicator" class="typing-indicator px-6 pb-2">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                
+                <div class="border-t border-white/10 p-6">
+                    <div class="flex space-x-4">
+                        <div class="flex-1">
+                            <textarea 
+                                id="messageInput" 
+                                placeholder="Describe your video project... (e.g., 'Create a 60-second product demo for a smart fitness tracker targeting health-conscious millennials')"
+                                class="w-full px-4 py-3 bg-black/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none resize-none"
+                                rows="3"
+                            ></textarea>
+                        </div>
+                        <button 
+                            id="sendBtn" 
+                            class="send-button px-6 py-3 rounded-lg text-white font-semibold flex items-center space-x-2"
+                        >
+                            <span>Send</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        Press Ctrl+Enter to send • Powered by Master Prompt System V12.4
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LuxuryChatroom {
+            constructor() {
+                this.apiUrl = 'https://asia-southeast1-winged-pen-466506-d8.cloudfunctions.net/pfssystem-backend';
+                this.token = localStorage.getItem('auth_token');
+                this.username = localStorage.getItem('username');
+                // *** NEW: Add a property to store the chat history ***
+                this.chatHistory = []; 
+                this.init();
+            }
+
+            init() {
+                if (!this.token || !this.username) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                this.setupEventListeners();
+                this.scrollToBottom();
+            }
+
+            setupEventListeners() {
+                const sendBtn = document.getElementById('sendBtn');
+                const messageInput = document.getElementById('messageInput');
+                const logoutBtn = document.getElementById('logoutBtn');
+
+                sendBtn.addEventListener('click', () => this.sendMessage());
+                
+                messageInput.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        e.preventDefault(); // Prevent new line on Ctrl+Enter
+                        this.sendMessage();
+                    }
+                });
+
+                logoutBtn.addEventListener('click', () => this.logout());
+            }
+
+            async sendMessage() {
+                const messageInput = document.getElementById('messageInput');
+                const message = messageInput.value.trim();
+
+                if (!message) return;
+
+                // Clear input and disable send button
+                messageInput.value = '';
+                this.toggleSendButton(false);
+
+                // Add user message to chat UI
+                this.addMessage(message, 'user');
+
+                // Show typing indicator
+                this.showTypingIndicator();
+
+                try {
+                    // *** MODIFIED: Send the message AND the entire chat history ***
+                    const response = await fetch(`${this.apiUrl}/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.token}`
+                        },
+                        body: JSON.stringify({ 
+                            message: message, 
+                            history: this.chatHistory // Send the history
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    // *** NEW: Update chat history after receiving a response ***
+                    this.chatHistory.push({ role: 'user', parts: [message] });
+
+                    if (response.ok && result.success) {
+                        this.addMessage(result.response, 'ai');
+                        this.chatHistory.push({ role: 'model', parts: [result.response] });
+                    } else {
+                        const errorMessage = result.message || 'Sorry, I encountered an error. Please try again.';
+                        this.addMessage(errorMessage, 'ai', true);
+                        // We don't add the error to history, so the AI doesn't get confused
+                        console.error('Chat error:', result.error || result.message);
+                    }
+                } catch (error) {
+                    this.addMessage('Network error. Please check your connection and try again.', 'ai', true);
+                    console.error('Network error:', error);
+                } finally {
+                    this.hideTypingIndicator();
+                    this.toggleSendButton(true);
+                    messageInput.focus(); // Keep the textarea focused
+                }
+            }
+
+            sendQuickPrompt(prompt) {
+                const messageInput = document.getElementById('messageInput');
+                messageInput.value = prompt;
+                this.sendMessage();
+            }
+
+            addMessage(content, sender, isError = false) {
+                const messagesContainer = document.getElementById('messagesContainer');
+                const messageDiv = document.createElement('div');
+                
+                const senderClass = sender === 'user' ? 'user-message' : 'ai-message';
+                const senderName = sender === 'user' ? this.username : 'Director-Grade AI';
+                const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // *** NEW: Format multi-line text correctly by replacing \n with <br> ***
+                const formattedContent = this.escapeHtml(content).replace(/\n/g, '<br>');
+
+                messageDiv.className = `message-bubble ${senderClass} p-4 rounded-lg`;
+                
+                if (isError) {
+                    messageDiv.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="font-semibold text-sm mb-1">${senderName}</div>
+                    <div class="whitespace-pre-wrap">${formattedContent}</div>
+                    <div class="message-time">${timestamp}</div>
+                `;
+
+                // Remove welcome message if it exists
+                const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+                if (welcomeMessage && sender === 'user') {
+                    welcomeMessage.remove();
+                }
+
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTypingIndicator() {
+                document.getElementById('typingIndicator').style.display = 'flex';
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                document.getElementById('typingIndicator').style.display = 'none';
+            }
+
+            toggleSendButton(enabled) {
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.disabled = !enabled;
+                
+                if (enabled) {
+                    sendBtn.innerHTML = `
+                        <span>Send</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    `;
+                } else {
+                    sendBtn.innerHTML = `
+                        <span>Sending...</span>
+                        <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    `;
+                }
+            }
+
+            scrollToBottom() {
+                const messagesContainer = document.getElementById('messagesContainer');
+                setTimeout(() => {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 100);
+            }
+
+            logout() {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('username');
+                window.location.href = 'login.html';
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize chatroom
+        const chatroom = new LuxuryChatroom();
+    </script>
+</body>
+</html>
