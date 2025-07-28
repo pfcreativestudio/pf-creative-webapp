@@ -74,7 +74,6 @@
 
     <div class="min-h-screen p-6 hidden" id="adminContent">
         <div class="max-w-6xl mx-auto">
-            <!-- Header -->
             <div class="glass-effect rounded-lg p-6 mb-8">
                 <h1 class="text-3xl font-bold gradient-text mb-2">Admin Panel</h1>
                 <p class="text-gray-400">Manage user credentials for PF Creative AI Studio</p>
@@ -89,7 +88,6 @@
                 </div>
             </div>
 
-            <!-- Add New User Form -->
             <div class="glass-effect rounded-lg p-6 mb-8">
                 <h2 class="text-xl font-semibold text-white mb-4">Add New User</h2>
                 <form id="addUserForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -109,7 +107,6 @@
                 </form>
             </div>
 
-            <!-- Users List -->
             <div class="glass-effect rounded-lg p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-semibold text-white">Current Users</h2>
@@ -119,8 +116,7 @@
                 </div>
                 
                 <div id="usersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Users will be loaded here -->
-                </div>
+                    </div>
                 
                 <div id="loadingMessage" class="text-center py-8 text-gray-400">
                     Loading users...
@@ -133,13 +129,13 @@
         </div>
     </div>
 
-    <!-- Success/Error Messages -->
     <div id="messageContainer" class="fixed top-4 right-4 z-50"></div>
 
     <script>
         class AdminPanel {
             constructor() {
-                this.apiUrl = 'https://asia-southeast1-winged-pen-466506-d8.cloudfunctions.net/pfssystem-backend';
+                // THIS IS THE CORRECTED BACKEND URL FOR YOUR NEW PROJECT
+                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
                 this.adminPassword = null; // Will be set after successful password entry
                 this.init();
             }
@@ -156,15 +152,16 @@
             checkAdminPassword() {
                 const inputPassword = document.getElementById("adminPasswordInput").value;
                 
-                // Frontend-only password check for immediate UI display
-                if (inputPassword === "admin123") { // Hardcoded for now, user will change later
+                // For now, the password is used to unlock the UI and is sent in headers
+                // In a real production app, you might verify this password against the backend first
+                if (inputPassword) { // Check if a password was entered
                     this.adminPassword = inputPassword;
                     document.getElementById("passwordPromptOverlay").style.display = "none"; // Hide the overlay
                     document.getElementById("adminContent").classList.remove("hidden"); // Show the admin content
                     this.setupEventListeners();
                     this.loadUsers();
                 } else {
-                    this.showMessage("Incorrect Admin Password", "error");
+                    this.showMessage("Please enter the Admin Password", "error");
                 }
             }
 
@@ -271,10 +268,10 @@
                             </div>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="adminPanel.editUser(\'${this.escapeHtml(user.username)}\')" class="flex-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm transition duration-300">
+                            <button onclick="adminPanel.editUser('${this.escapeHtml(user.username)}')" class="flex-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm transition duration-300">
                                 Edit
                             </button>
-                            <button onclick="adminPanel.deleteUser(\'${this.escapeHtml(user.username)}\')" class="flex-1 btn-danger px-3 py-1 rounded text-white text-sm">
+                            <button onclick="adminPanel.deleteUser('${this.escapeHtml(user.username)}')" class="flex-1 btn-danger px-3 py-1 rounded text-white text-sm">
                                 Delete
                             </button>
                         </div>
@@ -358,5 +355,3 @@
     </script>
 </body>
 </html>
-
-
