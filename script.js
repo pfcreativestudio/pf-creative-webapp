@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Configuration Area ---
     // The backend URL configured with the deployed Google Cloud Function
-    const BACKEND_URL = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+    const BACKEND_URL = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
     // --- End Configuration Area ---
 
     generateBtn.addEventListener('click', async () => {
