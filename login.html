@@ -55,6 +55,10 @@
     </div>
 
     <script>
+        // --- Configuration Area ---
+        const backendUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+        // --- End Configuration Area ---
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -69,8 +73,8 @@
             errorDiv.classList.add('hidden');
             
             try {
-                // Send login request to backend
-                const response = await fetch('https://asia-southeast1-winged-pen-466506-d8.cloudfunctions.net/pfssystem-backend/login', {
+                // Send login request to the new backend URL
+                const response = await fetch(`${backendUrl}/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -107,4 +111,3 @@
     </script>
 </body>
 </html>
-
