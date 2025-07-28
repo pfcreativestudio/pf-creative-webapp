@@ -95,4 +95,3 @@ Director's Vision (Overall Tone & Mood): []
         }
     });
 });
-
