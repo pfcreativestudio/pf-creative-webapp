@@ -49,6 +49,9 @@ Director's Vision (Overall Tone & Mood): []
         generateBtn.textContent = 'Generating...';
 
         try {
+            // NOTE: This is a simplified call for the main page which doesn't require login.
+            // The /chat endpoint in the backend is the one that uses the full master prompt.
+            // This endpoint might need adjustment depending on final logic.
             const response = await fetch(BACKEND_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
