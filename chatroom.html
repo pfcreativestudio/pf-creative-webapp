@@ -348,38 +348,45 @@
                 // Show typing indicator
                 this.showTypingIndicator();
 
+                // Add current user message to history BEFORE sending, in Gemini API expected format
+                this.chatHistory.push({ role: 'user', parts: [{ text: message }] });
+
                 try {
-                    // *** MODIFIED: Corrected API endpoint to /generate-script ***
-                    // *** MODIFIED: Changed body parameter from 'message' to 'project_info' ***
                     const response = await fetch(`${this.apiUrl}/generate-script`, { 
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${this.token}`
                         },
-                        body: JSON.stringify({ project_info: message }) // Send 'project_info'
+                        body: JSON.stringify({ 
+                            project_info: message, 
+                            history: this.chatHistory // 将完整的 chatHistory 发送给后端
+                        })
                     });
 
                     const result = await response.json();
 
-                    // Update chat history after receiving a response
-                    this.chatHistory.push({ role: 'user', parts: [message] });
-
                     if (response.ok && result.success) {
-                        this.addMessage(result.script, 'ai'); // Expecting 'script' from backend
-                        this.chatHistory.push({ role: 'model', parts: [result.script] });
+                        this.addMessage(result.script, 'ai'); 
+                        // Add AI response to history AFTER receiving, in Gemini API expected format
+                        this.chatHistory.push({ role: 'model', parts: [{ text: result.script }] }); 
                     } else {
                         const errorMessage = result.error || 'Sorry, I encountered an error. Please try again.';
                         this.addMessage(errorMessage, 'ai', true);
                         console.error('Chat error:', result.error || result.message);
+                        // If AI responds with error, remove the last user message from history
+                        // so the AI doesn't see its own error in the next turn.
+                        this.chatHistory.pop(); 
                     }
                 } catch (error) {
                     this.addMessage('Network error. Please check your connection and try again.', 'ai', true);
                     console.error('Network error:', error);
+                    // If network error, remove the last user message from history.
+                    this.chatHistory.pop();
                 } finally {
                     this.hideTypingIndicator();
                     this.toggleSendButton(true);
-                    messageInput.focus(); // Keep the textarea focused
+                    messageInput.focus(); 
                 }
             }
 
@@ -414,7 +421,7 @@
 
                 // Remove welcome message if it exists
                 const welcomeMessage = messagesContainer.querySelector('.welcome-message');
-                if (welcomeMessage && sender === 'user') {
+                if (welcomeMessage && messagesContainer.childElementCount > 1 && sender === 'user') { // Ensure welcome message is not the only content
                     welcomeMessage.remove();
                 }
 
