@@ -301,8 +301,7 @@
                 this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
                 this.token = localStorage.getItem('auth_token');
                 this.username = localStorage.getItem('username');
-                // *** NEW: Add a property to store the chat history ***
-                this.chatHistory = []; 
+                this.chatHistory = [];
                 this.init();
             }
 
@@ -350,31 +349,28 @@
                 this.showTypingIndicator();
 
                 try {
-                    // *** MODIFIED: Send the message AND the entire chat history ***
-                    const response = await fetch(`${this.apiUrl}/chat`, {
+                    // *** MODIFIED: Corrected API endpoint to /generate-script ***
+                    // *** MODIFIED: Changed body parameter from 'message' to 'project_info' ***
+                    const response = await fetch(`${this.apiUrl}/generate-script`, { 
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${this.token}`
                         },
-                        body: JSON.stringify({ 
-                            message: message, 
-                            history: this.chatHistory // Send the history
-                        })
+                        body: JSON.stringify({ project_info: message }) // Send 'project_info'
                     });
 
                     const result = await response.json();
 
-                    // *** NEW: Update chat history after receiving a response ***
+                    // Update chat history after receiving a response
                     this.chatHistory.push({ role: 'user', parts: [message] });
 
                     if (response.ok && result.success) {
-                        this.addMessage(result.response, 'ai');
-                        this.chatHistory.push({ role: 'model', parts: [result.response] });
+                        this.addMessage(result.script, 'ai'); // Expecting 'script' from backend
+                        this.chatHistory.push({ role: 'model', parts: [result.script] });
                     } else {
-                        const errorMessage = result.message || 'Sorry, I encountered an error. Please try again.';
+                        const errorMessage = result.error || 'Sorry, I encountered an error. Please try again.';
                         this.addMessage(errorMessage, 'ai', true);
-                        // We don't add the error to history, so the AI doesn't get confused
                         console.error('Chat error:', result.error || result.message);
                     }
                 } catch (error) {
@@ -401,7 +397,7 @@
                 const senderName = sender === 'user' ? this.username : 'Director-Grade AI';
                 const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                // *** NEW: Format multi-line text correctly by replacing \n with <br> ***
+                // Format multi-line text correctly by replacing \n with <br>
                 const formattedContent = this.escapeHtml(content).replace(/\n/g, '<br>');
 
                 messageDiv.className = `message-bubble ${senderClass} p-4 rounded-lg`;
