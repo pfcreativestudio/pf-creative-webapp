@@ -134,34 +134,57 @@
     <script>
         class AdminPanel {
             constructor() {
-                // THIS IS THE CORRECTED BACKEND URL FOR YOUR NEW PROJECT
-                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
-                this.adminPassword = null; // Will be set after successful password entry
+                // 这是你的 Cloud Function 的实际 URL，请确保它是正确的
+                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api'; // <-- 确保这个URL是你的函数URL
+                this.adminPassword = null; 
                 this.init();
             }
 
             init() {
-                document.getElementById("submitAdminPassword").addEventListener("click", () => this.checkAdminPassword());
+                document.getElementById("submitAdminPassword").addEventListener("click", () => this.verifyAdminPassword());
                 document.getElementById("adminPasswordInput").addEventListener("keypress", (e) => {
                     if (e.key === "Enter") {
-                        this.checkAdminPassword();
+                        this.verifyAdminPassword();
                     }
                 });
             }
 
-            checkAdminPassword() {
+            // 修改了 checkAdminPassword 方法为 verifyAdminPassword
+            async verifyAdminPassword() {
                 const inputPassword = document.getElementById("adminPasswordInput").value;
                 
-                // For now, the password is used to unlock the UI and is sent in headers
-                // In a real production app, you might verify this password against the backend first
-                if (inputPassword) { // Check if a password was entered
-                    this.adminPassword = inputPassword;
-                    document.getElementById("passwordPromptOverlay").style.display = "none"; // Hide the overlay
-                    document.getElementById("adminContent").classList.remove("hidden"); // Show the admin content
-                    this.setupEventListeners();
-                    this.loadUsers();
-                } else {
+                if (!inputPassword) {
                     this.showMessage("Please enter the Admin Password", "error");
+                    return;
+                }
+
+                // **重要：这里将 adminPassword 发送到后端进行验证**
+                try {
+                    // 我们假设后端有一个 /admin/verify-password 路由来验证密码
+                    // 注意: 你的 main.py 目前没有这个路由，你需要在 main.py 中添加
+                    const response = await fetch(`${this.apiUrl}/admin/verify-password`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Admin-Password': inputPassword // 发送密码进行验证
+                        },
+                        body: JSON.stringify({ adminPassword: inputPassword }) // 也可以在body中发送
+                    });
+
+                    if (response.ok) {
+                        // 如果密码正确，保存它并显示内容
+                        this.adminPassword = inputPassword;
+                        document.getElementById("passwordPromptOverlay").style.display = "none";
+                        document.getElementById("adminContent").classList.remove("hidden");
+                        this.setupEventListeners();
+                        this.loadUsers();
+                    } else {
+                        const errorData = await response.json();
+                        this.showMessage(errorData.error || "Incorrect Admin Password", "error");
+                    }
+                } catch (error) {
+                    this.showMessage("Network error during password verification. Please try again.", "error");
+                    console.error("Error verifying admin password:", error);
                 }
             }
 
@@ -177,9 +200,15 @@
             }
 
             async makeAdminRequest(endpoint, method, body = null) {
+                // 如果 adminPassword 未设置，表示还未通过验证，阻止请求
+                if (!this.adminPassword) {
+                    this.showMessage("Admin password not set. Please refresh and enter the password.", "error");
+                    return Promise.reject(new Error("Admin password not set."));
+                }
+
                 const headers = {
                     'Content-Type': 'application/json',
-                    'X-Admin-Password': this.adminPassword // Include the admin password here
+                    'X-Admin-Password': this.adminPassword // 每次请求都包含密码
                 };
 
                 const options = {
@@ -210,7 +239,7 @@
                     if (response.ok) {
                         this.showMessage("User added successfully!", "success");
                         document.getElementById("addUserForm").reset();
-                        this.loadUsers();
+                        this.loadUsers(); // 重新加载用户列表
                     } else {
                         this.showMessage(result.error || "Failed to add user", "error");
                     }
@@ -228,6 +257,7 @@
                 loadingMessage.classList.remove("hidden");
                 emptyMessage.classList.add("hidden");
                 usersList.innerHTML = "";
+                document.getElementById("totalUsers").textContent = "0"; // 重置总用户数
 
                 try {
                     const response = await this.makeAdminRequest("/admin/users", "GET");
@@ -241,7 +271,7 @@
                         } else {
                             this.renderUsers(result.users);
                         }
-                        document.getElementById("totalUsers").textContent = result.users.length;
+                        document.getElementById("totalUsers").textContent = result.users.length; // 更新总用户数
                     } else {
                         this.showMessage(result.error || "Failed to load users", "error");
                         emptyMessage.classList.remove("hidden");
@@ -300,15 +330,23 @@
                 }
             }
 
+            // 这是一个前端的弹窗提示，让你输入新密码
             editUser(username) {
                 const newPassword = prompt(`Enter new password for "${username}":`);
-                if (newPassword && newPassword.trim()) {
+                if (newPassword !== null && newPassword.trim()) { // 检查用户是否取消或输入空字符串
                     this.updateUser(username, newPassword.trim());
+                } else if (newPassword === null) {
+                    // 用户点击了取消
+                    this.showMessage("Password update cancelled.", "info");
+                } else {
+                    // 用户输入了空字符串
+                    this.showMessage("Password cannot be empty.", "error");
                 }
             }
 
             async updateUser(username, newPassword) {
                 try {
+                    // 注意：你需要在 main.py 中添加 /admin/update-user 路由
                     const response = await this.makeAdminRequest("/admin/update-user", "PUT", { username, password: newPassword });
                     const result = await response.json();
 
@@ -328,12 +366,13 @@
                 const container = document.getElementById("messageContainer");
                 const messageDiv = document.createElement("div");
                 
-                const bgColor = type === "success" ? "bg-green-600" : "bg-red-600";
+                const bgColor = type === "success" ? "bg-green-600" : (type === "error" ? "bg-red-600" : "bg-blue-600"); // Added 'info' type
                 messageDiv.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg mb-2 transform transition-all duration-300`;
                 messageDiv.textContent = message;
                 
                 container.appendChild(messageDiv);
                 
+                // 自动消失
                 setTimeout(() => {
                     messageDiv.style.opacity = "0";
                     messageDiv.style.transform = "translateX(100%)";
