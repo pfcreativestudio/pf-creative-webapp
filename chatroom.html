@@ -6,7 +6,6 @@
     <title>PF Creative AI Film Director</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- The complete styling from your chatroom_final.html is preserved below -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.5) transparent; }
@@ -114,7 +113,8 @@
     <script>
         class DirectorChatroom {
             constructor() {
-                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net';
+                // *** THIS IS THE CORRECTED LINE ***
+                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
                 this.token = localStorage.getItem('auth_token');
                 this.username = localStorage.getItem('username');
                 this.savedChats = [];
@@ -147,7 +147,7 @@
             
             // --- HISTORY MANAGEMENT ---
             loadAndRenderHistory() {
-                this.savedChats = JSON.parse(localStorage.getItem('pf_chat_sessions')) || [];
+                this.savedChats = JSON.parse(localStorage.getItem(`pf_chat_sessions_${this.username}`)) || [];
                 const historyContainer = document.getElementById('chatHistory');
                 historyContainer.innerHTML = '';
                 if (this.savedChats.length === 0) {
@@ -194,15 +194,18 @@
 
             saveCurrentChat() {
                 const existingChatIndex = this.savedChats.findIndex(c => c.id === this.currentChat.id);
+                if (this.currentChat.history.length === 0) return; // Don't save empty chats
+
                 if (existingChatIndex > -1) {
-                    this.savedChats[existingChatIndex] = { ...this.savedChats[existingChatIndex], history: this.currentChat.history, timestamp: new Date().toISOString() };
+                    this.savedChats[existingChatIndex].history = this.currentChat.history;
+                    this.savedChats[existingChatIndex].timestamp = new Date().toISOString();
                 } else {
                     const firstUserMessage = this.currentChat.history.find(m => m.role === 'user');
                     const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 30) + '...' : 'New Chat';
                     this.currentChat.id = Date.now();
                     this.savedChats.push({ id: this.currentChat.id, title: title, history: this.currentChat.history, timestamp: new Date().toISOString() });
                 }
-                localStorage.setItem('pf_chat_sessions', JSON.stringify(this.savedChats));
+                localStorage.setItem(`pf_chat_sessions_${this.username}`, JSON.stringify(this.savedChats));
                 this.loadAndRenderHistory();
                 this.highlightActiveChat();
             }
@@ -218,7 +221,9 @@
                     chatMessages.style.display = 'block';
 
                     this.currentChat.history.forEach(msg => {
-                        this.addMessage(msg.parts[0].text, msg.role, msg.parts.find(p => p.file)?.file);
+                        const filePart = msg.parts.find(p => p.file);
+                        const fileObject = filePart ? filePart.file : null;
+                        this.addMessage(msg.parts[0].text, msg.role, fileObject);
                     });
                     
                     this.highlightActiveChat();
@@ -228,7 +233,7 @@
             
             deleteChat(chatId) {
                 this.savedChats = this.savedChats.filter(c => c.id != chatId);
-                localStorage.setItem('pf_chat_sessions', JSON.stringify(this.savedChats));
+                localStorage.setItem(`pf_chat_sessions_${this.username}`, JSON.stringify(this.savedChats));
                 if (this.currentChat.id == chatId) {
                     this.startNewChat();
                 }
@@ -272,6 +277,7 @@
                 this.addMessage(userMessageContent, 'user', userFile);
                 
                 const userMessageForHistory = { role: 'user', parts: [{ text: userMessageContent }]};
+                // NOTE: We don't save the full file object in history to keep localStorage light
                 if(userFile) userMessageForHistory.parts.push({ file: { name: userFile.name, type: userFile.type } });
                 this.currentChat.history.push(userMessageForHistory);
 
@@ -333,12 +339,11 @@
 
                 let filePreviewHtml = '';
                 if (file && sender === 'user') {
-                     // Check if file is an image for preview
-                    if(file.type.startsWith('image/')) {
+                    if(file.type && file.type.startsWith('image/')) {
                          const tempUrl = URL.createObjectURL(file);
                          filePreviewHtml = `<img src="${tempUrl}" class="mt-2 rounded-lg max-w-xs" alt="Uploaded image">`;
-                    } else {
-                         filePreviewHtml = `<div class="mt-2 p-2 bg-black/20 rounded-md text-xs">File: ${this.escapeHtml(file.name)}</div>`;
+                    } else { // Handle file objects from history that don't have the full file data
+                         filePreviewHtml = `<div class="mt-2 p-2 bg-black/20 rounded-md text-xs flex items-center gap-2"><i class="fas fa-file-alt"></i> ${this.escapeHtml(file.name)}</div>`;
                     }
                 }
 
