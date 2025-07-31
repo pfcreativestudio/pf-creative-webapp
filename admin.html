@@ -6,22 +6,9 @@
     <title>Admin Panel - PF Creative AI Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg-dark-1: #0a0a0a;
-            --bg-dark-2: #1a1a1a;
-            --text-light: #e0e0e0;
-            --text-dark: #a0a0a0;
-            --accent-1: #f59e0b;
-            --accent-2: #ec4899;
-            --accent-3: #8b5cf6;
-            --danger-1: #ef4444;
-            --danger-2: #dc2626;
-            --success-1: #22c55e;
-            --info-1: #3b82f6;
-        }
         body {
-            background: linear-gradient(135deg, var(--bg-dark-1) 0%, var(--bg-dark-2) 50%, var(--bg-dark-1) 100%);
-            color: var(--text-light);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #e0e0e0;
             font-family: sans-serif;
         }
         .glass-effect {
@@ -30,13 +17,13 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .gradient-text {
-            background: linear-gradient(45deg, var(--accent-1), var(--accent-2), var(--accent-3));
+            background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         .btn-primary {
-            background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
             transition: all 0.3s ease;
         }
         .btn-primary:hover {
@@ -44,69 +31,51 @@
             box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
         }
         .btn-danger {
-            background: linear-gradient(45deg, var(--danger-1), var(--danger-2));
+            background: linear-gradient(45deg, #ef4444, #dc2626);
             transition: all 0.3s ease;
         }
         .btn-danger:hover {
             transform: scale(1.05);
             box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
         }
-        #passwordPromptOverlay, #editUserModalOverlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        .user-card {
+            transition: all 0.3s ease;
+        }
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.2);
+        }
+        #passwordPromptOverlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.8);
-            display: flex; justify-content: center; align-items: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             z-index: 1000;
         }
-        #passwordPromptBox, #editUserModalBox {
-            background: var(--bg-dark-2); padding: 30px; border-radius: 10px;
-            text-align: center; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        #passwordPromptBox {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
-        .user-table { width: 100%; border-collapse: collapse; }
-        .user-table th, .user-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        .user-table th { background-color: rgba(255, 255, 255, 0.1); font-weight: 600; color: var(--text-light); }
-        .user-table tbody tr { transition: background-color 0.2s ease-in-out; }
-        .user-table tbody tr:hover { background-color: rgba(255, 255, 255, 0.07); }
-        .status-badge { padding: 4px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
-        .status-badge.active { background-color: var(--success-1); color: white; }
-        .status-badge.expired { background-color: var(--danger-1); color: white; }
-        .status-badge.no-expiry { background-color: var(--info-1); color: white; }
-        .modal-input { width: 100%; padding: 8px 12px; background: #0a0a0a; border: 1px solid #4a4a4a; border-radius: 6px; color: white; }
     </style>
 </head>
 <body>
     <div id="passwordPromptOverlay">
-        <div id="passwordPromptBox" class="w-full max-w-sm">
+        <div id="passwordPromptBox">
             <h2 class="text-xl font-semibold text-white mb-4">Enter Admin Password</h2>
             <input type="password" id="adminPasswordInput" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none mb-4" placeholder="Admin Password">
             <button id="submitAdminPassword" class="btn-primary w-full px-6 py-2 rounded-lg text-white font-semibold">Submit</button>
         </div>
     </div>
 
-    <div id="editUserModalOverlay" class="hidden">
-        <div id="editUserModalBox" class="w-full max-w-md text-left">
-            <h2 class="text-xl font-semibold text-white mb-6">Edit User: <span id="editUsername" class="font-bold"></span></h2>
-            <form id="editUserForm">
-                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">New Password (optional)</label>
-                    <input type="text" id="editPassword" class="modal-input" placeholder="Leave blank to keep current password">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Expiration Date (optional)</label>
-                    <input type="date" id="editExpiresAt" class="modal-input">
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" id="cancelEditBtn" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white text-sm transition duration-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm transition duration-300">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-
     <div class="min-h-screen p-6 hidden" id="adminContent">
-        <div class="max-w-7xl mx-auto">
+        <div class="max-w-6xl mx-auto">
             <div class="glass-effect rounded-lg p-6 mb-8">
-                <h1 class="text-3xl font-bold gradient-text mb-2">Admin Panel - TEST SUCCESS</h1>
+                <h1 class="text-3xl font-bold gradient-text mb-2">Admin Panel</h1>
                 <p class="text-gray-400">Manage user credentials for PF Creative AI Studio</p>
                 <div class="mt-4 flex items-center space-x-4">
                     <div class="flex items-center space-x-2">
@@ -121,7 +90,7 @@
 
             <div class="glass-effect rounded-lg p-6 mb-8">
                 <h2 class="text-xl font-semibold text-white mb-4">Add New User</h2>
-                <form id="addUserForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form id="addUserForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
                         <input type="text" id="newUsername" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Enter username" required>
@@ -130,43 +99,32 @@
                         <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
                         <input type="text" id="newPassword" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Enter password" required>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Expiration Date (Optional)</label>
-                        <input type="date" id="newExpiresAt" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none">
-                    </div>
                     <div class="flex items-end">
-                        <button type="submit" class="btn-primary w-full px-6 py-2 rounded-lg text-white font-semibold">Add User</button>
+                        <button type="submit" class="btn-primary w-full px-6 py-2 rounded-lg text-white font-semibold">
+                            Add User
+                        </button>
                     </div>
                 </form>
             </div>
 
             <div class="glass-effect rounded-lg p-6">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-semibold text-white">Current Users</h2>
-                    <div class="flex items-center gap-4 w-full md:w-auto">
-                        <input type="search" id="searchBar" placeholder="Search by username..." class="w-full md:w-64 px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none">
-                        <button id="refreshBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm transition duration-300 flex-shrink-0">Refresh</button>
-                    </div>
+                    <button id="refreshBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm transition duration-300">
+                        Refresh
+                    </button>
                 </div>
                 
-                <div id="usersListContainer" class="overflow-x-auto">
-                     <table class="user-table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Password</th>
-                                <th>Status</th>
-                                <th>Time Remaining</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersList"></tbody>
-                    </table>
+                <div id="usersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 </div>
                 
-                <div id="loadingMessage" class="text-center py-8 text-gray-400">Loading users...</div>
-                <div id="emptyMessage" class="text-center py-8 text-gray-400 hidden">No users found. Add a user above.</div>
-                <div id="noResultsMessage" class="text-center py-8 text-gray-400 hidden">No users match your search.</div>
+                <div id="loadingMessage" class="text-center py-8 text-gray-400">
+                    Loading users...
+                </div>
+                
+                <div id="emptyMessage" class="text-center py-8 text-gray-400 hidden">
+                    No users found. Add your first user above.
+                </div>
             </div>
         </div>
     </div>
@@ -176,33 +134,45 @@
     <script>
         class AdminPanel {
             constructor() {
-                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
-                this.adminPassword = null;
-                this.users = [];
+                // 这是你的 Cloud Function 的实际 URL，请确保它是正确的
+                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api'; // <-- 确保这个URL是你的函数URL
+                this.adminPassword = null; 
                 this.init();
             }
 
             init() {
                 document.getElementById("submitAdminPassword").addEventListener("click", () => this.verifyAdminPassword());
                 document.getElementById("adminPasswordInput").addEventListener("keypress", (e) => {
-                    if (e.key === "Enter") this.verifyAdminPassword();
+                    if (e.key === "Enter") {
+                        this.verifyAdminPassword();
+                    }
                 });
             }
 
+            // 修改了 checkAdminPassword 方法为 verifyAdminPassword
             async verifyAdminPassword() {
                 const inputPassword = document.getElementById("adminPasswordInput").value;
+                
                 if (!inputPassword) {
                     this.showMessage("Please enter the Admin Password", "error");
                     return;
                 }
+
+                // **重要：这里将 adminPassword 发送到后端进行验证**
                 try {
+                    // 我们假设后端有一个 /admin/verify-password 路由来验证密码
+                    // 注意: 你的 main.py 目前没有这个路由，你需要在 main.py 中添加
                     const response = await fetch(`${this.apiUrl}/admin/verify-password`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': inputPassword },
-                        body: JSON.stringify({})
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Admin-Password': inputPassword // 发送密码进行验证
+                        },
+                        body: JSON.stringify({ adminPassword: inputPassword }) // 也可以在body中发送
                     });
 
                     if (response.ok) {
+                        // 如果密码正确，保存它并显示内容
                         this.adminPassword = inputPassword;
                         document.getElementById("passwordPromptOverlay").style.display = "none";
                         document.getElementById("adminContent").classList.remove("hidden");
@@ -213,7 +183,7 @@
                         this.showMessage(errorData.error || "Incorrect Admin Password", "error");
                     }
                 } catch (error) {
-                    this.showMessage("Network error during password verification.", "error");
+                    this.showMessage("Network error during password verification. Please try again.", "error");
                     console.error("Error verifying admin password:", error);
                 }
             }
@@ -223,58 +193,53 @@
                     e.preventDefault();
                     this.addUser();
                 });
-                document.getElementById("refreshBtn").addEventListener("click", () => this.loadUsers());
-                document.getElementById("searchBar").addEventListener("input", (e) => {
-                    this.filterUsers(e.target.value);
-                });
-                document.getElementById("cancelEditBtn").addEventListener("click", () => {
-                    document.getElementById("editUserModalOverlay").classList.add("hidden");
-                });
-                document.getElementById("editUserForm").addEventListener("submit", (e) => {
-                    e.preventDefault();
-                    const username = document.getElementById('editUsername').textContent;
-                    const newPassword = document.getElementById('editPassword').value.trim();
-                    const expiresAt = document.getElementById('editExpiresAt').value;
-                    this.updateUser(username, newPassword, expiresAt);
+
+                document.getElementById("refreshBtn").addEventListener("click", () => {
+                    this.loadUsers();
                 });
             }
 
             async makeAdminRequest(endpoint, method, body = null) {
+                // 如果 adminPassword 未设置，表示还未通过验证，阻止请求
                 if (!this.adminPassword) {
-                    this.showMessage("Admin password not set. Please refresh.", "error");
+                    this.showMessage("Admin password not set. Please refresh and enter the password.", "error");
                     return Promise.reject(new Error("Admin password not set."));
                 }
+
                 const headers = {
                     'Content-Type': 'application/json',
-                    'X-Admin-Password': this.adminPassword
+                    'X-Admin-Password': this.adminPassword // 每次请求都包含密码
                 };
-                const options = { method, headers };
+
+                const options = {
+                    method: method,
+                    headers: headers,
+                };
+
                 if (body) {
                     options.body = JSON.stringify(body);
                 }
+
                 return fetch(`${this.apiUrl}${endpoint}`, options);
             }
 
             async addUser() {
                 const username = document.getElementById("newUsername").value.trim();
                 const password = document.getElementById("newPassword").value.trim();
-                const expiresAt = document.getElementById("newExpiresAt").value;
 
                 if (!username || !password) {
-                    this.showMessage("Username and Password are required", "error");
+                    this.showMessage("Please fill in all fields", "error");
                     return;
                 }
-                const body = { username, password };
-                if (expiresAt) {
-                    body.expires_at = new Date(expiresAt).toISOString();
-                }
+
                 try {
-                    const response = await this.makeAdminRequest("/admin/add-user", "POST", body);
+                    const response = await this.makeAdminRequest("/admin/add-user", "POST", { username, password });
                     const result = await response.json();
+
                     if (response.ok) {
                         this.showMessage("User added successfully!", "success");
                         document.getElementById("addUserForm").reset();
-                        this.loadUsers();
+                        this.loadUsers(); // 重新加载用户列表
                     } else {
                         this.showMessage(result.error || "Failed to add user", "error");
                     }
@@ -285,84 +250,74 @@
             }
 
             async loadUsers() {
-                document.getElementById("loadingMessage").classList.remove("hidden");
-                document.getElementById("emptyMessage").classList.add("hidden");
-                document.getElementById("noResultsMessage").classList.add("hidden");
-                document.getElementById("usersList").innerHTML = "";
-                document.getElementById("totalUsers").textContent = "0";
-                document.getElementById("searchBar").value = "";
+                const loadingMessage = document.getElementById("loadingMessage");
+                const emptyMessage = document.getElementById("emptyMessage");
+                const usersList = document.getElementById("usersList");
+
+                loadingMessage.classList.remove("hidden");
+                emptyMessage.classList.add("hidden");
+                usersList.innerHTML = "";
+                document.getElementById("totalUsers").textContent = "0"; // 重置总用户数
+
                 try {
                     const response = await this.makeAdminRequest("/admin/users", "GET");
                     const result = await response.json();
-                    document.getElementById("loadingMessage").classList.add("hidden");
+
+                    loadingMessage.classList.add("hidden");
+
                     if (response.ok && result.users) {
-                        this.users = result.users;
-                        document.getElementById("totalUsers").textContent = this.users.length;
-                        if (this.users.length === 0) {
-                            document.getElementById("emptyMessage").classList.remove("hidden");
+                        if (result.users.length === 0) {
+                            emptyMessage.classList.remove("hidden");
                         } else {
-                            this.renderUsers(this.users);
+                            this.renderUsers(result.users);
                         }
+                        document.getElementById("totalUsers").textContent = result.users.length; // 更新总用户数
                     } else {
                         this.showMessage(result.error || "Failed to load users", "error");
-                        document.getElementById("emptyMessage").classList.remove("hidden");
+                        emptyMessage.classList.remove("hidden");
                     }
                 } catch (error) {
-                    document.getElementById("loadingMessage").classList.add("hidden");
+                    loadingMessage.classList.add("hidden");
                     this.showMessage("Network error. Please try again.", "error");
                     console.error("Error loading users:", error);
                 }
             }
 
-            filterUsers(searchTerm) {
-                const lowercasedTerm = searchTerm.toLowerCase();
-                const filteredUsers = this.users.filter(user => 
-                    user.username.toLowerCase().includes(lowercasedTerm)
-                );
-                this.renderUsers(filteredUsers);
-                document.getElementById("noResultsMessage").classList.toggle(filteredUsers.length === 0 && this.users.length > 0);
-            }
-
             renderUsers(users) {
-                const usersListBody = document.getElementById("usersList");
-                usersListBody.innerHTML = users.map(user => {
-                    const { status, timeRemaining, badgeClass } = this.calculateExpiry(user.expires_at);
-                    return `
-                        <tr data-username="${this.escapeHtml(user.username)}">
-                            <td class="font-medium text-white">${this.escapeHtml(user.username)}</td>
-                            <td>${this.escapeHtml(user.password)}</td>
-                            <td><span class="status-badge ${badgeClass}">${status}</span></td>
-                            <td class="${timeRemaining.includes('Expired') ? 'text-red-400' : 'text-gray-300'}">${timeRemaining}</td>
-                            <td>
-                                <div class="flex space-x-2">
-                                    <button onclick="adminPanel.showEditModal('${this.escapeHtml(user.username)}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-xs transition duration-300">Edit</button>
-                                    <button onclick="adminPanel.deleteUser('${this.escapeHtml(user.username)}')" class="btn-danger px-3 py-1 rounded text-white text-xs">Delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join("");
-            }
-
-            calculateExpiry(expiresAtStr) {
-                if (!expiresAtStr) {
-                    return { status: 'Active', timeRemaining: 'No Expiry', badgeClass: 'no-expiry' };
-                }
-                const expiryDate = new Date(expiresAtStr);
-                const now = new Date();
-                const diffTime = expiryDate - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays <= 0) {
-                    return { status: 'Expired', timeRemaining: `Expired ${-diffDays} days ago`, badgeClass: 'expired' };
-                }
-                return { status: 'Active', timeRemaining: `${diffDays} days left`, badgeClass: 'active' };
+                const usersList = document.getElementById("usersList");
+                usersList.innerHTML = users.map(user => `
+                    <div class="user-card glass-effect rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-white">${this.escapeHtml(user.username)}</h3>
+                                <p class="text-sm text-gray-400">Password: ${this.escapeHtml(user.password)}</p>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-xs text-green-400">Active</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="adminPanel.editUser('${this.escapeHtml(user.username)}')" class="flex-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm transition duration-300">
+                                Edit
+                            </button>
+                            <button onclick="adminPanel.deleteUser('${this.escapeHtml(user.username)}')" class="flex-1 btn-danger px-3 py-1 rounded text-white text-sm">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join("");
             }
 
             async deleteUser(username) {
-                if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) return;
+                if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+                    return;
+                }
+
                 try {
                     const response = await this.makeAdminRequest("/admin/delete-user", "DELETE", { username });
                     const result = await response.json();
+
                     if (response.ok) {
                         this.showMessage("User deleted successfully!", "success");
                         this.loadUsers();
@@ -374,30 +329,29 @@
                     console.error("Error deleting user:", error);
                 }
             }
-            
-            showEditModal(username) {
-                const user = this.users.find(u => u.username === username);
-                if (!user) return;
-                document.getElementById('editUsername').textContent = user.username;
-                document.getElementById('editPassword').value = '';
-                document.getElementById('editExpiresAt').value = user.expires_at ? user.expires_at.split('T')[0] : '';
-                document.getElementById('editUserModalOverlay').classList.remove('hidden');
+
+            // 这是一个前端的弹窗提示，让你输入新密码
+            editUser(username) {
+                const newPassword = prompt(`Enter new password for "${username}":`);
+                if (newPassword !== null && newPassword.trim()) { // 检查用户是否取消或输入空字符串
+                    this.updateUser(username, newPassword.trim());
+                } else if (newPassword === null) {
+                    // 用户点击了取消
+                    this.showMessage("Password update cancelled.", "info");
+                } else {
+                    // 用户输入了空字符串
+                    this.showMessage("Password cannot be empty.", "error");
+                }
             }
 
-            async updateUser(username, newPassword, expiresAt) {
-                const body = { username };
-                if (newPassword) {
-                    body.password = newPassword;
-                }
-                if (expiresAt !== undefined) {
-                     body.expires_at = expiresAt ? new Date(expiresAt).toISOString() : '';
-                }
+            async updateUser(username, newPassword) {
                 try {
-                    const response = await this.makeAdminRequest("/admin/update-user", "PUT", body);
+                    // 注意：你需要在 main.py 中添加 /admin/update-user 路由
+                    const response = await this.makeAdminRequest("/admin/update-user", "PUT", { username, password: newPassword });
                     const result = await response.json();
+
                     if (response.ok) {
                         this.showMessage("User updated successfully!", "success");
-                        document.getElementById("editUserModalOverlay").classList.add("hidden");
                         this.loadUsers();
                     } else {
                         this.showMessage(result.error || "Failed to update user", "error");
@@ -411,14 +365,20 @@
             showMessage(message, type) {
                 const container = document.getElementById("messageContainer");
                 const messageDiv = document.createElement("div");
-                const bgColor = type === "success" ? "bg-green-600" : (type === "error" ? "bg-red-600" : "bg-blue-600");
+                
+                const bgColor = type === "success" ? "bg-green-600" : (type === "error" ? "bg-red-600" : "bg-blue-600"); // Added 'info' type
                 messageDiv.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg mb-2 transform transition-all duration-300`;
                 messageDiv.textContent = message;
+                
                 container.appendChild(messageDiv);
+                
+                // 自动消失
                 setTimeout(() => {
                     messageDiv.style.opacity = "0";
                     messageDiv.style.transform = "translateX(100%)";
-                    setTimeout(() => container.removeChild(messageDiv), 300);
+                    setTimeout(() => {
+                        container.removeChild(messageDiv);
+                    }, 300);
                 }, 3000);
             }
 
@@ -428,6 +388,8 @@
                 return div.innerHTML;
             }
         }
+
+        // Initialize admin panel
         const adminPanel = new AdminPanel();
     </script>
 </body>
