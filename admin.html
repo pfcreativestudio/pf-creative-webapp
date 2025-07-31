@@ -61,48 +61,16 @@
             background: var(--bg-dark-2); padding: 30px; border-radius: 10px;
             text-align: center; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
-        /* Custom styles for table */
-        .user-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .user-table th, .user-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .user-table th {
-            background-color: rgba(255, 255, 255, 0.1);
-            font-weight: 600;
-            color: var(--text-light);
-        }
-        .user-table tbody tr {
-            transition: background-color 0.2s ease-in-out;
-        }
-        .user-table tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.07);
-        }
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .user-table { width: 100%; border-collapse: collapse; }
+        .user-table th, .user-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .user-table th { background-color: rgba(255, 255, 255, 0.1); font-weight: 600; color: var(--text-light); }
+        .user-table tbody tr { transition: background-color 0.2s ease-in-out; }
+        .user-table tbody tr:hover { background-color: rgba(255, 255, 255, 0.07); }
+        .status-badge { padding: 4px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
         .status-badge.active { background-color: var(--success-1); color: white; }
         .status-badge.expired { background-color: var(--danger-1); color: white; }
         .status-badge.no-expiry { background-color: var(--info-1); color: white; }
-
-        .modal-input {
-            width: 100%;
-            padding: 8px 12px;
-            background: #0a0a0a;
-            border: 1px solid #4a4a4a;
-            border-radius: 6px;
-            color: white;
-        }
+        .modal-input { width: 100%; padding: 8px 12px; background: #0a0a0a; border: 1px solid #4a4a4a; border-radius: 6px; color: white; }
     </style>
 </head>
 <body>
@@ -210,7 +178,7 @@
             constructor() {
                 this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
                 this.adminPassword = null;
-                this.users = []; // Cache for user data
+                this.users = [];
                 this.init();
             }
 
@@ -231,7 +199,7 @@
                     const response = await fetch(`${this.apiUrl}/admin/verify-password`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Admin-Password': inputPassword },
-                        body: JSON.stringify({}) // Body is not strictly needed but good practice
+                        body: JSON.stringify({})
                     });
 
                     if (response.ok) {
@@ -255,18 +223,13 @@
                     e.preventDefault();
                     this.addUser();
                 });
-
                 document.getElementById("refreshBtn").addEventListener("click", () => this.loadUsers());
-                
                 document.getElementById("searchBar").addEventListener("input", (e) => {
                     this.filterUsers(e.target.value);
                 });
-
-                // Edit Modal Listeners
                 document.getElementById("cancelEditBtn").addEventListener("click", () => {
                     document.getElementById("editUserModalOverlay").classList.add("hidden");
                 });
-
                 document.getElementById("editUserForm").addEventListener("submit", (e) => {
                     e.preventDefault();
                     const username = document.getElementById('editUsername').textContent;
@@ -301,17 +264,13 @@
                     this.showMessage("Username and Password are required", "error");
                     return;
                 }
-
                 const body = { username, password };
                 if (expiresAt) {
-                    // Convert to UTC ISO string to be safe
                     body.expires_at = new Date(expiresAt).toISOString();
                 }
-
                 try {
                     const response = await this.makeAdminRequest("/admin/add-user", "POST", body);
                     const result = await response.json();
-
                     if (response.ok) {
                         this.showMessage("User added successfully!", "success");
                         document.getElementById("addUserForm").reset();
@@ -332,13 +291,10 @@
                 document.getElementById("usersList").innerHTML = "";
                 document.getElementById("totalUsers").textContent = "0";
                 document.getElementById("searchBar").value = "";
-
                 try {
                     const response = await this.makeAdminRequest("/admin/users", "GET");
                     const result = await response.json();
-                    
                     document.getElementById("loadingMessage").classList.add("hidden");
-
                     if (response.ok && result.users) {
                         this.users = result.users;
                         document.getElementById("totalUsers").textContent = this.users.length;
@@ -364,7 +320,6 @@
                     user.username.toLowerCase().includes(lowercasedTerm)
                 );
                 this.renderUsers(filteredUsers);
-                
                 document.getElementById("noResultsMessage").classList.toggle(filteredUsers.length === 0 && this.users.length > 0);
             }
 
@@ -376,11 +331,7 @@
                         <tr data-username="${this.escapeHtml(user.username)}">
                             <td class="font-medium text-white">${this.escapeHtml(user.username)}</td>
                             <td>${this.escapeHtml(user.password)}</td>
-                            <td>
-                                <span class="status-badge ${badgeClass}">
-                                    ${status}
-                                </span>
-                            </td>
+                            <td><span class="status-badge ${badgeClass}">${status}</span></td>
                             <td class="${timeRemaining.includes('Expired') ? 'text-red-400' : 'text-gray-300'}">${timeRemaining}</td>
                             <td>
                                 <div class="flex space-x-2">
@@ -401,7 +352,6 @@
                 const now = new Date();
                 const diffTime = expiryDate - now;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
                 if (diffDays <= 0) {
                     return { status: 'Expired', timeRemaining: `Expired ${-diffDays} days ago`, badgeClass: 'expired' };
                 }
@@ -409,9 +359,7 @@
             }
 
             async deleteUser(username) {
-                if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) {
-                    return;
-                }
+                if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) return;
                 try {
                     const response = await this.makeAdminRequest("/admin/delete-user", "DELETE", { username });
                     const result = await response.json();
@@ -430,29 +378,23 @@
             showEditModal(username) {
                 const user = this.users.find(u => u.username === username);
                 if (!user) return;
-
                 document.getElementById('editUsername').textContent = user.username;
                 document.getElementById('editPassword').value = '';
-                // Format YYYY-MM-DD for the date input
                 document.getElementById('editExpiresAt').value = user.expires_at ? user.expires_at.split('T')[0] : '';
                 document.getElementById('editUserModalOverlay').classList.remove('hidden');
             }
 
             async updateUser(username, newPassword, expiresAt) {
                 const body = { username };
-                // Only include fields that are being changed
                 if (newPassword) {
                     body.password = newPassword;
                 }
                 if (expiresAt !== undefined) {
-                     // An empty string in the date input means we want to clear the expiration
                      body.expires_at = expiresAt ? new Date(expiresAt).toISOString() : '';
                 }
-
                 try {
                     const response = await this.makeAdminRequest("/admin/update-user", "PUT", body);
                     const result = await response.json();
-
                     if (response.ok) {
                         this.showMessage("User updated successfully!", "success");
                         document.getElementById("editUserModalOverlay").classList.add("hidden");
@@ -473,7 +415,6 @@
                 messageDiv.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg mb-2 transform transition-all duration-300`;
                 messageDiv.textContent = message;
                 container.appendChild(messageDiv);
-                
                 setTimeout(() => {
                     messageDiv.style.opacity = "0";
                     messageDiv.style.transform = "translateX(100%)";
@@ -487,7 +428,6 @@
                 return div.innerHTML;
             }
         }
-
         const adminPanel = new AdminPanel();
     </script>
 </body>
