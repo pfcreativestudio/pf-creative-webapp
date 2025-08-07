@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     };
 
     // 使用fetch函数，向Billplz的Staging(测试)环境API发送请求
-    const billplzResponse = await fetch('https://www.billplz-sandbox.com/api/v3/bills', {
+    const billplzResponse = await fetch('https://www.billplz.com/api/v3/bills', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
