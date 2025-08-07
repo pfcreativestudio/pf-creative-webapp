@@ -283,6 +283,31 @@
                 }
             }
 
+            // --- 第一个修改点 ---
+            // 增加一个辅助函数，用来格式化从后端传来的日期数据
+            formatSubscriptionDate(dateString) {
+                // 如果日期为空 (null)，说明用户还未订阅
+                if (!dateString) {
+                    return '<span class="font-semibold text-gray-500">Not Subscribed</span>';
+                }
+                try {
+                    const date = new Date(dateString);
+                    // 检查日期是否有效
+                    if (isNaN(date.getTime())) {
+                        return '<span class="font-semibold text-yellow-500">Invalid Date</span>';
+                    }
+                    const isExpired = date < new Date();
+                    // 如果已过期，用红色显示；如果有效，用绿色显示
+                    const colorClass = isExpired ? 'text-red-500' : 'text-green-400';
+                    // 将日期格式化为 YYYY-MM-DD
+                    const formattedDate = date.toISOString().split('T')[0];
+                    return `<span class="font-semibold ${colorClass}">${formattedDate}</span>`;
+                } catch (e) {
+                    return '<span class="font-semibold text-yellow-500">Error</span>';
+                }
+            }
+            // --- 修改结束 ---
+
             renderUsers(users) {
                 const usersList = document.getElementById("usersList");
                 usersList.innerHTML = users.map(user => `
@@ -291,7 +316,8 @@
                             <div>
                                 <h3 class="font-semibold text-white">${this.escapeHtml(user.username)}</h3>
                                 <p class="text-sm text-gray-400">Password: ${this.escapeHtml(user.password)}</p>
-                            </div>
+                                <p class="text-sm text-gray-400">Subscribed Until: ${this.formatSubscriptionDate(user.subscription_expires_at)}</p>
+                                </div>
                             <div class="flex items-center space-x-1">
                                 <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                                 <span class="text-xs text-green-400">Active</span>
