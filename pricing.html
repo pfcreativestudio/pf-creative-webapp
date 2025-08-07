@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - PF Creative AI Director System</title>
+    <style>
+        body {
+            background-color: #0d0d2b; /* 深紫色背景 */
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif; /* 使用更现代的字体 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 50px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        .pricing-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .pricing-plan {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            width: 320px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .pricing-plan:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .plan-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .plan-price {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 15px 0;
+            color: #f0a5ff; /* 亮紫色 */
+        }
+        .plan-details, .plan-bonus {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        .plan-bonus {
+            color: #5dffb9; /* 亮绿色 */
+            font-weight: bold;
+        }
+        .cta-button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(90deg, #8e2de2, #4a00e0);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+        .cta-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .pro-plan {
+            border-color: #f0a5ff; /* PRO套餐的边框高亮 */
+        }
+        .error-message {
+            color: #ff4d4d;
+            margin-top: 30px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="main-title">PF CREATIVE AI FILM DIRECTOR SYSTEM</h1>
+    
+    <div class="pricing-container">
+        <div class="pricing-plan">
+            <h2 class="plan-name">Beginner</h2>
+            <div class="plan-price">RM99</div>
+            <div class="plan-details">1 MONTH</div>
+            <div class="plan-bonus" style="color: #ffab76;">(RM30 OFF)</div>
+            <button class="cta-button" onclick="handlePurchase('beginner_1m', 'Beginner Plan (1 Month)', 9900)">
+                Choose Beginner
+            </button>
+        </div>
+
+        <div class="pricing-plan pro-plan">
+            <h2 class="plan-name">👑 PRO</h2>
+            <div class="plan-price">RM297</div>
+            <div class="plan-details">3 MONTHS</div>
+            <div class="plan-bonus">(FREE 9 MONTHS) TOTAL 12 MONTHS</div>
+            <button class="cta-button" onclick="handlePurchase('pro_3m', 'PRO Plan (3+9 Months)', 29700)">
+                Choose PRO
+            </button>
+        </div>
+
+        <div class="pricing-plan">
+            <h2 class="plan-name">Competent</h2>
+            <div class="plan-price">RM198</div>
+            <div class="plan-details">2 MONTHS</div>
+            <div class="plan-bonus">(FREE 4 MONTHS) TOTAL 6 MONTHS</div>
+            <button class="cta-button" onclick="handlePurchase('competent_2m', 'Competent Plan (2+6 Months)', 19800)">
+                Choose Competent
+            </button>
+        </div>
+    </div>
+
+    <p id="errorMessage" class="error-message"></p>
+
+    <script>
+        const handlePurchase = async (planId, planName, amountInSen) => {
+            const purchaseButton = event.currentTarget;
+            const errorMessage = document.getElementById('errorMessage');
+
+            // 禁用所有按钮并显示加载状态
+            document.querySelectorAll('.cta-button').forEach(btn => {
+                btn.disabled = true;
+                btn.textContent = '请稍候...';
+            });
+            errorMessage.textContent = '';
+
+            try {
+                // 调用我们的后端API来创建账单
+                const response = await fetch('/api/create-bill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        planId: planId, 
+                        planName: planName,
+                        amount: amountInSen // 将价格（以仙为单位）发送给后端
+                    }), 
+                });
+
+                if (!response.ok) {
+                    throw new Error('创建账单失败，请稍后重试。');
+                }
+
+                const data = await response.json();
+
+                if (data.url) {
+                    // 跳转到Billplz支付页面
+                    window.location.href = data.url;
+                } else {
+                    throw new Error('未能获取支付链接。');
+                }
+            } catch (err) {
+                errorMessage.textContent = err.message;
+                // 如果出错，重新启用所有按钮
+                document.querySelectorAll('.cta-button').forEach(btn => {
+                    btn.disabled = false;
+                    // 根据按钮的功能恢复文本
+                    if(btn.onclick.toString().includes('beginner')) btn.textContent = 'Choose Beginner';
+                    if(btn.onclick.toString().includes('pro')) btn.textContent = 'Choose PRO';
+                    if(btn.onclick.toString().includes('competent')) btn.textContent = 'Choose Competent';
+                });
+            }
+        };
+    </script>
+</body>
+</html>
