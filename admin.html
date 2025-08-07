@@ -134,8 +134,7 @@
     <script>
         class AdminPanel {
             constructor() {
-                // 这是你的 Cloud Function 的实际 URL，请确保它是正确的
-                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api'; // <-- 确保这个URL是你的函数URL
+                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api'; 
                 this.adminPassword = null; 
                 this.init();
             }
@@ -151,12 +150,10 @@
 
             async verifyAdminPassword() {
                 const inputPassword = document.getElementById("adminPasswordInput").value;
-                
                 if (!inputPassword) {
                     this.showMessage("Please enter the Admin Password", "error");
                     return;
                 }
-
                 try {
                     const response = await fetch(`${this.apiUrl}/admin/verify-password`, {
                         method: 'POST',
@@ -166,7 +163,6 @@
                         },
                         body: JSON.stringify({ adminPassword: inputPassword })
                     });
-
                     if (response.ok) {
                         this.adminPassword = inputPassword;
                         document.getElementById("passwordPromptOverlay").style.display = "none";
@@ -188,7 +184,6 @@
                     e.preventDefault();
                     this.addUser();
                 });
-
                 document.getElementById("refreshBtn").addEventListener("click", () => {
                     this.loadUsers();
                 });
@@ -199,37 +194,27 @@
                     this.showMessage("Admin password not set. Please refresh and enter the password.", "error");
                     return Promise.reject(new Error("Admin password not set."));
                 }
-
                 const headers = {
                     'Content-Type': 'application/json',
                     'X-Admin-Password': this.adminPassword
                 };
-
-                const options = {
-                    method: method,
-                    headers: headers,
-                };
-
+                const options = { method: method, headers: headers };
                 if (body) {
                     options.body = JSON.stringify(body);
                 }
-
                 return fetch(`${this.apiUrl}${endpoint}`, options);
             }
 
             async addUser() {
                 const username = document.getElementById("newUsername").value.trim();
                 const password = document.getElementById("newPassword").value.trim();
-
                 if (!username || !password) {
                     this.showMessage("Please fill in all fields", "error");
                     return;
                 }
-
                 try {
                     const response = await this.makeAdminRequest("/admin/add-user", "POST", { username, password });
                     const result = await response.json();
-
                     if (response.ok) {
                         this.showMessage("User added successfully!", "success");
                         document.getElementById("addUserForm").reset();
@@ -247,18 +232,14 @@
                 const loadingMessage = document.getElementById("loadingMessage");
                 const emptyMessage = document.getElementById("emptyMessage");
                 const usersList = document.getElementById("usersList");
-
                 loadingMessage.classList.remove("hidden");
                 emptyMessage.classList.add("hidden");
                 usersList.innerHTML = "";
                 document.getElementById("totalUsers").textContent = "0";
-
                 try {
                     const response = await this.makeAdminRequest("/admin/users", "GET");
                     const result = await response.json();
-
                     loadingMessage.classList.add("hidden");
-
                     if (response.ok && result.users) {
                         if (result.users.length === 0) {
                             emptyMessage.classList.remove("hidden");
@@ -276,9 +257,7 @@
                     console.error("Error loading users:", error);
                 }
             }
-            
-            // --- 新增的辅助函数 ---
-            // 用来格式化从后端传来的日期数据
+
             formatSubscriptionDate(dateString) {
                 if (!dateString) {
                     return '<span class="font-semibold text-gray-500">Not Subscribed</span>';
@@ -327,22 +306,17 @@
                 `).join("");
             }
 
-            // --- 新增的处理函数 ---
-            addSubscriptionTime(username) {
+            async addSubscriptionTime(username) {
                 const daysToAdd = prompt(`Enter number of days to add for user "${username}":`);
-                
                 if (daysToAdd === null) {
                     this.showMessage("Operation cancelled.", "info");
                     return;
                 }
-
                 const days = parseInt(daysToAdd, 10);
-
                 if (isNaN(days) || days <= 0) {
                     this.showMessage("Please enter a valid positive number of days.", "error");
                     return;
                 }
-
                 this.updateSubscription(username, days);
             }
 
@@ -353,10 +327,9 @@
                         days_to_add: days 
                     });
                     const result = await response.json();
-
                     if (response.ok) {
                         this.showMessage(`Successfully added ${days} days for ${username}!`, "success");
-                        this.loadUsers(); // 重新加载用户列表以显示最新日期
+                        this.loadUsers();
                     } else {
                         this.showMessage(result.error || "Failed to update subscription", "error");
                     }
@@ -365,16 +338,14 @@
                     console.error("Error updating subscription:", error);
                 }
             }
-            
+
             async deleteUser(username) {
                 if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
                     return;
                 }
-
                 try {
                     const response = await this.makeAdminRequest("/admin/delete-user", "DELETE", { username });
                     const result = await response.json();
-
                     if (response.ok) {
                         this.showMessage("User deleted successfully!", "success");
                         this.loadUsers();
@@ -402,7 +373,6 @@
                 try {
                     const response = await this.makeAdminRequest("/admin/update-user", "PUT", { username, password: newPassword });
                     const result = await response.json();
-
                     if (response.ok) {
                         this.showMessage("User updated successfully!", "success");
                         this.loadUsers();
@@ -418,13 +388,10 @@
             showMessage(message, type) {
                 const container = document.getElementById("messageContainer");
                 const messageDiv = document.createElement("div");
-                
                 const bgColor = type === "success" ? "bg-green-600" : (type === "error" ? "bg-red-600" : "bg-blue-600");
                 messageDiv.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg mb-2 transform transition-all duration-300`;
                 messageDiv.textContent = message;
-                
                 container.appendChild(messageDiv);
-                
                 setTimeout(() => {
                     messageDiv.style.opacity = "0";
                     messageDiv.style.transform = "translateX(100%)";
@@ -440,8 +407,6 @@
                 return div.innerHTML;
             }
         }
-
-        // Initialize admin panel
         const adminPanel = new AdminPanel();
     </script>
 </body>
