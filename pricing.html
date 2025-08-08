@@ -298,7 +298,7 @@ async function handlePurchase(planId, planName, amountInSen){
   });
   
   try {
-    // MODIFIED: Changed the fetch URL to '/create-bill' to match the backend
+    // MODIFIED: Changed the fetch URL to '/api/create-bill' to match the backend
     const res = await fetch('/create-bill', {
       method: 'POST',
       headers: { 
