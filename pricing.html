@@ -3,77 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pricing - PF Creative AI Director System</title>
+    <title>Pricing Plans - PF Creative AI Director System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-bg: #111827;
-            --color-surface: #1F2937;
-            --color-primary: #8B5CF6;
-            --color-secondary: #EC4899;
+            --color-bg: #030712; /* Richer dark blue/black */
+            --color-surface: #111827; /* Slightly lighter surface */
+            --color-primary: #8B5CF6; /* Purple */
+            --color-secondary: #EC4899; /* Pink */
             --color-text: #E5E7EB;
             --color-text-muted: #9CA3AF;
+            --color-border: rgba(255, 255, 255, 0.1);
         }
 
         body {
             background-color: var(--color-bg);
             color: var(--color-text);
             font-family: 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .main-title {
-            font-size: 2.5rem;
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 1rem;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.6));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        .subtitle {
-            font-size: 1.2rem;
+        .header p {
+            font-size: 1.25rem;
             color: var(--color-text-muted);
-            margin-bottom: 4rem;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .pricing-container {
-            display: flex;
-            justify-content: center;
-            align-items: stretch; /* 让卡片等高 */
-            flex-wrap: wrap;
-            gap: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            align-items: stretch;
         }
 
         .pricing-plan {
             background: var(--color-surface);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--color-border);
             border-radius: 16px;
             padding: 2.5rem;
-            width: 340px;
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .pricing-plan:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
         .plan-name {
             font-size: 1rem;
             font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
             color: var(--color-text-muted);
         }
 
@@ -84,54 +90,51 @@
             color: #FFFFFF;
         }
         
-        .plan-price-tag {
-            font-size: 1.2rem;
-            font-weight: 500;
+        .plan-details, .plan-bonus {
+            font-size: 0.9rem;
             color: var(--color-text-muted);
+            min-height: 40px; /* Ensure consistent height */
         }
-
-        .plan-details {
-            font-size: 1rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
-        }
-        .plan-bonus {
-            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-            color: white;
-            font-weight: bold;
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            margin: 1.5rem auto;
-            display: inline-block;
+        
+        .plan-bonus strong {
+            color: var(--color-primary);
         }
 
         .cta-button {
             width: 100%;
             padding: 1rem;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
             color: white;
             border: none;
             border-radius: 10px;
             transition: all 0.3s;
-            margin-top: auto; /* 将按钮推到底部 */
+            margin-top: 2rem;
+        }
+
+        .cta-button.primary {
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .cta-button.secondary {
+            background-color: transparent;
+            border: 1px solid var(--color-border);
         }
 
         .cta-button:hover:not(:disabled) {
             transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
         }
 
         .cta-button:disabled {
-            background: #4B5563;
+            background: #374151;
             cursor: not-allowed;
+            opacity: 0.7;
         }
-        
+
         .pro-plan {
             border: 2px solid var(--color-primary);
-            position: relative;
         }
         
         .pro-badge {
@@ -146,62 +149,160 @@
             font-size: 0.9rem;
             font-weight: bold;
         }
+        
+        .features-list {
+            text-align: left;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-border);
+        }
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .features-list svg {
+            color: var(--color-primary);
+            flex-shrink: 0;
+        }
 
         .error-message {
             color: #F87171;
-            margin-top: 30px;
-            font-size: 1.2rem;
+            margin-top: 2rem;
+            text-align: center;
         }
+
+        .section {
+            margin-top: 6rem;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+        }
+
+        /* FAQ Styles */
+        .faq-item {
+            border-bottom: 1px solid var(--color-border);
+            padding: 1.5rem 0;
+        }
+        .faq-item summary {
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-item p {
+            color: var(--color-text-muted);
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+        .faq-item summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .faq-item[open] summary::after {
+            transform: rotate(45deg);
+        }
+
     </style>
 </head>
 <body>
-    <h1 class="main-title">PF Creative AI Film Director System</h1>
-    <p class="subtitle">Choose your plan and start creating cinematic magic.</p>
-    
-    <div class="pricing-container">
-        <div class="pricing-plan">
-            <h2 class="plan-name">Beginner</h2>
-            <div class="plan-price">RM99</div>
-            <div class="plan-price-tag">1 MONTH</div>
-            <div class="plan-details">(RM30 OFF)</div>
-            <button class="cta-button" onclick="handlePurchase('beginner_1m', 'Beginner Plan (1 Month)', 9900)">
-                Choose Beginner
-            </button>
-        </div>
+    <div class="container">
+        <header class="header">
+            <h1>Fair, simple pricing for creators</h1>
+            <p>Choose the plan that fits your creative workflow. Get started in minutes and elevate your video production today.</p>
+        </header>
 
-        <div class="pricing-plan pro-plan">
-            <div class="pro-badge">Most Popular</div>
-            <h2 class="plan-name">👑 PRO</h2>
-            <div class="plan-price">RM297</div>
-            <div class="plan-price-tag">3 MONTHS</div>
-            <div class="plan-bonus">(FREE 9 MONTHS) TOTAL 12 MONTHS</div>
-            <button class="cta-button" onclick="handlePurchase('pro_3m', 'PRO Plan (3+9 Months)', 29700)">
-                Choose PRO
-            </button>
-        </div>
+        <main>
+            <section class="pricing-container">
+                <div class="pricing-plan">
+                    <h2 class="plan-name">Beginner</h2>
+                    <div class="plan-price">RM99</div>
+                    <div class="plan-details">Billed as one payment for <strong>1 Month</strong> access.</div>
+                    <div class="plan-bonus">(RM30 OFF Launch Promo)</div>
+                    <ul class="features-list">
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> 20 Scripts / Month</li>
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Standard Creative Styles</li>
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Email Support</li>
+                    </ul>
+                    <button class="cta-button secondary" onclick="handlePurchase('beginner_1m', 'Beginner Plan (1 Month)', 9900)">
+                        Choose Beginner
+                    </button>
+                </div>
 
-        <div class="pricing-plan">
-            <h2 class="plan-name">Competent</h2>
-            <div class="plan-price">RM198</div>
-            <div class="plan-price-tag">2 MONTHS</div>
-            <div class="plan-bonus">(FREE 4 MONTHS) TOTAL 6 MONTHS</div>
-            <button class="cta-button" onclick="handlePurchase('competent_2m', 'Competent Plan (2+6 Months)', 19800)">
-                Choose Competent
-            </button>
-        </div>
+                <div class="pricing-plan pro-plan">
+                    <div class="pro-badge">Best Value</div>
+                    <h2 class="plan-name">👑 PRO</h2>
+                    <div class="plan-price">RM297</div>
+                    <div class="plan-details">Billed as one payment for <strong>12 Months</strong> access.</div>
+                    <div class="plan-bonus"><strong>(SAVE 75%)</strong> FREE 9 MONTHS</div>
+                    <ul class="features-list">
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> <strong>Unlimited</strong> Scripts / Month</li>
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Access All Creative Styles</li>
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> <strong>Creative Fusion & Wildcard AI</strong></li>
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> <strong>Priority</strong> Email Support</li>
+                    </ul>
+                    <button class="cta-button primary" onclick="handlePurchase('pro_3m', 'PRO Plan (3+9 Months)', 29700)">
+                        Choose PRO
+                    </button>
+                </div>
+
+                <div class="pricing-plan">
+                    <h2 class="plan-name">Competent</h2>
+                    <div class="plan-price">RM198</div>
+                    <div class="plan-details">Billed as one payment for <strong>6 Months</strong> access.</div>
+                    <div class="plan-bonus"><strong>(SAVE 67%)</strong> FREE 4 MONTHS</div>
+                     <ul class="features-list">
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> 100 Scripts / Month</li>
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Standard & Cinematic Styles</li>
+                        <li><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Email Support</li>
+                    </ul>
+                    <button class="cta-button secondary" onclick="handlePurchase('competent_2m', 'Competent Plan (2+6 Months)', 19800)">
+                        Choose Competent
+                    </button>
+                </div>
+            </section>
+            
+            <p id="errorMessage" class="error-message"></p>
+
+            <section class="section">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <div class="faq-container">
+                    <details class="faq-item">
+                        <summary>Is this a one-time payment or a subscription?</summary>
+                        <p>The plans listed are one-time payments for the specified access duration (e.g., 12 months for the PRO plan). Your access will expire at the end of the period, and you can choose to purchase a new plan at any time. There are no automatic recurring charges.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>What do I need to use the AI Film Director System?</summary>
+                        <p>You only need a web browser to access our system. The script generation is done on our servers. To generate the final video, you will need access to Google's Veo video generation model and credits for it, which we provide a guide for.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>What does "Unlimited Scripts" on the PRO plan mean?</summary>
+                        <p>It means you can generate as many complete, multi-scene video scripts as you need throughout your 12-month access period, subject to our fair use policy to prevent automated abuse. For 99.9% of creators and agencies, it's effectively unlimited.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Can I get a refund if I'm not satisfied?</summary>
+                        <p>Due to the nature of digital services and the costs associated with AI generation, we do not offer refunds. We encourage you to review our examples and features before making a purchase.</p>
+                    </details>
+                </div>
+            </section>
+        </main>
     </div>
-
-    <p id="errorMessage" class="error-message"></p>
 
     <script>
         const handlePurchase = async (planId, planName, amountInSen) => {
-            const purchaseButton = event.currentTarget;
-            const errorMessage = document.getElementById('errorMessage');
             const allButtons = document.querySelectorAll('.cta-button');
+            const errorMessage = document.getElementById('errorMessage');
 
             allButtons.forEach(btn => {
                 btn.disabled = true;
-                btn.textContent = 'Processing...'; // 已修改为英文
+                btn.textContent = 'Processing...'; // Corrected to English
             });
             errorMessage.textContent = '';
 
@@ -229,7 +330,7 @@
                 }
             } catch (err) {
                 errorMessage.textContent = err.message;
-                // 重置所有按钮的状态
+                // Reset buttons on error
                 document.querySelector('[onclick*="beginner"]').textContent = 'Choose Beginner';
                 document.querySelector('[onclick*="pro"]').textContent = 'Choose PRO';
                 document.querySelector('[onclick*="competent"]').textContent = 'Choose Competent';
