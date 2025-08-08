@@ -1,4 +1,4 @@
-import { db } from '/lib/db';
+import { db } from './db.js';
 import jwt from 'jsonwebtoken'; // 我们需要jsonwebtoken库来验证token
 
 export default async function handler(req, res) {
@@ -54,3 +54,4 @@ export default async function handler(req, res) {
     }
 
 }
+
