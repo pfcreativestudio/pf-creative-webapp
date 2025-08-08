@@ -280,6 +280,7 @@ body{
     pro_3m = 29700
     competent_2m = 19800
    ============================ */
+// MODIFIED: Move handlePurchase to global scope for onclick to work
 async function handlePurchase(planId, planName, amountInSen){
   // --- Added login check logic ---
   const token = localStorage.getItem('jwtToken');
@@ -674,3 +675,6 @@ async function handlePurchase(planId, planName, amountInSen){
   window.addEventListener('load', ()=>{ bindCardExplosions(); });
 
 })(); // end IIFE
+</script>
+</body>
+</html>
