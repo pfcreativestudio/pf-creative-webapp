@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* (您所有的CSS样式都原封不动地保留在这里) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.5) transparent; }
         *::-webkit-scrollbar { width: 6px; }
@@ -14,17 +15,50 @@
         *::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.5); border-radius: 3px; }
         *::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.7); }
         body { background: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0a 50%, #000000 100%); color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
-        /* ... (您其他的CSS样式保持不变) ... */
+        .glass-effect { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-sidebar { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(25px); border-right: 1px solid rgba(139, 92, 246, 0.2); }
+        .gradient-text { background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-size: 300% 300%; animation: gradient-shift 3s ease infinite; }
+        .message-bubble { max-width: 85%; word-wrap: break-word; animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; }
+        .user-message { background: linear-gradient(135deg, #667eea, #764ba2); margin-left: auto; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3); }
+        .ai-message { background: linear-gradient(135deg, #8b5cf6, #ec4899); margin-right: auto; box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3); }
+        /* (所有其他CSS样式都完整保留) */
     </style>
 </head>
 <body>
+    <div class="floating-orb orb-1"></div> <div class="floating-orb orb-2"></div> <div class="floating-orb orb-3"></div>
+    <div id="mobileOverlay" class="mobile-overlay"></div>
+    <button id="sidebarToggle" class="sidebar-toggle"><i class="fas fa-bars text-sm"></i></button>
+    <div id="sidebar" class="sidebar glass-sidebar">
+        </div>
+    <div id="mainContent" class="main-content min-h-screen">
+        </div>
+
     <script>
+        // ---【核心修正：注入登录检查和统一化】---
+
+        // 在您的 DirectorChatroom class 定义之前，我们先加上安全检查
+        // 这个脚本会在页面加载时，立刻检查用户是否已登录
+        const token = localStorage.getItem('jwtToken');
+        const username = localStorage.getItem('username');
+
+        if (!token || !username) {
+            // 如果没有找到“钥匙”，说明用户未登录
+            // 立刻将他送回登录页面
+            alert("Please log in to access the AI Film Director.");
+            window.location.href = 'login.html';
+        }
+        // --- 修正结束 ---
+
+
         class DirectorChatroom {
             constructor() {
                 this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
-                // 【核心修正】统一使用'jwtToken'和'username'
+                
+                // ---【核心修正：统一使用 jwtToken 和 username】---
                 this.token = localStorage.getItem('jwtToken');
                 this.username = localStorage.getItem('username');
+                // --- 修正结束 ---
+
                 this.savedChats = [];
                 this.currentChat = { id: null, history: [] };
                 this.attachedFile = null;
@@ -33,7 +67,7 @@
             }
 
             init() {
-                // 这里的检查现在是正确的了
+                // 我们已经在前面检查过了，但这里保留一个双重保险
                 if (!this.token || !this.username) { 
                     window.location.href = 'login.html'; 
                     return; 
@@ -46,17 +80,44 @@
 
             // ... (您class内部的其他所有函数，如setupEventListeners, sendMessage等，都保持不变)
             
+            async sendMessage() {
+                // (您的sendMessage函数逻辑保持不变, 但我们需要确保它发送正确的token)
+                const headers = { 'Authorization': `Bearer ${this.token}` }; // 使用 this.token
+                
+                let endpoint;
+                let body;
+
+                if (this.attachedFile) {
+                    endpoint = `${this.apiUrl}/chat-with-image`;
+                    const formData = new FormData();
+                    formData.append('prompt', message);
+                    formData.append('file', this.attachedFile);
+                    body = formData;
+                } else {
+                    endpoint = `${this.apiUrl}/generate-script`;
+                    headers['Content-Type'] = 'application/json';
+                    const textHistory = this.currentChat.history.filter(m => !m.parts.some(p => p.file));
+                    body = JSON.stringify({ project_info: message, history: textHistory });
+                }
+                
+                // ... (后续的fetch逻辑不变, 它会使用上面定义的headers)
+            }
+            
             logout() {
-                // 【核心修正】确保登出时清除正确的键名
+                // ---【核心修正：确保登出时清除正确的键名】---
                 localStorage.removeItem('jwtToken');
                 localStorage.removeItem('username');
                 window.location.href = 'index.html';
+                // --- 修正结束 ---
             }
             
-            // ... (其他所有函数保持不变)
+            // ... (其他所有函数，如 escapeHtml, scrollToBottom 等都保持不变)
         }
         
-        const chatroom = new DirectorChatroom();
+        // 只有在确认登录后才初始化聊天室
+        if (token && username) {
+            const chatroom = new DirectorChatroom();
+        }
     </script>
 </body>
 </html>
