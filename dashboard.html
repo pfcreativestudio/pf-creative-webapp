@@ -24,8 +24,12 @@
                 <p>Loading your account details...</p>
             </div>
 
-            <div id="contentState" class="hidden">
-                <div class="glass-effect rounded-lg p-6 mb-6">
+            <div id="errorState" class="hidden text-center text-red-400 glass-effect rounded-lg p-6">
+                <p id="errorMessage">Error loading data. Please try logging in again.</p>
+            </div>
+
+            <div id="contentState" class="hidden space-y-6">
+                <div class="glass-effect rounded-lg p-6">
                     <h2 class="text-xl font-semibold">Subscription Status</h2>
                     <p class="text-gray-400 mt-2">
                         Your current plan expires in: 
@@ -51,39 +55,41 @@
     </div>
 
     <script>
-        // 这个函数会在页面加载时自动运行
         window.addEventListener('DOMContentLoaded', async () => {
             const loadingDiv = document.getElementById('loadingState');
             const contentDiv = document.getElementById('contentState');
+            const errorDiv = document.getElementById('errorState');
+            const errorMessage = document.getElementById('errorMessage');
             
-            const token = localStorage.getItem('jwtToken'); // 假设您登录后将JWT存在localStorage
+            const token = localStorage.getItem('jwtToken');
             if (!token) {
-                // 如果没有token，说明未登录，直接跳转到登录页
                 window.location.href = 'login.html';
                 return;
             }
 
             try {
-                // 我们将在下一步创建这个 /api/get-user-status 后端文件
-                const response = await fetch('/api/get-user-status', {
+                // 【核心修正】确保API地址是您Google Cloud Function的完整URL + 对应的路径
+                const apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api/get-user-status';
+                
+                const response = await fetch(apiUrl, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
-                if (response.status === 401) { // Token 无效或过期
+                if (response.status === 401) {
                     localStorage.removeItem('jwtToken');
                     window.location.href = 'login.html';
                     return;
                 }
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch user status.');
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Failed to fetch user status.');
                 }
 
                 const userData = await response.json();
                 
-                // --- 数据显示逻辑 ---
                 const expiryDateSpan = document.getElementById('expiryDate');
                 const daysRemainingSpan = document.getElementById('daysRemaining');
 
@@ -96,12 +102,11 @@
                     daysRemainingSpan.textContent = diffDays;
                     expiryDateSpan.textContent = expiryDate.toISOString().split('T')[0];
                     
-                    if (diffDays < 7) {
+                    if (diffDays < 7 && diffDays > 0) {
                         daysRemainingSpan.classList.remove('text-green-400');
                         daysRemainingSpan.classList.add('text-yellow-400');
-                    }
-                    if (diffDays === 0) {
-                        daysRemainingSpan.classList.remove('text-yellow-400');
+                    } else if (diffDays === 0) {
+                        daysRemainingSpan.classList.remove('text-green-400');
                         daysRemainingSpan.classList.add('text-red-500');
                     }
 
@@ -117,7 +122,9 @@
 
             } catch (error) {
                 console.error(error);
-                loadingDiv.textContent = 'Error loading data. Please try logging in again.';
+                errorMessage.textContent = `Error: ${error.message}. Please try logging in again.`;
+                loadingDiv.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
             }
         });
 
