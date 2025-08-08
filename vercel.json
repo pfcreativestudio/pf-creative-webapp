@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(dashboard|index|login|pricing|register|chatroom|multilingual|privacy|terms)\\.html",
+      "dest": "/$1.html"
+    },
+    {
+      "src": "/(.*\\.(?:js|css|jpg|jpeg|png|svg|gif|ico|woff2|woff|ttf|eot))",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(create-bill|webhook-billplz|login|register|get-user-status|generate-script|chat-with-image|admin.*)",
+      "dest": "main.py"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ]
+}
