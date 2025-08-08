@@ -4,110 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing - PF Creative AI Director System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-bg: #111827;
+            --color-surface: #1F2937;
+            --color-primary: #8B5CF6;
+            --color-secondary: #EC4899;
+            --color-text: #E5E7EB;
+            --color-text-muted: #9CA3AF;
+        }
+
         body {
-            background-color: #0d0d2b; /* 深紫色背景 */
-            color: #ffffff;
-            font-family: 'Poppins', sans-serif; /* 使用更现代的字体 */
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
             padding: 40px 20px;
         }
+
         .main-title {
             font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 50px;
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--color-text-muted);
+            margin-bottom: 4rem;
+        }
+
         .pricing-container {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: stretch; /* 让卡片等高 */
             flex-wrap: wrap;
             gap: 30px;
         }
+
         .pricing-plan {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 30px;
-            width: 320px;
+            background: var(--color-surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 340px;
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
         }
+
         .pricing-plan:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
+
         .plan-name {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
             letter-spacing: 1px;
             text-transform: uppercase;
+            color: var(--color-text-muted);
         }
+
         .plan-price {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin: 15px 0;
-            color: #f0a5ff; /* 亮紫色 */
+            font-size: 4rem;
+            font-weight: 800;
+            margin: 1rem 0;
+            color: #FFFFFF;
         }
-        .plan-details, .plan-bonus {
+        
+        .plan-price-tag {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        .plan-details {
             font-size: 1rem;
-            margin-bottom: 20px;
+            font-weight: 500;
+            margin-top: 0.5rem;
         }
         .plan-bonus {
-            color: #5dffb9; /* 亮绿色 */
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            color: white;
             font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            margin: 1.5rem auto;
+            display: inline-block;
         }
+
         .cta-button {
             width: 100%;
-            padding: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
-            background: linear-gradient(90deg, #8e2de2, #4a00e0);
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
             color: white;
             border: none;
             border-radius: 10px;
-            transition: transform 0.2s;
+            transition: all 0.3s;
+            margin-top: auto; /* 将按钮推到底部 */
         }
-        .cta-button:hover {
+
+        .cta-button:hover:not(:disabled) {
             transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
         }
+
         .cta-button:disabled {
-            background: #555;
+            background: #4B5563;
             cursor: not-allowed;
         }
+        
         .pro-plan {
-            border-color: #f0a5ff; /* PRO套餐的边框高亮 */
+            border: 2px solid var(--color-primary);
+            position: relative;
         }
+        
+        .pro-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            color: white;
+            padding: 5px 15px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
         .error-message {
-            color: #ff4d4d;
+            color: #F87171;
             margin-top: 30px;
             font-size: 1.2rem;
         }
     </style>
 </head>
 <body>
-    <h1 class="main-title">PF CREATIVE AI FILM DIRECTOR SYSTEM</h1>
+    <h1 class="main-title">PF Creative AI Film Director System</h1>
+    <p class="subtitle">Choose your plan and start creating cinematic magic.</p>
     
     <div class="pricing-container">
         <div class="pricing-plan">
             <h2 class="plan-name">Beginner</h2>
             <div class="plan-price">RM99</div>
-            <div class="plan-details">1 MONTH</div>
-            <div class="plan-bonus" style="color: #ffab76;">(RM30 OFF)</div>
+            <div class="plan-price-tag">1 MONTH</div>
+            <div class="plan-details">(RM30 OFF)</div>
             <button class="cta-button" onclick="handlePurchase('beginner_1m', 'Beginner Plan (1 Month)', 9900)">
                 Choose Beginner
             </button>
         </div>
 
         <div class="pricing-plan pro-plan">
+            <div class="pro-badge">Most Popular</div>
             <h2 class="plan-name">👑 PRO</h2>
             <div class="plan-price">RM297</div>
-            <div class="plan-details">3 MONTHS</div>
+            <div class="plan-price-tag">3 MONTHS</div>
             <div class="plan-bonus">(FREE 9 MONTHS) TOTAL 12 MONTHS</div>
             <button class="cta-button" onclick="handlePurchase('pro_3m', 'PRO Plan (3+9 Months)', 29700)">
                 Choose PRO
@@ -117,7 +183,7 @@
         <div class="pricing-plan">
             <h2 class="plan-name">Competent</h2>
             <div class="plan-price">RM198</div>
-            <div class="plan-details">2 MONTHS</div>
+            <div class="plan-price-tag">2 MONTHS</div>
             <div class="plan-bonus">(FREE 4 MONTHS) TOTAL 6 MONTHS</div>
             <button class="cta-button" onclick="handlePurchase('competent_2m', 'Competent Plan (2+6 Months)', 19800)">
                 Choose Competent
@@ -131,48 +197,43 @@
         const handlePurchase = async (planId, planName, amountInSen) => {
             const purchaseButton = event.currentTarget;
             const errorMessage = document.getElementById('errorMessage');
+            const allButtons = document.querySelectorAll('.cta-button');
 
-            // 禁用所有按钮并显示加载状态
-            document.querySelectorAll('.cta-button').forEach(btn => {
+            allButtons.forEach(btn => {
                 btn.disabled = true;
-                btn.textContent = '请稍候...';
+                btn.textContent = 'Processing...'; // 已修改为英文
             });
             errorMessage.textContent = '';
 
             try {
-                // 调用我们的后端API来创建账单
                 const response = await fetch('/api/create-bill', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         planId: planId, 
                         planName: planName,
-                        amount: amountInSen // 将价格（以仙为单位）发送给后端
+                        amount: amountInSen
                     }), 
                 });
 
                 if (!response.ok) {
-                    throw new Error('创建账单失败，请稍后重试。');
+                    throw new Error('Failed to create payment link. Please try again.');
                 }
 
                 const data = await response.json();
 
                 if (data.url) {
-                    // 跳转到Billplz支付页面
                     window.location.href = data.url;
                 } else {
-                    throw new Error('未能获取支付链接。');
+                    throw new Error('Could not retrieve payment link.');
                 }
             } catch (err) {
                 errorMessage.textContent = err.message;
-                // 如果出错，重新启用所有按钮
-                document.querySelectorAll('.cta-button').forEach(btn => {
-                    btn.disabled = false;
-                    // 根据按钮的功能恢复文本
-                    if(btn.onclick.toString().includes('beginner')) btn.textContent = 'Choose Beginner';
-                    if(btn.onclick.toString().includes('pro')) btn.textContent = 'Choose PRO';
-                    if(btn.onclick.toString().includes('competent')) btn.textContent = 'Choose Competent';
-                });
+                // 重置所有按钮的状态
+                document.querySelector('[onclick*="beginner"]').textContent = 'Choose Beginner';
+                document.querySelector('[onclick*="pro"]').textContent = 'Choose PRO';
+                document.querySelector('[onclick*="competent"]').textContent = 'Choose Competent';
+                allButtons.forEach(btn => btn.disabled = false);
             }
         };
     </script>
