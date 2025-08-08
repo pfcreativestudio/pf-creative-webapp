@@ -1,5 +1,5 @@
 // 引入我们之前创建的数据库连接助手
-import { db } from '../../lib/db';
+import { db } from '/lib/db';
 // 引入Node.js内置的加密模块，用于安全验证
 import crypto from 'crypto';
 
