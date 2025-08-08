@@ -1,5 +1,5 @@
 // 引入我们的数据库连接助手
-import { db } from '../../lib/db'; 
+import { db } from '/lib/db'; 
 // 我们暂时不加密密码，但引入crypto为未来做准备
 import crypto from 'crypto'; 
 
