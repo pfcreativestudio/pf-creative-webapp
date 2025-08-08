@@ -305,7 +305,7 @@ async function handlePurchase(planId, planName, amountInSen){
   });
   
   try {
-    const res = await fetch('/api/create-bill', {
+    const res = await fetch('/create-bill', {
       method: 'POST',
       headers: { 
         'Content-Type':'application/json',
