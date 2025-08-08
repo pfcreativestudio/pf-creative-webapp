@@ -3,214 +3,183 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PF Creative AI Director — Pricing (Ultra Blast Finale)</title>
+<title>PF Creative AI Director — Pricing (Ultimate Luxe)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ================= THEME & BASE ================= */
+/* ---------------- THEME ---------------- */
 :root{
-  --bg-1:#030114;
-  --bg-2:#070621;
+  --bg-0:#030114;
+  --bg-1:#070621;
   --muted:#9aa0ad;
-  --text:#f2f5fb;
+  --text:#f4f7fb;
   --purple:#8b5cff;
   --pink:#ff3fa6;
   --cyan:#35e1ff;
-  --gold1:#ffd66d;
-  --gold2:#ff9f5a;
-  --glass-border: rgba(255,255,255,0.08);
-  --card-radius:18px;
+  --gold-1:#ffd66d;
+  --gold-2:#ff9f5a;
+  --card-radius:20px;
+  --glass-border: rgba(255,255,255,0.06);
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;margin:0}
 body{
-  margin:0;
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
-  background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
-  color:var(--text);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+  background: linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   overflow-x:hidden;
 }
 
-/* ================ FULLSCREEN BACKGROUND ================ */
-.bg-full { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+/* ---------- full-screen canvases & overlays ---------- */
+.bg-full{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ribbon-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+.bloom{position:fixed;inset:0;z-index:2;pointer-events:none;background:
+  radial-gradient(700px 300px at 12% 10%, rgba(139,92,246,0.12), transparent 8%),
+  radial-gradient(700px 300px at 88% 86%, rgba(255,63,166,0.09), transparent 8%),
+  radial-gradient(900px 420px at 50% 50%, rgba(65,217,255,0.04), transparent 10%);
+  mix-blend-mode:screen;opacity:0.95;}
+.vignette{position:fixed;inset:0;z-index:3;pointer-events:none;background:
+  linear-gradient(180deg, rgba(0,0,0,0.22), transparent 40%);mix-blend-mode:multiply}
 
-/* three canvases stacked for layers */
-canvas.layer { position:absolute; inset:0; width:100%; height:100%; display:block; }
+/* beam overlay canvas (for initial blast) */
+#beamCanvas{position:fixed;inset:0;z-index:9;pointer-events:none;}
 
-/* decorative SVG ribbons + flares */
-.svg-ribbons { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; mix-blend-mode:screen; z-index:1; }
+/* ---------- page layout ---------- */
+.wrap{position:relative;z-index:5;max-width:1240px;margin:34px auto 120px;padding:28px 20px}
+.early{display:inline-flex;align-items:center;gap:12px;padding:10px 18px;border-radius:999px;margin:0 auto 18px;background:linear-gradient(90deg, rgba(139,92,246,0.16), rgba(255,63,166,0.08));color:#fff;font-weight:800}
+.header{text-align:center;margin-bottom:18px}
+.header h1{margin:0;font-size:44px;font-weight:800;background:linear-gradient(90deg,#fff,rgba(255,255,255,0.95));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 18px 48px rgba(0,0,0,0.6))}
+.header p{margin:12px auto 0;color:var(--muted);max-width:820px;font-size:15px}
 
-/* strong bloom overlays */
-.bloom {
-  position:fixed; inset:0; z-index:2; pointer-events:none;
+/* ---------- grid & cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:20px;align-items:stretch}
+.card{
+  position:relative;border-radius:var(--card-radius);padding:28px;min-height:540px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid var(--glass-border);backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:0 18px 70px rgba(0,0,0,0.6);transition:transform .34s,box-shadow .34s;overflow:visible;
+  transform:translateY(8px);
+}
+.card:hover{transform:translateY(-32px) scale(1.02) rotateX(0.6deg);box-shadow:0 70px 260px rgba(0,0,0,0.8), 0 0 120px rgba(139,92,246,0.06)}
+
+/* --------- metallic gold border effect ---------
+   Using pseudo-element to simulate reflective gilding.
+   Animation sweeps a highlight across the border to mimic metal reflection.
+   PRO card has stronger gold look.
+   -------------------------------------------------*/
+.card::before{
+  content:""; position:absolute; inset:0; border-radius:var(--card-radius); padding:2px; pointer-events:none;
   background:
-    radial-gradient(700px 300px at 12% 10%, rgba(139,92,246,0.12), transparent 8%),
-    radial-gradient(700px 300px at 88% 86%, rgba(255,63,166,0.09), transparent 8%),
-    radial-gradient(900px 420px at 50% 50%, rgba(65,217,255,0.04), transparent 10%);
-  mix-blend-mode:screen;
-  opacity:0.95;
+    linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  -webkit-mask: linear-gradient(#fff,#fff); mix-blend-mode:overlay;
 }
-
-/* vignette to deepen edges */
-.vignette {
-  position:fixed; inset:0; z-index:3; pointer-events:none;
-  background: radial-gradient(900px 400px at 50% 8%, rgba(0,0,0,0.0), transparent 10%),
-              linear-gradient(180deg, rgba(0,0,0,0.22), transparent 40%);
-  mix-blend-mode:multiply;
+.card::after{
+  /* metallic rim */
+  content:""; position:absolute; inset:-1.2px; border-radius:calc(var(--card-radius) + 1.2px); padding:0; pointer-events:none; z-index:6;
+  background: conic-gradient(from 90deg at 50% 50%,
+    rgba(255,255,255,0.06), rgba(255,215,120,0.18), rgba(255,215,120,0.26), rgba(255,255,255,0.06));
+  -webkit-mask: linear-gradient(#000, #000);
+  opacity:0.35; filter:blur(6px);
+  transform:translateZ(0);
+  transition:opacity .6s ease;
 }
+/* animated highlight sweep */
+.card .rim-highlight{ position:absolute; inset:-1.2px; border-radius:calc(var(--card-radius) + 1.2px); pointer-events:none; z-index:7;
+  background: linear-gradient(90deg, rgba(255,255,255,0.0), rgba(255,255,255,0.85) 45%, rgba(255,255,255,0.0) 65%);
+  transform:translateX(-120%); filter:blur(12px); opacity:0; transition:opacity .35s; }
+/* on hover sweep */
+.card:hover .rim-highlight{ transform:translateX(120%); opacity:0.7; transition:transform .9s cubic-bezier(.2,.9,.2,1), opacity .35s; }
 
-/* ================ PAGE CONTENT ================ */
-.container { position:relative; z-index:6; max-width:1280px; margin:34px auto 110px; padding:28px 20px; }
+/* PRO stronger gold rim */
+.card.pro::after{ background: conic-gradient(from 90deg at 50% 50%, rgba(255,240,200,0.02), rgba(255,215,120,0.32), rgba(255,200,100,0.36), rgba(255,240,200,0.02)); opacity:0.54; filter:blur(8px) }
+.card.pro .rim-highlight{ background: linear-gradient(90deg, rgba(255,240,200,0.0), rgba(255,255,255,0.95) 40%, rgba(255,240,200,0.0) 72%); filter:blur(14px) }
 
-/* Early bird banner */
-.early {
-  display:inline-flex; align-items:center; gap:12px; padding:10px 18px; border-radius:999px; margin:0 auto 18px;
-  background: linear-gradient(90deg, rgba(139,92,246,0.16), rgba(255,63,166,0.08));
-  color:white; font-weight:800; box-shadow: 0 10px 40px rgba(139,92,246,0.06); width:fit-content;
+/* sheen inside */
+.sheen{position:absolute;left:-40%;bottom:-18%;width:180%;height:40%;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06), rgba(255,255,255,0.02));transform:rotate(9deg);filter:blur(16px);opacity:0.04;pointer-events:none;transition:all .9s}
+.card:hover .sheen{left:100%;opacity:0.14}
+
+/* other card content */
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+.plan-name{font-weight:800;color:var(--muted);font-size:13px}
+.priceWrap{position:relative;margin-top:12px}
+.price{font-size:56px;font-weight:900;line-height:0.9;background:linear-gradient(90deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 22px 60px rgba(139,92,246,0.08)}
+.duration{margin-top:8px;color:var(--muted);font-size:14px}
+.divider{height:1px;margin:18px 0;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03))}
+.features{flex:1;margin-top:8px}
+.features li{list-style:none;display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;color:var(--muted);font-size:15px}
+.features svg{flex-shrink:0;margin-top:3px;color:var(--cyan)}
+
+.cta{margin-top:18px}
+.btn{display:inline-block;width:100%;padding:14px 16px;border-radius:14px;border:none;font-weight:900;font-size:15px;cursor:pointer;color:#08121a;background:linear-gradient(90deg,var(--gold-1),var(--gold-2));box-shadow:0 18px 70px rgba(255,200,120,0.12);position:relative;overflow:hidden}
+.btn.alt{background:linear-gradient(90deg,var(--purple),var(--pink));color:#fff;box-shadow:0 16px 64px rgba(139,92,246,0.12)}
+.btn::after{content:"";position:absolute;left:-40%;top:-40%;width:40%;height:200%;background:linear-gradient(90deg,rgba(255,255,255,0.22),rgba(255,255,255,0.04));transform:rotate(25deg);opacity:0.06;transition:all .6s}
+.btn:hover::after{left:120%;opacity:0.14;transform:rotate(20deg)}
+.btn:active::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:999px;background:rgba(0,0,0,0.06);animation:ripple .6s}
+@keyframes ripple{from{opacity:0.9;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-50%) scale(40)}}
+
+/* price shake */
+@keyframes popShake {
+  0%{ transform: translateY(0) scale(1) }
+  10%{ transform: translateY(-6px) scale(1.03) rotate(-1deg) }
+  30%{ transform: translateY(6px) scale(0.995) rotate(1deg) }
+  50%{ transform: translateY(-3px) scale(1.01) rotate(-0.6deg) }
+  70%{ transform: translateY(2px) scale(0.998) rotate(0.6deg) }
+  100%{ transform: translateY(0) scale(1) rotate(0) }
 }
-.early .dot { width:12px; height:12px; border-radius:999px; background: linear-gradient(90deg, var(--gold1), var(--gold2)); box-shadow:0 0 18px rgba(255,160,80,0.6); animation: earlyPulse 1.2s infinite; }
-@keyframes earlyPulse { 0%{transform:scale(.9)}50%{transform:scale(1.25)}100%{transform:scale(.9)} }
-.countdown { margin-left:10px; font-weight:800; font-size:13px; background: rgba(0,0,0,0.12); padding:6px 10px; border-radius:10px; }
-
-/* header */
-.header { text-align:center; margin-bottom:18px; }
-.header h1 {
-  margin:0; font-size:46px; font-weight:800;
-  background: linear-gradient(90deg,#fff, rgba(255,255,255,0.9));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 18px 50px rgba(0,0,0,0.6));
-}
-.header p { margin:12px auto 0; color:var(--muted); max-width:860px; font-size:15px; }
-
-/* grid */
-.grid { display:grid; grid-template-columns: repeat(3,1fr); gap:20px; align-items:stretch; margin-top:20px; }
-
-/* card */
-.card {
-  position:relative; border-radius:var(--card-radius); padding:28px; min-height:560px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid var(--glass-border); backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 22px 100px rgba(0,0,0,0.65);
-  transition: transform 0.36s cubic-bezier(.2,.9,.2,1), box-shadow 0.36s;
-  transform: translateY(10px);
-  overflow:visible;
-}
-.card:hover { transform: translateY(-36px) scale(1.02) rotateX(0.6deg); box-shadow: 0 80px 260px rgba(0,0,0,0.8), 0 0 120px rgba(139,92,246,0.06); }
-
-/* neon stroke */
-.card::before { content:""; position:absolute; inset:0; border-radius:var(--card-radius); padding:1px; pointer-events:none; background: linear-gradient(90deg, rgba(139,92,246,0.05), rgba(255,63,166,0.03)); mix-blend-mode:overlay; }
-
-/* sheen */
-.sheen { position:absolute; left:-40%; bottom:-18%; width:180%; height:40%; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06), rgba(255,255,255,0.02)); transform:rotate(9deg); filter:blur(20px); opacity:0.04; pointer-events:none; transition: all .9s; }
-.card:hover .sheen { left:100%; opacity:0.16; }
-
-/* PRO card gold look */
-.card.pro { border: 1px solid rgba(255,215,0,0.14); box-shadow: 0 80px 260px rgba(0,0,0,0.78), 0 0 120px rgba(255,215,0,0.06); }
-.card.pro::before { background: linear-gradient(90deg, rgba(255,215,0,0.06), rgba(139,92,246,0.02)); }
-
-/* top */
-.top { display:flex; justify-content:space-between; align-items:flex-start; }
-.plan-name { font-weight:800; color:var(--muted); font-size:13px; }
-.priceWrap { position:relative; margin-top:12px; }
-.price { font-size:64px; font-weight:900; line-height:0.92; background: linear-gradient(90deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow: 0 26px 80px rgba(139,92,246,0.08); }
-.duration { margin-top:8px; color:var(--muted); font-size:14px; }
-.price-dot { position:absolute; right:-12px; top:-18px; width:16px; height:16px; border-radius:99px; background: radial-gradient(circle, rgba(139,92,246,0.95), rgba(255,63,166,0.22)); box-shadow:0 0 36px rgba(139,92,246,0.16); }
-
-/* divider */
-.divider { height:1px; margin:18px 0; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03)); }
-
-/* features */
-.features { flex:1; margin-top:8px; }
-.features li { list-style:none; display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; color:var(--muted); font-size:15px; }
-.features svg { flex-shrink:0; margin-top:3px; color:var(--cyan); }
-
-/* cta */
-.cta { margin-top:16px; }
-.btn {
-  display:inline-block; width:100%; padding:14px 16px; border-radius:14px; border:none; font-weight:900; font-size:15px; cursor:pointer;
-  color:#08121a; background: linear-gradient(90deg,var(--gold1),var(--gold2)); box-shadow: 0 20px 80px rgba(255,200,120,0.14); position:relative; overflow:hidden; transition: transform .18s, box-shadow .18s;
-}
-.btn.alt { background: linear-gradient(90deg,var(--purple),var(--pink)); color:#fff; box-shadow: 0 18px 76px rgba(139,92,246,0.12); }
-.btn::after { content:""; position:absolute; left:-45%; top:-40%; width:40%; height:200%; background:linear-gradient(90deg, rgba(255,255,255,0.22), rgba(255,255,255,0.04)); transform:rotate(25deg); opacity:0.06; transition:all .6s; }
-.btn:hover::after { left:120%; opacity:0.14; transform:rotate(20deg); }
-.btn:active::before { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:8px; height:8px; border-radius:999px; background:rgba(0,0,0,0.06); animation:ripple .6s; }
-@keyframes ripple { from{opacity:0.9; transform:translate(-50%,-50%) scale(1)} to{opacity:0; transform:translate(-50%,-50%) scale(40)} }
-
-/* price-ring small canvas */
-.price-ring { position:absolute; right:-8px; top:-28px; width:88px; height:88px; pointer-events:none; }
-
-/* badge */
-.badge { position:absolute; top:-18px; left:50%; transform:translateX(-50%); padding:9px 18px; border-radius:999px; background: linear-gradient(90deg,var(--gold1),var(--gold2)); color:#08121a; font-weight:900; box-shadow:0 12px 40px rgba(255,200,120,0.12); z-index:7; }
-
-/* faq */
-.faq { margin-top:40px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.03); }
-.faq details { padding:12px 8px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--muted); }
-.faq summary { cursor:pointer; font-weight:700; color:var(--text); font-size:15px; }
+.price.pop{ animation: popShake 700ms cubic-bezier(.2,.9,.2,1); }
 
 /* responsive */
-@media (max-width:1024px){
-  .grid{ grid-template-columns:1fr; }
-  .header h1{ font-size:34px; }
-  .price{ font-size:44px; }
-  .card{ min-height:460px; }
-}
+@media (max-width:1024px){ .grid{grid-template-columns:1fr} .header h1{font-size:34px} .price{font-size:44px} .card{min-height:460px} }
 </style>
 </head>
 <body>
   <!-- BACKGROUND LAYERS -->
   <div class="bg-full" aria-hidden="true">
-    <!-- layer 1: nebula cloud & stars -->
-    <canvas id="layer-nebula" class="layer"></canvas>
-    <!-- layer 2: high-energy particles & beams -->
-    <canvas id="layer-particles" class="layer"></canvas>
-    <!-- layer 3: connecting lines / network -->
-    <canvas id="layer-lines" class="layer"></canvas>
+    <canvas id="nebula" class="canvas-layer"></canvas>
+    <canvas id="particleLayer" class="canvas-layer"></canvas>
+    <canvas id="network" class="canvas-layer"></canvas>
 
-    <!-- svg ribbons + beams -->
-    <svg class="svg-ribbons" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+    <svg class="ribbon-svg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
       <defs>
-        <linearGradient id="grad1" x1="0" x2="1"><stop offset="0" stop-color="#8b5cff" stop-opacity="0.18"/><stop offset="1" stop-color="#ff3fa6" stop-opacity="0.14"/></linearGradient>
-        <linearGradient id="grad2" x1="0" x2="1"><stop offset="0" stop-color="#ffd66d" stop-opacity="0.12"/><stop offset="1" stop-color="#ff9f5a" stop-opacity="0.09"/></linearGradient>
-        <filter id="bigBlur"><feGaussianBlur stdDeviation="40"/></filter>
+        <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#8b5cff" stop-opacity="0.16"/><stop offset="1" stop-color="#ff3fa6" stop-opacity="0.12"/></linearGradient>
+        <linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#ffd66d" stop-opacity="0.12"/><stop offset="1" stop-color="#ff9f5a" stop-opacity="0.08"/></linearGradient>
+        <filter id="bb"><feGaussianBlur stdDeviation="40"/></filter>
       </defs>
-      <path id="ribbonA" d="M0,240 C420,120 820,340 1600,120 L1600,0 L0,0 Z" fill="url(#grad1)" opacity="0.16" filter="url(#bigBlur)"></path>
-      <path id="ribbonB" d="M0,680 C420,800 920,500 1600,660 L1600,900 L0,900 Z" fill="url(#grad2)" opacity="0.12" filter="url(#bigBlur)"></path>
-      <!-- animated center beam -->
-      <g id="centerBeams" transform="translate(800,450)">
-        <rect x="-4" y="-900" width="8" height="1800" fill="url(#grad1)" opacity="0.06" />
-        <rect x="-2" y="-900" width="4" height="1800" fill="url(#grad2)" opacity="0.04" />
-      </g>
+      <path id="r1" d="M0,200 C400,100 800,300 1600,120 L1600,0 L0,0 Z" fill="url(#g1)" opacity="0.16" filter="url(#bb)"></path>
+      <path id="r2" d="M0,700 C400,820 900,520 1600,640 L1600,900 L0,900 Z" fill="url(#g2)" opacity="0.12" filter="url(#bb)"></path>
     </svg>
 
     <div class="bloom"></div>
     <div class="vignette"></div>
   </div>
 
+  <!-- beam overlay for initial blast -->
+  <canvas id="beamCanvas"></canvas>
+
   <!-- MAIN CONTENT -->
-  <div class="container" role="main">
+  <div class="wrap" role="main">
     <div class="early" role="banner" aria-live="polite">
-      <div class="dot" aria-hidden="true"></div>
+      <div style="width:10px;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--gold-1),var(--gold-2));box-shadow:0 0 14px rgba(255,160,80,0.6)"></div>
       🔥 Early Bird — Limited Time Promotion!
-      <div class="countdown" id="countdown">--d --:--:--</div>
+      <!-- countdown removed as requested -->
     </div>
 
     <header class="header">
       <h1>Choose Your Creative Journey</h1>
-      <p>All plans include <strong>Unlimited Projects</strong> — full creative styles access, AI Director features, and premium resources.</p>
+      <p>All plans include <strong>Unlimited Projects</strong>, full creative styles access, AI Director features and premium resources.</p>
     </header>
 
     <section class="grid" aria-label="Pricing plans">
       <!-- Beginner -->
-      <article class="card" aria-labelledby="beginner-label">
+      <article class="card" id="card-beginner" aria-labelledby="beginner-label">
+        <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
         <div class="top">
           <div>
             <div id="beginner-label" class="plan-name">Beginner</div>
             <div class="priceWrap">
-              <div class="price">RM99</div>
+              <div class="price" id="price-beginner">RM99</div>
               <div class="duration">Billed as one payment for <strong>1 Month</strong> access</div>
-              <div class="price-ring" id="ring-beginner"></div>
             </div>
           </div>
           <div style="text-align:right;color:var(--muted);font-size:12px">Limited Launch Offer</div>
@@ -219,10 +188,7 @@ canvas.layer { position:absolute; inset:0; width:100%; height:100%; display:bloc
         <div class="divider" aria-hidden="true"></div>
 
         <ul class="features">
-          <li>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--cyan)"/></svg>
-            <div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px">Create full multi-scene projects without caps</div></div>
-          </li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--cyan)"/></svg><div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px">Create multi-scene projects without caps</div></div></li>
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg><div>Access All Creative Styles</div></li>
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div>Creative Fusion & Wildcard AI</div></li>
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg><div>Email Support</div></li>
@@ -234,16 +200,16 @@ canvas.layer { position:absolute; inset:0; width:100%; height:100%; display:bloc
       </article>
 
       <!-- PRO -->
-      <article class="card pro" aria-labelledby="pro-label">
+      <article class="card pro" id="card-pro" aria-labelledby="pro-label">
         <div class="badge">👑 Best Value</div>
+        <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
         <div class="top">
           <div>
             <div id="pro-label" class="plan-name">PRO</div>
             <div class="priceWrap">
-              <div class="price">RM297</div>
+              <div class="price" id="price-pro">RM297</div>
               <div class="duration">Billed as one payment for <strong>12 Months</strong> access</div>
-              <div class="price-ring" id="ring-pro"></div>
             </div>
           </div>
           <div style="text-align:right;color:var(--muted);font-size:12px">SAVE 75% • FREE 9 MONTHS</div>
@@ -265,15 +231,15 @@ canvas.layer { position:absolute; inset:0; width:100%; height:100%; display:bloc
       </article>
 
       <!-- Competent -->
-      <article class="card" aria-labelledby="comp-label">
+      <article class="card" id="card-competent" aria-labelledby="comp-label">
+        <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
         <div class="top">
           <div>
             <div id="comp-label" class="plan-name">Competent</div>
             <div class="priceWrap">
-              <div class="price">RM198</div>
+              <div class="price" id="price-competent">RM198</div>
               <div class="duration">Billed as one payment for <strong>6 Months</strong> access</div>
-              <div class="price-ring" id="ring-competent"></div>
             </div>
           </div>
           <div style="text-align:right;color:var(--muted);font-size:12px">SAVE 67% • FREE 4 MONTHS</div>
@@ -297,20 +263,23 @@ canvas.layer { position:absolute; inset:0; width:100%; height:100%; display:bloc
 
     <p id="errorMessage" role="status" aria-live="polite" style="margin-top:18px"></p>
 
-    <section class="faq" aria-labelledby="faqTitle">
-      <h2 id="faqTitle" class="faq-title" style="margin-bottom:18px; text-align:center; font-size:26px;">Frequently Asked Questions</h2>
-      <details><summary>Is this a one-time payment or a subscription?</summary><p>The plans listed are one-time payments for the specified access duration (e.g., 12 months for the PRO plan). Your access will expire at the end of the period, and you can choose to purchase a new plan at any time. There are no automatic recurring charges.</p></details>
-      <details><summary>What do I need to use the AI Film Director System?</summary><p>You only need a web browser. Project processing runs on our servers. To generate the final video you may need model credits (we provide docs).</p></details>
-      <details><summary>What does "Unlimited Projects" on the PRO plan mean?</summary><p>It means you can create as many complete, multi-scene projects as you need throughout your access period, subject to our fair use policy.</p></details>
-      <details><summary>Can I get a refund if I'm not satisfied?</summary><p>Due to digital delivery and AI costs, we do not offer refunds. Please review features before purchasing.</p></details>
+    <section class="faq" aria-labelledby="faqTitle" style="margin-top:40px">
+      <h2 id="faqTitle" style="text-align:center;font-size:26px;margin-bottom:18px;font-weight:800">Frequently Asked Questions</h2>
+      <details><summary>Is this a one-time payment or a subscription?</summary><p>The plans listed are one-time payments for the specified access duration. Your access will expire, and you can purchase again. No automatic recurring charges.</p></details>
+      <details><summary>What do I need to use the AI Film Director System?</summary><p>Just a web browser — project processing runs on our servers. To render final video you may need model credits (we provide docs).</p></details>
+      <details><summary>What does "Unlimited Projects" mean?</summary><p>Create as many multi-scene projects as needed during your access period, subject to fair use.</p></details>
+      <details><summary>Refund policy?</summary><p>Due to digital delivery and AI costs, refunds are not offered. Review features before purchasing.</p></details>
     </section>
   </div>
 
 <script>
 /* ============================
-   PRESERVE PURCHASE LOGIC (UNCHANGED)
-   planId -> amounts (sen): beginner_1m=9900, pro_3m=29700, competent_2m=19800
-   Endpoint: POST /api/create-bill with { planId, planName, amount }
+  Purchase logic preserved (unchanged)
+  planId -> amounts (sen):
+    beginner_1m = 9900
+    pro_3m = 29700
+    competent_2m = 19800
+  Endpoint: POST /api/create-bill { planId, planName, amount }
    ============================ */
 async function handlePurchase(planId, planName, amountInSen){
   const allButtons = document.querySelectorAll('.btn');
@@ -325,10 +294,7 @@ async function handlePurchase(planId, planName, amountInSen){
     });
     if (!res.ok) throw new Error('Failed to create payment link. Please try again.');
     const data = await res.json();
-    if (data && data.url) {
-      window.location.href = data.url;
-      return;
-    }
+    if (data && data.url) { window.location.href = data.url; return; }
     throw new Error('Could not retrieve payment link.');
   } catch (err) {
     errorMessage.textContent = err.message;
@@ -337,18 +303,19 @@ async function handlePurchase(planId, planName, amountInSen){
 }
 
 /* ============================
-   BACKGROUND: FULL "BLAST" EFFECT
-   - layer-nebula: large gradient clouds + animated noise
-   - layer-particles: burst particle emitters + fast trails
-   - layer-lines: connecting lines + flowing waves
-   - svg ribbons animated via transforms
-   - price-ring micro-canvas per card for orbiting dots
+   Visual Effects:
+   - Nebula canvas (soft moving blobs)
+   - Particle burst layer (emitters)
+   - Network lines
+   - Initial beam blast (one-time)
+   - Price-centered particle explosion on card mouseenter (and initial page enter)
    ============================ */
 (function(){
-  // canvases
-  const nebula = document.getElementById('layer-nebula');
-  const parts  = document.getElementById('layer-particles');
-  const lines  = document.getElementById('layer-lines');
+  // Setup canvases
+  const nebula = document.getElementById('nebula');
+  const part = document.getElementById('particleLayer');
+  const net = document.getElementById('network');
+  const beamCanvas = document.getElementById('beamCanvas');
   const dpr = Math.min(window.devicePixelRatio || 1.5, 2);
 
   function fit(c){
@@ -356,18 +323,19 @@ async function handlePurchase(planId, planName, amountInSen){
     c.style.width = innerWidth + 'px'; c.style.height = innerHeight + 'px';
     c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
   }
-  fit(nebula); fit(parts); fit(lines);
-  window.addEventListener('resize', ()=>{ fit(nebula); fit(parts); fit(lines); initAll(); });
+  [nebula, part, net, beamCanvas].forEach(fit);
+  window.addEventListener('resize', ()=>{ [nebula, part, net, beamCanvas].forEach(fit); initAll(); });
 
   const nCtx = nebula.getContext('2d');
-  const pCtx = parts.getContext('2d');
-  const lCtx = lines.getContext('2d');
+  const pCtx = part.getContext('2d');
+  const lCtx = net.getContext('2d');
+  const bCtx = beamCanvas.getContext('2d');
 
-  // mouse
+  // Mouse position for parallax
   let mouse = { x: innerWidth/2, y: innerHeight/2 };
   window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-  // ---------- Nebula: layered gradient blobs with subtle motion ----------
+  // ---------- NEBULA blobs ----------
   let blobs = [];
   function initNebula(){
     blobs = [];
@@ -376,170 +344,109 @@ async function handlePurchase(planId, planName, amountInSen){
       blobs.push({
         x: Math.random()*innerWidth,
         y: Math.random()*innerHeight,
-        rx: innerWidth*0.6*(0.4 + Math.random()*0.6),
-        ry: innerHeight*0.5*(0.4 + Math.random()*0.6),
-        hue: 200 + Math.random()*160,   // varied hue
+        rx: innerWidth * (0.25 + Math.random()*0.5),
+        ry: innerHeight * (0.18 + Math.random()*0.4),
+        hue: 220 + Math.random()*160,
         phase: Math.random()*Math.PI*2,
-        speed: 0.0006 + Math.random()*0.0008
+        speed: 0.0005 + Math.random()*0.001
       });
     }
   }
 
-  // ---------- Particles: burst emitters + trailing sparks ----------
+  // ---------- PARTICLE emitters ----------
   let emitters = [];
   function initEmitters(){
-    emitters = [];
-    const centers = [
-      { x: innerWidth*0.5, y: innerHeight*0.45 },
-      { x: innerWidth*0.2, y: innerHeight*0.6 },
-      { x: innerWidth*0.8, y: innerHeight*0.3 }
+    emitters = [
+      { x: innerWidth*0.5, y: innerHeight*0.45, color:[139,92,246], parts: [] },
+      { x: innerWidth*0.22, y: innerHeight*0.62, color:[255,63,166], parts: [] },
+      { x: innerWidth*0.78, y: innerHeight*0.28, color:[65,217,255], parts: [] }
     ];
-    centers.forEach((c, idx) => {
-      emitters.push({
-        x: c.x, y: c.y,
-        rate: 8 + Math.floor(Math.random()*8),
-        colorA: idx===1 ? [255,63,166] : (idx===2 ? [65,217,255] : [139,92,246]),
-        particles: []
-      });
-    });
   }
 
-  // particle object
-  function spawnParticle(e){
-    const angle = Math.random()*Math.PI*2;
-    const speed = 0.4 + Math.random()*4.2;
-    const life = 900 + Math.random()*1600;
-    return {
-      x: e.x + (Math.random()-0.5)*40,
-      y: e.y + (Math.random()-0.5)*40,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size: 0.8 + Math.random()*3.2,
-      life: life,
-      age: 0,
-      color: e.colorA,
-      alpha: 0.9 * (0.6 + Math.random()*0.4)
-    };
+  function spawn(p, color){
+    const ang = Math.random()*Math.PI*2;
+    const sp = 1.4 + Math.random()*6.0;
+    return { x: p.x + (Math.random()-0.5)*6, y: p.y + (Math.random()-0.5)*6, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, r: 0.8 + Math.random()*3.0, life: 700 + Math.random()*900, age:0, color };
   }
 
-  // ---------- Network lines (flowing) ----------
+  // ---------- NETWORK nodes ----------
   let nodes = [];
   function initNetwork(){
     nodes = [];
-    const count = Math.max(20, Math.floor(innerWidth / 80));
+    const count = Math.max(18, Math.floor(innerWidth/80));
     for(let i=0;i<count;i++){
-      nodes.push({
-        x: Math.random()*innerWidth,
-        y: Math.random()*innerHeight,
-        vx: (Math.random()*2-1)*0.3,
-        vy: (Math.random()*2-1)*0.3,
-        baseR: 1 + Math.random()*2
-      });
+      nodes.push({ x: Math.random()*innerWidth, y: Math.random()*innerHeight, vx:(Math.random()*2-1)*0.2, vy:(Math.random()*2-1)*0.2 });
     }
   }
 
-  function initAll(){
-    initNebula();
-    initEmitters();
-    initNetwork();
-  }
+  function initAll(){ initNebula(); initEmitters(); initNetwork(); }
   initAll();
 
-  // small helper: gradient overlay for nebula
+  // Nebula draw
   function drawNebula(){
     nCtx.clearRect(0,0,innerWidth,innerHeight);
-    // large radial gradient base
+    // base tint
     const g = nCtx.createLinearGradient(0,0,innerWidth,innerHeight);
-    g.addColorStop(0, 'rgba(6,6,10,0.35)');
-    g.addColorStop(1, 'rgba(10,10,20,0.35)');
-    nCtx.fillStyle = g;
-    nCtx.fillRect(0,0,innerWidth,innerHeight);
+    g.addColorStop(0, 'rgba(6,6,10,0.28)');
+    g.addColorStop(1, 'rgba(10,12,30,0.28)');
+    nCtx.fillStyle = g; nCtx.fillRect(0,0,innerWidth,innerHeight);
 
-    // draw blobs
-    blobs.forEach((b, idx) => {
+    blobs.forEach((b,i) => {
       b.phase += b.speed;
-      const ox = Math.sin(b.phase*1.1 + idx) * 60;
-      const oy = Math.cos(b.phase*0.9 + idx) * 40;
-      const cx = b.x + ox + (mouse.x - innerWidth/2) * 0.02 * (idx%2? -1:1);
-      const cy = b.y + oy + (mouse.y - innerHeight/2) * 0.02 * (idx%2? 1:-1);
+      const ox = Math.sin(b.phase*1.2 + i)*90;
+      const oy = Math.cos(b.phase*0.9 + i)*60;
+      const cx = b.x + ox + (mouse.x - innerWidth/2)*0.02*(i%2? -1:1);
+      const cy = b.y + oy + (mouse.y - innerHeight/2)*0.02*(i%2? 1:-1);
       const rx = b.rx * (0.9 + Math.sin(b.phase*0.7)*0.08);
       const ry = b.ry * (0.9 + Math.cos(b.phase*0.5)*0.06);
-      // create gradient
-      const grad = nCtx.createRadialGradient(cx,cy,Math.min(rx,ry)*0.08, cx,cy, Math.max(rx,ry));
-      // choose colorful gradient stops to make it "bright"
+      const grad = nCtx.createRadialGradient(cx,cy,Math.min(rx,ry)*0.06, cx,cy, Math.max(rx,ry));
       const h = Math.floor(b.hue);
-      grad.addColorStop(0, `hsla(${h}, 85%, 65%, 0.18)`);
-      grad.addColorStop(0.4, `hsla(${(h+40)%360}, 80%, 55%, 0.09)`);
-      grad.addColorStop(1, `rgba(6,6,12,0)`);
-      nCtx.save();
-      nCtx.globalCompositeOperation = 'screen';
-      nCtx.fillStyle = grad;
-      nCtx.beginPath();
-      nCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2);
-      nCtx.fill();
-      nCtx.restore();
+      grad.addColorStop(0, `hsla(${h},85%,65%,0.20)`);
+      grad.addColorStop(0.4, `hsla(${(h+40)%360},80%,55%,0.10)`);
+      grad.addColorStop(1, 'rgba(6,6,12,0)');
+      nCtx.save(); nCtx.globalCompositeOperation = 'screen'; nCtx.fillStyle = grad;
+      nCtx.beginPath(); nCtx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); nCtx.fill(); nCtx.restore();
     });
   }
 
-  // render particles
+  // Particles draw
   function drawParticles(delta){
     pCtx.clearRect(0,0,innerWidth,innerHeight);
-
-    // Emit new particles
-    emitters.forEach(em => {
-      // slight orbit of emitter center (gives motion)
-      em.x += Math.sin(Date.now()*0.0004 + em.x*0.00002)*0.4;
-      em.y += Math.cos(Date.now()*0.00035 + em.y*0.00002)*0.5;
-      for(let i=0;i<em.rate;i++){
-        if(Math.random() < 0.6){
-          em.particles.push(spawnParticle(em));
-        }
-      }
-      // small occasional heavy burst
-      if(Math.random() < 0.002) {
-        for(let b=0;b<18;b++) em.particles.push(spawnParticle(em));
-      }
-    });
-
-    // update & draw particles with trails
     pCtx.globalCompositeOperation = 'lighter';
+    // emit mild ambient particles
     emitters.forEach(em => {
-      for(let i=em.particles.length-1;i>=0;i--){
-        const pt = em.particles[i];
-        pt.age += delta;
-        // motion damping and gravity-ish pull towards center
-        pt.vx *= 0.995; pt.vy *= 0.995;
-        pt.x += pt.vx; pt.y += pt.vy;
-        // trail (draw as small radial with blur)
-        const lifeRatio = Math.max(0, 1 - pt.age/pt.life);
-        const size = pt.size * (0.6 + (1 - lifeRatio)*1.6);
+      // drift emitter very slowly
+      em.x += Math.sin(Date.now()*0.0003 + em.x*0.00001)*0.2;
+      em.y += Math.cos(Date.now()*0.00027 + em.y*0.00001)*0.25;
+      if(Math.random() < 0.12) em.parts.push(spawn(em, em.color));
+      // occasional burst
+      if(Math.random() < 0.0008) for(let k=0;k<14;k++) em.parts.push(spawn(em, em.color));
+      for(let i=em.parts.length-1;i>=0;i--){
+        const p = em.parts[i]; p.age += delta;
+        p.vx *= 0.995; p.vy *= 0.995;
+        p.x += p.vx; p.y += p.vy;
+        const lifeRatio = Math.max(0, 1 - p.age/p.life);
         pCtx.beginPath();
-        pCtx.fillStyle = `rgba(${pt.color[0]},${pt.color[1]},${pt.color[2]},${pt.alpha * lifeRatio})`;
-        pCtx.arc(pt.x, pt.y, Math.max(0.2, size), 0, Math.PI*2);
+        pCtx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${0.85 * lifeRatio})`;
+        pCtx.arc(p.x, p.y, Math.max(0.3, p.r*(0.6 + (1-lifeRatio)*1.4)), 0, Math.PI*2);
         pCtx.fill();
-        // remove dead
-        if(pt.age > pt.life) em.particles.splice(i,1);
+        if(p.age > p.life) em.parts.splice(i,1);
       }
     });
     pCtx.globalCompositeOperation = 'source-over';
   }
 
-  // draw network lines
+  // network draw
   function drawNetwork(){
     lCtx.clearRect(0,0,innerWidth,innerHeight);
-    // nodes update
     nodes.forEach(n => {
       n.x += n.vx + (mouse.x - n.x) * 0.00012;
       n.y += n.vy + (mouse.y - n.y) * 0.00012;
-      if(n.x < -20) n.x = innerWidth + 20;
-      if(n.x > innerWidth + 20) n.x = -20;
-      if(n.y < -20) n.y = innerHeight + 20;
-      if(n.y > innerHeight + 20) n.y = -20;
+      if(n.x < -10) n.x = innerWidth + 10; if(n.x > innerWidth + 10) n.x = -10;
+      if(n.y < -10) n.y = innerHeight + 10; if(n.y > innerHeight + 10) n.y = -10;
     });
-
-    // connect close nodes
     lCtx.beginPath();
-    nodes.forEach((a, i) => {
+    nodes.forEach((a,i) => {
       for(let j=i+1;j<nodes.length;j++){
         const b = nodes[j];
         const d = Math.hypot(a.x-b.x, a.y-b.y);
@@ -551,34 +458,23 @@ async function handlePurchase(planId, planName, amountInSen){
         }
       }
     });
-    lCtx.stroke();
-    lCtx.closePath();
-
-    // small node dots (glow)
-    nodes.forEach(n => {
-      lCtx.beginPath();
-      lCtx.fillStyle = 'rgba(255,255,255,0.02)';
-      lCtx.arc(n.x,n.y,1.6,0,Math.PI*2);
-      lCtx.fill();
-    });
-
-    // flowing sine wave (big)
+    lCtx.stroke(); lCtx.closePath();
+    // node dots
+    nodes.forEach(n => { lCtx.beginPath(); lCtx.fillStyle='rgba(255,255,255,0.02)'; lCtx.arc(n.x,n.y,1.6,0,Math.PI*2); lCtx.fill(); });
+    // flowing big wave
     lCtx.beginPath();
-    const tt = Date.now() * 0.0006;
+    const t = Date.now()*0.0006;
     for(let x=0;x<innerWidth;x+=12){
-      const y = innerHeight*0.5 + Math.sin((x*0.007)+tt) * 160 + Math.cos((x*0.002)+tt*1.4)*40;
+      const y = innerHeight*0.5 + Math.sin((x*0.007)+t) * 140 + Math.cos((x*0.002)+t*1.4)*36;
       if(x===0) lCtx.moveTo(x,y); else lCtx.lineTo(x,y);
     }
-    lCtx.strokeStyle = 'rgba(255,255,255,0.02)';
-    lCtx.lineWidth = 1.2;
-    lCtx.stroke();
-    lCtx.closePath();
+    lCtx.strokeStyle = 'rgba(255,255,255,0.02)'; lCtx.lineWidth = 1.2; lCtx.stroke();
   }
 
-  // main loop
+  // main frame
   let last = performance.now();
-  function frame(t){
-    const delta = t - last; last = t;
+  function frame(now){
+    const delta = now - last; last = now;
     drawNebula();
     drawParticles(delta);
     drawNetwork();
@@ -586,88 +482,163 @@ async function handlePurchase(planId, planName, amountInSen){
   }
   requestAnimationFrame(frame);
 
-  // animate ribbons SVG (parallax) for extra motion
-  const rA = document.getElementById('ribbonA'), rB = document.getElementById('ribbonB'), centerBeams = document.getElementById('centerBeams');
+  // animate svg ribbons for subtle motion
+  const r1 = document.getElementById('r1'), r2 = document.getElementById('r2');
   let start = Date.now();
-  (function animateRibbons(){
+  (function animRibbons(){
     const tt = (Date.now() - start) * 0.00008;
-    if(rA) rA.setAttribute('transform', `translate(${Math.sin(tt*1.3)*60}, ${Math.cos(tt*0.9)*18}) rotate(${Math.sin(tt)*2})`);
-    if(rB) rB.setAttribute('transform', `translate(${Math.cos(tt*1.1)*80}, ${Math.sin(tt*0.7)*15}) rotate(${Math.cos(tt)*1.2})`);
-    if(centerBeams) centerBeams.setAttribute('transform', `translate(${0 + Math.sin(tt*0.6)*6}, ${0 + Math.cos(tt*0.9)*4})`);
-    requestAnimationFrame(animateRibbons);
+    if(r1) r1.setAttribute('transform', `translate(${Math.sin(tt*1.3)*60}, ${Math.cos(tt*0.9)*18}) rotate(${Math.sin(tt)*2})`);
+    if(r2) r2.setAttribute('transform', `translate(${Math.cos(tt*1.1)*80}, ${Math.sin(tt*0.7)*15}) rotate(${Math.cos(tt)*1.2})`);
+    requestAnimationFrame(animRibbons);
   })();
 
-  // re-init on resize
-  window.addEventListener('resize', initAll);
-})();
-
-/* ============================
-   Price ring micro-particles around each price
-   (small canvases inside .price-ring)
-   ============================ */
-(function(){
-  function createRing(id, theme){
-    const el = document.getElementById(id);
-    if(!el) return;
-    const c = document.createElement('canvas');
-    c.width = 160; c.height = 160; c.style.width = '80px'; c.style.height = '80px';
-    el.appendChild(c);
-    const ctx = c.getContext('2d');
-    const dots = [];
-    for(let i=0;i<26;i++){
-      dots.push({ ang: Math.random()*Math.PI*2, rad: 28 + Math.random()*24, sp: 0.002 + Math.random()*0.006, s: 0.6 + Math.random()*2 });
-    }
-    function draw(){
-      ctx.clearRect(0,0,c.width,c.height);
-      ctx.save(); ctx.translate(c.width/2, c.height/2);
-      // ring base
-      ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.lineWidth = 2; ctx.arc(0,0,40,0,Math.PI*2); ctx.stroke(); ctx.closePath();
-      for(let i=0;i<dots.length;i++){
-        const d = dots[i]; d.ang += d.sp;
-        const x = Math.cos(d.ang) * d.rad, y = Math.sin(d.ang) * d.rad;
+  /* ---------- INITIAL BEAM BLAST (one-time) ----------
+     Strong radial beams from center that rapidly fade.
+     Plays once on page load.
+  ----------------------------------------------------*/
+  function playBeamBlast(){
+    const ctx = bCtx;
+    const W = beamCanvas.width / dpr, H = beamCanvas.height / dpr;
+    let start = performance.now();
+    const beams = 28;
+    function drawBlast(ts){
+      const t = ts - start;
+      ctx.clearRect(0,0,beamCanvas.width,beamCanvas.height);
+      ctx.save();
+      ctx.scale(dpr,dpr);
+      // center flash (very bright short)
+      const flashAlpha = Math.max(0, 1 - t/650);
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255, ${0.25 * flashAlpha})`;
+      ctx.fillRect(0,0,W,H);
+      ctx.closePath();
+      // radial beams
+      const cx = W/2, cy = H/2;
+      for(let i=0;i<beams;i++){
+        const ang = (i / beams) * Math.PI*2 + (t*0.004);
+        const len = 0.8 + Math.sin(t*0.02 + i) * 0.25;
+        const x2 = cx + Math.cos(ang) * W * len;
+        const y2 = cy + Math.sin(ang) * H * len;
         ctx.beginPath();
-        if(theme === 'gold') ctx.fillStyle = (i%2 ? 'rgba(255,200,120,0.95)' : 'rgba(253,160,133,0.9)');
-        else ctx.fillStyle = (i%2 ? 'rgba(139,92,246,0.95)' : 'rgba(255,63,166,0.9)');
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.arc(x,y, d.s, 0, Math.PI*2); ctx.fill(); ctx.closePath();
-        ctx.globalCompositeOperation = 'source-over';
+        const grad = ctx.createLinearGradient(cx,cy,x2,y2);
+        grad.addColorStop(0, `rgba(255,250,230, ${0.45 * (1 - t/1200)})`);
+        grad.addColorStop(0.4, `rgba(255,200,120, ${0.22 * (1 - t/1200)})`);
+        grad.addColorStop(1, 'rgba(255,200,120,0)');
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 6 * (1 - t/1200);
+        ctx.moveTo(cx,cy); ctx.lineTo(x2,y2); ctx.stroke(); ctx.closePath();
       }
-      ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.arc(0,0,6,0,Math.PI*2); ctx.fill(); ctx.closePath();
       ctx.restore();
-      requestAnimationFrame(draw);
+      if(t < 1200) requestAnimationFrame(drawBlast); else ctx.clearRect(0,0,beamCanvas.width,beamCanvas.height);
     }
-    draw();
+    requestAnimationFrame(drawBlast);
   }
-  createRing('ring-beginner','neon'); createRing('ring-pro','gold'); createRing('ring-competent','neon');
-})();
 
-/* ============================
-   EARLY BIRD COUNTDOWN (7 days default)
-   ============================ */
-(function(){
-  const el = document.getElementById('countdown');
-  const target = new Date(Date.now() + 7*24*60*60*1000);
-  function update(){
-    const now = new Date();
-    let diff = Math.max(0, target - now);
-    const d = Math.floor(diff / (1000*60*60*24)); diff -= d*24*60*60*1000;
-    const h = String(Math.floor(diff / (1000*60*60))).padStart(2,'0'); diff -= h*60*60*1000;
-    const m = String(Math.floor(diff / (1000*60))).padStart(2,'0'); diff -= m*60*1000;
-    const s = String(Math.floor(diff / 1000)).padStart(2,'0');
-    el.textContent = `${d}d ${h}:${m}:${s}`;
-    if(target - now <= 0) el.textContent = 'Ended';
+  // call once after small delay (so initial layout ready)
+  window.addEventListener('load', ()=>{ setTimeout(playBeamBlast, 260); });
+
+  /* ---------- PRICE-CENTERED PARTICLE EXPLOSION ----------
+     Create a small transient canvas positioned over the price element,
+     spawn many particles outward + little glow + trigger price pop shake.
+  -------------------------------------------------------*/
+  function createExplosionAt(elem, theme){
+    if(!elem) return;
+    // compute position & size
+    const rect = elem.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    // create overlay canvas
+    const c = document.createElement('canvas');
+    const s = 1; // scale in CSS pixels
+    c.width = rect.width * 2;
+    c.height = rect.height * 2;
+    c.style.position = 'fixed';
+    c.style.left = (cx - rect.width) + 'px';
+    c.style.top = (cy - rect.height) + 'px';
+    c.style.width = rect.width*2 + 'px';
+    c.style.height = rect.height*2 + 'px';
+    c.style.pointerEvents = 'none';
+    c.style.zIndex = 9999;
+    document.body.appendChild(c);
+    const ctx = c.getContext('2d');
+    let particles = [];
+    const baseColor = (theme === 'gold') ? [[255,200,120],[253,160,133]] : [[139,92,246],[255,63,166]];
+    // spawn many particles
+    const count = 48 + Math.floor(Math.random()*36);
+    for(let i=0;i<count;i++){
+      const ang = Math.random()*Math.PI*2;
+      const speed = 2 + Math.random()*10;
+      const col = baseColor[i%baseColor.length];
+      particles.push({
+        x: c.width/2, y: c.height/2,
+        vx: Math.cos(ang)*speed + (Math.random()-0.5)*1.8,
+        vy: Math.sin(ang)*speed + (Math.random()-0.5)*1.8,
+        r: 1 + Math.random()*3.6,
+        life: 500 + Math.random()*900,
+        age: 0,
+        color: col
+      });
+    }
+    // also a few bright sparks
+    let start = performance.now();
+    function explode(now){
+      const t = now - start;
+      const dt = 16;
+      ctx.clearRect(0,0,c.width,c.height);
+      // draw glow center
+      const gg = ctx.createRadialGradient(c.width/2,c.height/2,0,c.width/2,c.height/2,c.width*0.5);
+      gg.addColorStop(0, 'rgba(255,255,255,0.25)');
+      gg.addColorStop(0.2, 'rgba(255,255,255,0.08)');
+      gg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = gg; ctx.fillRect(0,0,c.width,c.height);
+      // particles
+      for(let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.age += dt;
+        // motion
+        p.vx *= 0.985; p.vy *= 0.985;
+        p.x += p.vx; p.y += p.vy;
+        const lifeRatio = Math.max(0, 1 - p.age/p.life);
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${0.95 * lifeRatio})`;
+        ctx.arc(p.x, p.y, Math.max(0.2, p.r * (0.6 + (1-lifeRatio)*1.6)), 0, Math.PI*2);
+        ctx.fill();
+        if(p.age > p.life) particles.splice(i,1);
+      }
+      if(particles.length > 0) requestAnimationFrame(explode); else { document.body.removeChild(c); }
+    }
+    requestAnimationFrame(explode);
   }
-  update();
-  setInterval(update, 1000);
-})();
 
-/* ============================
-   Small perf: pause heavy anim when tab hidden (optional)
-   (left minimal) 
-   ============================ */
-document.addEventListener('visibilitychange', function(){
-  // Could implement pause/resume — left running for immediate demo
-});
+  // link explosions to cards (mouseenter)
+  function bindCardExplosions(){
+    const cards = [
+      { card: document.getElementById('card-beginner'), price: document.getElementById('price-beginner'), theme:'neon' },
+      { card: document.getElementById('card-pro'), price: document.getElementById('price-pro'), theme:'gold' },
+      { card: document.getElementById('card-competent'), price: document.getElementById('price-competent'), theme:'neon' }
+    ];
+    cards.forEach(({card, price, theme}) => {
+      if(!card || !price) return;
+      let triggered = false;
+      // initial "enter" explosion once per page load for emphasis
+      setTimeout(()=>{ price.classList.add('pop'); createExplosionAt(price, theme); setTimeout(()=>price.classList.remove('pop'), 800); }, 500 + Math.random()*400);
+      card.addEventListener('mouseenter', ()=> {
+        price.classList.add('pop');
+        createExplosionAt(price, theme);
+        setTimeout(()=> price.classList.remove('pop'), 900);
+      });
+      // also support keyboard focus
+      card.addEventListener('focusin', ()=> {
+        price.classList.add('pop');
+        createExplosionAt(price, theme);
+        setTimeout(()=> price.classList.remove('pop'), 900);
+      });
+    });
+  }
+  // bind after content loaded
+  window.addEventListener('load', ()=>{ bindCardExplosions(); });
+
+})(); // end IIFE
 </script>
 </body>
 </html>
