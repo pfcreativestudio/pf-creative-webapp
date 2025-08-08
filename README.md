@@ -29,5 +29,5 @@ This project is a web application that generates video scripts using AI. Users c
 1. Enter the brand name, product name, and target audience in the provided fields.
 2. Click 'Generate My Script' to get an AI-generated video script.
 3. Use the 'Copy Script' button to copy the generated script to your clipboard.
-
+# Test update on August 8th
 
