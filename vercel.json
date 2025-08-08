@@ -1,0 +1,36 @@
+{
+  "rewrites": [
+    {
+      "source": "/create-bill",
+      "destination": "/main.py"
+    },
+    {
+      "source": "/webhook-billplz",
+      "destination": "/main.py"
+    },
+    {
+      "source": "/login",
+      "destination": "/main.py"
+    },
+    {
+      "source": "/register",
+      "destination": "/main.py"
+    },
+    {
+      "source": "/get-user-status",
+      "destination": "/main.py"
+    },
+    {
+      "source": "/generate-script",
+      "destination": "/main.py"
+    },
+    {
+      "source": "/chat-with-image",
+      "destination": "/main.py"
+    },
+    {
+      "source": "/admin(.*)",
+      "destination": "/main.py"
+    }
+  ]
+}
