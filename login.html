@@ -26,8 +26,13 @@
             background: linear-gradient(45deg, #f59e0b, #ec4899);
             transition: all 0.3s ease;
         }
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+        .btn-primary:disabled {
+            background: #444;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -56,7 +61,7 @@
             <div id="errorMessage" class="hidden text-red-400 text-sm text-center"></div>
             
             <button type="submit" id="loginBtn"
-                class="w-full btn-primary text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition duration-300 transform hover:scale-105">
+                class="w-full btn-primary text-white font-semibold py-3 px-6 rounded-lg transition duration-300">
                 Login
             </button>
         </form>
@@ -70,17 +75,21 @@
         // --- 您的后端API地址 ---
         const backendUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
         
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorDiv = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('errorMessage');
-            const loginBtn = document.getElementById('loginBtn');
             
+            // 更新按钮状态为“登录中”
             loginBtn.textContent = 'Logging in...';
             loginBtn.disabled = true;
             errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
             
             try {
                 const response = await fetch(`${backendUrl}/login`, {
@@ -92,25 +101,31 @@
                 const result = await response.json();
                 
                 if (response.ok && result.token) {
-                    // --- 修改点 1 ---
-                    // 将token存入localStorage，键名为'jwtToken'，以和dashboard.html保持一致
+                    // ---【核心修正点 1】---
+                    // 登录成功后，将获取到的token安全地存入浏览器的localStorage
+                    // 'jwtToken'这个名字必须和 dashboard.html 中读取的名字完全一致
                     localStorage.setItem('jwtToken', result.token);
                     
-                    // --- 修改点 2 ---
-                    // 登录成功后，跳转到用户仪表盘页面
-                    window.location.href = 'dashboard.html';
+                    // ---【核心修正点 2】---
+                    // 显示成功信息，并在一秒后跳转到用户仪表盘页面
+                    loginBtn.textContent = 'Success!';
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
 
                 } else {
-                    errorDiv.textContent = result.message || 'Invalid username or password';
-                    errorDiv.classList.remove('hidden');
+                    // 如果登录失败，抛出错误
+                    throw new Error(result.message || 'Invalid username or password');
                 }
             } catch (error) {
-                errorDiv.textContent = 'Connection error. Please try again.';
+                // 捕获所有错误（网络错误或登录失败错误）
+                errorDiv.textContent = error.message;
                 errorDiv.classList.remove('hidden');
+                
+                // 恢复按钮状态
+                loginBtn.textContent = 'Login';
+                loginBtn.disabled = false;
             }
-            
-            loginBtn.textContent = 'Login';
-            loginBtn.disabled = false;
         });
     </script>
 </body>
