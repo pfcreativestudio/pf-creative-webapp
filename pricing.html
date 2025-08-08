@@ -6,690 +6,580 @@
 <title>Pricing Plans - PF Creative AI Director System</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ---------- Root Colors / Variables ---------- */
+/* ---------- Variables ---------- */
 :root{
-  --bg-1: #070712;
-  --bg-2: #121026;
-  --glass: rgba(255,255,255,0.05);
-  --glass-strong: rgba(255,255,255,0.08);
-  --glass-border: rgba(255,255,255,0.12);
-  --accent-1: #9b5cff; /* purple */
-  --accent-2: #ff73d9; /* pink */
+  --bg-dark-1: #04060a;
+  --bg-dark-2: #0a0f1f;
+  --glass: rgba(255,255,255,0.04);
+  --glass-strong: rgba(255,255,255,0.07);
+  --glass-border: rgba(255,255,255,0.10);
+  --muted: #9aa0ad;
+  --accent-purple: #9b5cff;
+  --accent-pink: #ff73d9;
   --gold-start: #f6d365;
   --gold-end: #fda085;
-  --muted: #aeb3bf;
-  --text: #eef0f6;
-  --success: #8ee28a;
+  --text: #eef1f8;
+  --success: #7ee08b;
 }
 
 /* ---------- Base ---------- */
-* { box-sizing: border-box; }
-html,body { height:100%; }
+*{box-sizing:border-box}
+html,body{height:100%}
 body{
   margin:0;
   font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  background: linear-gradient(180deg,var(--bg-dark-1) 0%, var(--bg-dark-2) 100%);
   color:var(--text);
-  background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
-  overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
 }
 
-/* ---------- Full-canvas background layers ---------- */
-.bg-layer {
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-}
-/* subtle vignette */
-.bg-vignette {
-  position:fixed; inset:0; z-index:0;
-  background: radial-gradient(1000px 500px at 50% 10%, rgba(255,255,255,0.02), transparent 10%),
-              radial-gradient(800px 400px at 10% 80%, rgba(155,92,255,0.03), transparent 8%),
-              linear-gradient(180deg, rgba(0,0,0,0.15), transparent 40%);
+/* ---------- Full background canvas layers ---------- */
+.bg-wrap{position:fixed;inset:0;z-index:0;pointer-events:none}
+.canvas-layer{position:absolute;inset:0;width:100%;height:100%}
+
+/* animated glow bands */
+.glow-band {
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(600px 200px at 10% 15%, rgba(155,92,255,0.07), transparent 10%),
+    radial-gradient(900px 300px at 90% 85%, rgba(255,115,217,0.06), transparent 12%);
   mix-blend-mode:overlay;
 }
 
 /* ---------- Page container ---------- */
-.container {
+.container{
   max-width:1200px;
-  margin: 40px auto 120px;
-  padding: 48px 24px;
+  margin: 36px auto 120px;
+  padding: 36px 20px;
   position:relative;
-  z-index:2; /* above background */
+  z-index:3;
 }
 
-/* header */
-.header {
-  text-align:center;
-  margin-bottom:40px;
+/* Early Bird Banner */
+.early-bird {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin: 0 auto 20px;
+  max-width:980px;
+  padding:10px 18px;
+  border-radius:999px;
+  background: linear-gradient(90deg, rgba(155,92,255,0.12), rgba(255,115,217,0.06));
+  color: #fff;
+  font-weight:700;
+  letter-spacing:0.2px;
+  box-shadow: 0 6px 30px rgba(155,92,255,0.06);
 }
+.early-bird .pulse {
+  display:inline-block;
+  width:10px; height:10px; border-radius:99px;
+  background: radial-gradient(circle, #ffcf7a, #ff7a7a);
+  box-shadow:0 0 12px rgba(255,140,80,0.6);
+  animation: ebPulse 1.6s infinite;
+}
+@keyframes ebPulse {
+  0%{transform:scale(0.9);opacity:0.9}
+  50%{transform:scale(1.2);opacity:1}
+  100%{transform:scale(0.9);opacity:0.9}
+}
+
+/* Header */
+.header { text-align:center; margin-bottom:22px; }
 .header h1{
-  margin:0;
-  font-size:44px;
-  line-height:1.02;
-  font-weight:800;
-  background:linear-gradient(90deg,#fff, rgba(255,255,255,0.8));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  font-size:40px; margin:0; font-weight:800;
+  background: linear-gradient(90deg,#fff, rgba(255,255,255,0.8));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  filter: drop-shadow(0 8px 30px rgba(0,0,0,0.6));
 }
-.header p{
-  margin:14px auto 0;
-  color:var(--muted);
-  max-width:800px;
-  font-size:16px;
+.header p {
+  margin:12px auto 0; color:var(--muted); max-width:760px; font-size:15px;
 }
 
-/* grid */
-.pricing-container{
+/* Grid */
+.pricing-grid {
   display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:28px;
-  align-items:stretch;
-  margin-top:28px;
+  grid-template-columns:repeat(3,1fr);
+  gap:22px;
+  margin-top:18px;
 }
 
-/* ---------- Glass Card ---------- */
+/* Glass Card */
 .card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius:16px;
-  padding:30px;
-  min-height:520px;
   position:relative;
+  border-radius:16px;
+  padding:26px;
+  min-height:520px;
   overflow:visible;
-  backdrop-filter: blur(12px) saturate(120%);
-  box-shadow:
-    0 6px 30px rgba(3,7,20,0.6),
-    inset 0 1px 0 rgba(255,255,255,0.02);
-  transition: transform .36s cubic-bezier(.2,.9,.2,1), box-shadow .36s;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 40px rgba(2,6,20,0.6);
+  backdrop-filter: blur(12px) saturate(140%);
+  transition: transform .36s cubic-bezier(.2,.9,.2,1), box-shadow .36s, border-color .36s;
+  transform: translateY(6px);
   display:flex;
   flex-direction:column;
-  z-index:3;
-  transform:translateY(8px);
+  z-index:4;
   opacity:0;
-  animation: enterUp .6s forwards;
+  animation: cardEnter .6s forwards;
 }
-
-/* entrance staggering */
-.card:nth-child(1){ animation-delay: 0.08s; }
-.card:nth-child(2){ animation-delay: 0.16s; transform:scale(1.01); }
-.card:nth-child(3){ animation-delay: 0.24s; }
-
-/* hover */
+.card:nth-child(1){ animation-delay:0.06s }
+.card:nth-child(2){ animation-delay:0.12s }
+.card:nth-child(3){ animation-delay:0.18s }
+@keyframes cardEnter {
+  from{ opacity:0; transform:translateY(26px) scale(0.995) }
+  to{ opacity:1; transform:translateY(0) scale(1) }
+}
 .card:hover {
   transform: translateY(-18px) scale(1.01);
-  box-shadow: 0 30px 60px rgba(3,7,20,0.7), 0 0 40px rgba(155,92,255,0.08);
+  box-shadow: 0 40px 90px rgba(2,6,20,0.75), 0 0 48px rgba(155,92,255,0.06);
 }
 
-/* card inner header */
-.card .top {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+/* glass highlight stroke */
+.card::before{
+  content:"";
+  position:absolute; inset:0; border-radius:16px;
+  padding:1px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  -webkit-mask: linear-gradient(#fff,#fff);
+  pointer-events:none;
 }
-.plan-name {
-  font-size:14px;
-  color:var(--muted);
-  font-weight:600;
+
+/* gold overlay for PRO */
+.card.pro{
+  border: 1px solid rgba(255,215,0,0.12);
+  box-shadow: 0 40px 90px rgba(0,0,0,0.75), 0 0 40px rgba(255,215,0,0.04);
 }
+
+/* top area */
+.top{
+  display:flex; justify-content:space-between; align-items:flex-start;
+}
+.plan-name{ color:var(--muted); font-weight:600; font-size:13px; }
+.price-wrap { position:relative; margin-top:14px; }
 .plan-price {
-  margin-top:18px;
-  font-weight:800;
-  font-size:44px;
-  line-height:0.95;
-  color:var(--accent-1);
-  background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  text-shadow: 0 6px 30px rgba(155,92,255,0.08);
+  font-size:44px; font-weight:800; line-height:0.95;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow: 0 8px 28px rgba(155,92,255,0.06);
 }
-.plan-duration {
-  margin-top:8px;
-  color:var(--muted);
-  font-size:14px;
+.duration { margin-top:8px; color:var(--muted); font-size:14px; }
+
+/* small decorative glow */
+.price-dot {
+  position:absolute; right:-10px; top:-6px;
+  width:10px; height:10px; border-radius:99px;
+  background: radial-gradient(circle, rgba(155,92,255,0.95), rgba(255,115,217,0.25));
+  box-shadow: 0 0 22px rgba(155,92,255,0.18);
 }
 
-/* subtle highlight line */
-.card .divider{
-  height:1px;
-  width:100%;
-  background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03));
-  margin:20px 0;
-}
+/* divider */
+.divider { height:1px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03)); margin:18px 0; }
 
 /* features */
-.features {
-  margin-top:8px;
-  flex:1;
-}
+.features { flex:1; margin-top:6px; }
 .features li{
-  list-style:none;
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-  margin-bottom:14px;
-  color:var(--muted);
+  list-style:none; display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; color:var(--muted);
   font-size:15px;
 }
-.features li svg{ flex-shrink:0; margin-top:3px; }
+.features svg{ flex-shrink:0; margin-top:3px; color:var(--accent-purple) }
 
 /* CTA */
-.cta {
-  margin-top:18px;
-}
+.actions { margin-top:18px; }
 .btn {
-  width:100%;
-  padding:14px 18px;
-  border-radius:12px;
-  border:none;
-  font-weight:700;
-  font-size:15px;
-  cursor:pointer;
-  color:white;
-  background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
-  box-shadow: 0 8px 30px rgba(155,92,255,0.12);
-  transition: transform .22s ease, box-shadow .22s ease;
-  display:inline-block;
+  width:100%; padding:14px 16px; border-radius:12px; border:none; font-weight:800; font-size:15px;
+  cursor:pointer; color:#fff; background: linear-gradient(90deg,var(--accent-purple),var(--accent-pink));
+  box-shadow: 0 12px 32px rgba(155,92,255,0.12);
+  transition: transform .22s ease, box-shadow .22s;
 }
-.btn:hover{ transform:translateY(-4px) scale(1.02); box-shadow: 0 20px 50px rgba(155,92,255,0.18); }
+.btn:hover { transform: translateY(-6px); box-shadow: 0 26px 60px rgba(155,92,255,0.18); }
+.btn.secondary { background: transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); box-shadow:none; }
 
-/* outline-button for secondary style */
-.btn.secondary{
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.06);
-  color:var(--text);
-  box-shadow:none;
-}
-
-/* PRO special border (gold) */
-.card.pro {
-  border: 1px solid rgba(255,215,0,0.08);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.06);
-}
+/* PRO badge */
 .badge {
-  position:absolute;
-  top:-14px;
-  left:50%;
-  transform:translateX(-50%);
-  background: linear-gradient(90deg, var(--gold-start), var(--gold-end));
-  color:#111;
-  padding:8px 18px;
-  border-radius:999px;
-  font-weight:700;
-  font-size:13px;
-  box-shadow: 0 6px 30px rgba(253,160,133,0.12);
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%); padding:8px 20px; border-radius:999px;
+  background: linear-gradient(90deg,var(--gold-start),var(--gold-end)); color:#08121a; font-weight:800; box-shadow:0 8px 30px rgba(253,160,133,0.12);
 }
 
-/* crown icon area */
-.crown {
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  font-weight:700;
-  color: #f3d79a;
-  font-size:13px;
-}
+/* crown */
+.crown { display:inline-flex; gap:8px; align-items:center; color:#f1dca0; font-weight:700 }
 
-/* subtle gloss overlay for glass feel */
-.card::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  border-radius:16px;
-  pointer-events:none;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 25%);
-  mix-blend-mode:overlay;
-}
+/* faq */
+.section { margin-top:48px; }
+.section-title { text-align:center; font-size:26px; margin-bottom:18px; font-weight:700; }
+.faq { background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.04); }
+.faq details { padding:12px 8px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--muted); }
+.faq summary{ cursor:pointer; font-weight:700; color:var(--text); font-size:15px; }
 
-/* price glow tiny dot */
-.price-glow {
-  position:absolute;
-  width:6px; height:6px;
-  border-radius:99px;
-  right:28px; top:28px;
-  background: radial-gradient(circle, rgba(155,92,255,0.9), rgba(255,115,217,0.15));
-  box-shadow: 0 0 16px rgba(155,92,255,0.28);
-}
-
-/* FAQ section */
-.section {
-  margin-top:64px;
-}
-.section-title {
-  text-align:center;
-  font-size:28px;
-  margin-bottom:26px;
-  font-weight:700;
-}
-.faq-container {
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-  border-radius:12px;
-  padding:18px;
-  border:1px solid rgba(255,255,255,0.04);
-}
-.faq-item{ padding:14px 12px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--muted); }
-.faq-item summary{ cursor:pointer; font-weight:600; color:var(--text); font-size:15px; list-style:none; }
-.faq-item p{ margin:8px 0 0; color:var(--muted); font-size:14px; line-height:1.6; }
-
-/* error message */
-#errorMessage { color:#ff7b7b; margin-top:18px; text-align:center; }
+/* error */
+#errorMessage { color:#ff8b8b; margin-top:16px; text-align:center }
 
 /* responsive */
-@media (max-width: 1024px){
-  .pricing-container { grid-template-columns: repeat(1, 1fr); }
-  .container { padding:30px 20px; margin-top:20px; }
-  .header h1{ font-size:34px; }
+@media (max-width:1024px){
+  .pricing-grid{ grid-template-columns: 1fr; }
+  .container{ padding:22px 18px; margin-top:18px }
+  .header h1{ font-size:30px }
 }
 
-/* ---------- background particle & lines canvas ---------- */
-.canvas {
-  position: fixed;
-  inset:0;
-  z-index:1;
-  width:100%;
-  height:100%;
-}
-
-/* small entrance keyframe */
-@keyframes enterUp {
-  from { transform: translateY(22px); opacity:0; }
-  to { transform: translateY(0); opacity:1; }
+/* subtle animations */
+@keyframes floaty {
+  0%{ transform: translateY(0px); }
+  50%{ transform: translateY(-6px); }
+  100%{ transform: translateY(0px); }
 }
 </style>
 </head>
 <body>
-  <!-- ---------- Dynamic multi-layer background ---------- -->
-  <div class="bg-layer">
-    <canvas id="c-lines" class="canvas"></canvas>
-    <div class="bg-vignette"></div>
+  <!-- Background layers: multiple canvas for depth -->
+  <div class="bg-wrap" aria-hidden="true">
+    <canvas id="bg-particles" class="canvas-layer"></canvas>
+    <canvas id="bg-lines" class="canvas-layer"></canvas>
+    <div class="glow-band"></div>
   </div>
 
-  <!-- ---------- Content Container (above background) ---------- -->
-  <div class="container">
+  <!-- Main content -->
+  <div class="container" role="main">
+    <div class="early-bird" role="banner" aria-live="polite">
+      <span class="pulse" aria-hidden="true"></span>
+      🔥 Early Bird — Limited Time Promotion! Get exclusive savings while it lasts.
+    </div>
+
     <header class="header">
       <h1>Choose Your Creative Journey</h1>
-      <p>All plans come with <strong>Unlimited Projects</strong>, access to all creative styles, and our full AI Director experience — choose how long you want to create without limits.</p>
+      <p>All plans include <strong>Unlimited Projects</strong> — full access to creative styles, AI Director features, and priority resources depending on plan level.</p>
     </header>
 
-    <!-- ---------- Pricing Cards (glass) ---------- -->
-    <main>
-      <section class="pricing-container" aria-label="Pricing plans">
-        <!-- Beginner (preserve original planId & amount mapping) -->
-        <article class="card" role="region" aria-labelledby="plan-beginner">
-          <div class="price-glow" aria-hidden="true"></div>
+    <section class="pricing-grid" aria-label="Pricing options">
+      <!-- Beginner -->
+      <article class="card" aria-labelledby="beginner-title">
+        <div>
           <div class="top">
             <div>
-              <div id="plan-beginner" class="plan-name">Beginner</div>
-              <div class="plan-price">RM99</div>
-              <div class="plan-duration">Billed as one payment for <strong>1 Month</strong> access.</div>
+              <div id="beginner-title" class="plan-name">Beginner</div>
+              <div class="price-wrap">
+                <div class="plan-price">RM99</div>
+                <div class="duration">Billed as one payment for <strong>1 Month</strong> access</div>
+                <div class="price-dot" aria-hidden="true"></div>
+              </div>
             </div>
-            <div style="text-align:right; font-size:12px; color:var(--muted);">Launch Promo</div>
+            <div style="text-align:right; color:var(--muted); font-size:12px;">Limited Launch Offer</div>
           </div>
 
           <div class="divider" aria-hidden="true"></div>
 
           <ul class="features" aria-hidden="false">
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"/>
-              </svg>
-              <div><strong>Unlimited Projects</strong><div style="color:var(--muted); font-size:13px;">Create full multi-scene projects without limits</div></div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"/></svg>
+              <div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px;">Create multi-scene projects with no script caps</div></div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" /></svg>
               <div>Access All Creative Styles</div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               <div>Creative Fusion & Wildcard AI</div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg>
               <div>Email Support</div>
             </li>
           </ul>
 
-          <div class="cta">
+          <div class="actions">
             <button class="btn secondary" onclick="handlePurchase('beginner_1m','Beginner Plan (1 Month)', 9900)">Choose Beginner</button>
           </div>
-        </article>
+        </div>
+      </article>
 
-        <!-- PRO (preserve original planId & amount mapping) -->
-        <article class="card pro" role="region" aria-labelledby="plan-pro" style="border-radius:18px;">
-          <div class="badge">👑 Best Value</div>
-          <div class="price-glow" aria-hidden="true" style="box-shadow: 0 0 26px rgba(253,160,133,0.14);"></div>
+      <!-- PRO -->
+      <article class="card pro" aria-labelledby="pro-title">
+        <div class="badge">👑 Best Value</div>
+        <div>
           <div class="top">
             <div>
-              <div id="plan-pro" class="plan-name">PRO</div>
-              <div class="plan-price">RM297</div>
-              <div class="plan-duration">Billed as one payment for <strong>12 Months</strong> access.</div>
+              <div id="pro-title" class="plan-name">PRO</div>
+              <div class="price-wrap">
+                <div class="plan-price">RM297</div>
+                <div class="duration">Billed as one payment for <strong>12 Months</strong> access</div>
+                <div class="price-dot" aria-hidden="true" style="box-shadow:0 0 30px rgba(253,160,133,0.16)"></div>
+              </div>
             </div>
-            <div style="text-align:right; font-size:12px; color:var(--muted);">SAVE 75% • FREE 9 MONTHS</div>
+            <div style="text-align:right; color:var(--muted); font-size:12px;">SAVE 75% • FREE 9 MONTHS</div>
           </div>
 
           <div class="divider" aria-hidden="true"></div>
 
           <ul class="features">
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"/>
-              </svg>
-              <div><strong>Unlimited Projects</strong><div style="color:var(--muted); font-size:13px;">For creators and agencies who scale fast</div></div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"/></svg>
+              <div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px;">For creators & agencies who scale fast</div></div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" /></svg>
               <div>Access All Creative Styles</div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               <div><strong>Creative Fusion & Wildcard AI</strong></div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg>
               <div><strong>Priority</strong> Email Support</div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6"/></svg>
               <div>Free AI Director Masterclass</div>
             </li>
           </ul>
 
-          <div class="cta">
+          <div class="actions">
             <button class="btn" onclick="handlePurchase('pro_3m','PRO Plan (12 Months)', 29700)">Choose PRO</button>
           </div>
-        </article>
+        </div>
+      </article>
 
-        <!-- Competent -->
-        <article class="card" role="region" aria-labelledby="plan-competent">
-          <div class="price-glow" aria-hidden="true" style="box-shadow: 0 0 18px rgba(155,92,255,0.08);"></div>
+      <!-- Competent -->
+      <article class="card" aria-labelledby="competent-title">
+        <div>
           <div class="top">
             <div>
-              <div id="plan-competent" class="plan-name">Competent</div>
-              <div class="plan-price">RM198</div>
-              <div class="plan-duration">Billed as one payment for <strong>6 Months</strong> access.</div>
+              <div id="competent-title" class="plan-name">Competent</div>
+              <div class="price-wrap">
+                <div class="plan-price">RM198</div>
+                <div class="duration">Billed as one payment for <strong>6 Months</strong> access</div>
+                <div class="price-dot" aria-hidden="true" style="box-shadow:0 0 18px rgba(155,92,255,0.08)"></div>
+              </div>
             </div>
-            <div style="text-align:right; font-size:12px; color:var(--muted);">SAVE 67% • FREE 4 MONTHS</div>
+            <div style="text-align:right; color:var(--muted); font-size:12px;">SAVE 67% • FREE 4 MONTHS</div>
           </div>
 
           <div class="divider" aria-hidden="true"></div>
 
           <ul class="features">
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"/>
-              </svg>
-              <div><strong>Unlimited Projects</strong><div style="color:var(--muted); font-size:13px;">Balanced for creators with ongoing workflows</div></div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"/></svg>
+              <div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px;">Balanced for ongoing workflows</div></div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" /></svg>
               <div>Access All Creative Styles</div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               <div>Creative Fusion & Wildcard AI</div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg>
               <div>Email Support</div>
             </li>
             <li>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M3 7h18M3 12h10M3 17h6" stroke="currentColor" stroke-width="1.6"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h18M3 12h10M3 17h6" stroke="currentColor" stroke-width="1.6"/></svg>
               <div>Monthly Project Insights</div>
             </li>
           </ul>
 
-          <div class="cta">
+          <div class="actions">
             <button class="btn secondary" onclick="handlePurchase('competent_2m','Competent Plan (6 Months)', 19800)">Choose Competent</button>
           </div>
-        </article>
-      </section>
-
-      <p id="errorMessage"></p>
-
-      <!-- FAQ -->
-      <section class="section" aria-labelledby="faq-title">
-        <h2 id="faq-title" class="section-title">Frequently Asked Questions</h2>
-        <div class="faq-container" role="region" aria-live="polite">
-          <details class="faq-item">
-            <summary>Is this a one-time payment or a subscription?</summary>
-            <p>The plans listed are one-time payments for the specified access duration (e.g., 12 months for the PRO plan). Your access will expire at the end of the period, and you can choose to purchase a new plan at any time. There are no automatic recurring charges.</p>
-          </details>
-
-          <details class="faq-item">
-            <summary>What do I need to use the AI Film Director System?</summary>
-            <p>You only need a web browser to access our system. Project processing is done on our servers. To generate the final video, you will need access to the video generation model (e.g., Veo) and credits, which we provide documentation for.</p>
-          </details>
-
-          <details class="faq-item">
-            <summary>What does "Unlimited Projects" on the PRO plan mean?</summary>
-            <p>It means you can create as many complete, multi-scene projects as you need throughout your access period. Use is subject to our fair use policy to prevent automated abuse, but for most creators it's effectively unlimited.</p>
-          </details>
-
-          <details class="faq-item">
-            <summary>Can I get a refund if I'm not satisfied?</summary>
-            <p>Due to the nature of digital services and the costs associated with AI generation, we do not offer refunds. We encourage you to review examples and features before making a purchase.</p>
-          </details>
         </div>
-      </section>
-    </main>
+      </article>
+    </section>
+
+    <p id="errorMessage" role="status" aria-live="polite"></p>
+
+    <!-- FAQ -->
+    <section class="section" aria-labelledby="faqTitle">
+      <h2 id="faqTitle" class="section-title">Frequently Asked Questions</h2>
+      <div class="faq" role="region" aria-live="polite">
+        <details>
+          <summary>Is this a one-time payment or a subscription?</summary>
+          <p>The plans listed are one-time payments for the specified access duration (e.g., 12 months for the PRO plan). Your access will expire at the end of the period, and you can choose to purchase a new plan at any time. There are no automatic recurring charges.</p>
+        </details>
+        <details>
+          <summary>What do I need to use the AI Film Director System?</summary>
+          <p>You only need a web browser to access our system. Project processing is done on our servers. To generate the final video, you will need access to the video generation model (e.g., Veo) and credits, which we provide documentation for.</p>
+        </details>
+        <details>
+          <summary>What does "Unlimited Projects" on the PRO plan mean?</summary>
+          <p>It means you can create as many complete, multi-scene projects as you need throughout your access period, subject to our fair use policy. For almost all creators it's effectively unlimited.</p>
+        </details>
+        <details>
+          <summary>Can I get a refund if I'm not satisfied?</summary>
+          <p>Due to the nature of digital services and the costs associated with AI generation, we do not offer refunds. We encourage you to review examples and features before making a purchase.</p>
+        </details>
+      </div>
+    </section>
   </div>
 
-  <!-- ---------- Inline JS: background lines + parallax + purchase logic ---------- -->
-  <script>
-  /* ------------------------------
-     Preserve original purchase logic
-     IDs & amounts match your backend expectation
-     (beginner_1m: 9900, pro_3m: 29700, competent_2m: 19800)
-  -------------------------------*/
-  const handlePurchase = async (planId, planName, amountInSen) => {
-    const allButtons = document.querySelectorAll('.btn');
-    const errorMessage = document.getElementById('errorMessage');
-
-    allButtons.forEach(btn => {
-      btn.disabled = true;
-      btn.textContent = 'Processing...';
-      btn.style.opacity = '0.7';
+<script>
+/* ---------------------------
+  Purchase logic (preserve original)
+  planId/amount se ns: beginner_1m=9900, pro_3m=29700, competent_2m=19800
+----------------------------*/
+const handlePurchase = async (planId, planName, amountInSen) => {
+  const buttons = document.querySelectorAll('.btn');
+  const err = document.getElementById('errorMessage');
+  err.textContent = '';
+  buttons.forEach(b => { b.disabled = true; b.dataset.orig = b.textContent; b.textContent = 'Processing...'; b.style.opacity='0.7'; });
+  try {
+    const res = await fetch('/api/create-bill', {
+      method: 'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ planId, planName, amount: amountInSen })
     });
-    errorMessage.textContent = '';
+    if (!res.ok) throw new Error('Failed to create payment link. Please try again.');
+    const data = await res.json();
+    if (data && data.url) { window.location.href = data.url; return; }
+    throw new Error('Could not retrieve payment link.');
+  } catch (e) {
+    err.textContent = e.message;
+    // reset
+    buttons.forEach(b => { b.disabled = false; b.textContent = b.dataset.orig; b.style.opacity='1'; });
+  }
+};
 
-    try {
-      const resp = await fetch('/api/create-bill', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, planName, amount: amountInSen })
+/* ---------------------------
+  Background animation: multi-layer particles + connecting lines + parallax
+  Single combined script with good performance tuning.
+----------------------------*/
+(function(){
+  // canvases
+  const cParticles = document.getElementById('bg-particles');
+  const cLines = document.getElementById('bg-lines');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function fitCanvas(c){
+    c.width = innerWidth * dpr;
+    c.height = innerHeight * dpr;
+    c.style.width = innerWidth + 'px';
+    c.style.height = innerHeight + 'px';
+    c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+  }
+  fitCanvas(cParticles); fitCanvas(cLines);
+
+  // particle layer config (back -> front)
+  const configs = [
+    {count: 28, size:1.0, speed: 0.12, color:[155,92,255], alpha:0.08, link:160, depth:0.5},
+    {count: 18, size:1.8, speed: 0.06, color:[255,115,217], alpha:0.06, link:220, depth:0.8},
+    {count: 10, size:3.3, speed: 0.03, color:[246,211,101], alpha:0.04, link:280, depth:1.2}
+  ];
+
+  const particles = [];
+  configs.forEach((cfg,i)=>{
+    particles[i] = [];
+    for(let k=0;k<cfg.count;k++){
+      particles[i].push({
+        x: Math.random()*innerWidth,
+        y: Math.random()*innerHeight,
+        vx: (Math.random()*2-1)*cfg.speed,
+        vy: (Math.random()*2-1)*cfg.speed,
+        r: cfg.size * (0.6 + Math.random()*1.2),
+        baseR: cfg.size,
       });
+    }
+  });
 
-      if (!resp.ok) throw new Error('Failed to create payment link. Please try again.');
+  let mouse = {x: innerWidth/2, y: innerHeight/2, lastX: innerWidth/2, lastY: innerHeight/2};
 
-      const data = await resp.json();
-      if (data && data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('Could not retrieve payment link.');
+  window.addEventListener('mousemove', (e)=>{
+    mouse.x = e.clientX; mouse.y = e.clientY;
+  });
+
+  window.addEventListener('resize', () => {
+    fitCanvas(cParticles); fitCanvas(cLines);
+    // reposition particles within new bounds
+    configs.forEach((cfg,i)=>{
+      particles[i].forEach(p => { p.x = Math.random()*innerWidth; p.y = Math.random()*innerHeight; });
+    });
+  });
+
+  const ctxP = cParticles.getContext('2d');
+  const ctxL = cLines.getContext('2d');
+
+  function draw(){
+    // clear
+    ctxP.clearRect(0,0,innerWidth,innerHeight);
+    ctxL.clearRect(0,0,innerWidth,innerHeight);
+
+    // subtle moving gradient (on particles canvas)
+    const g = ctxP.createLinearGradient(0,0,innerWidth,innerHeight);
+    g.addColorStop(0,'rgba(14,10,25,0.05)');
+    g.addColorStop(1,'rgba(10,12,30,0.06)');
+    ctxP.fillStyle = g;
+    ctxP.fillRect(0,0,innerWidth,innerHeight);
+
+    // update & draw particles by layer
+    configs.forEach((cfg,i)=>{
+      const arr = particles[i];
+      for(let j=0;j<arr.length;j++){
+        const p = arr[j];
+        // movement influenced by mouse (parallax subtle)
+        const dx = (mouse.x - p.x) * 0.0009 * (i+1);
+        const dy = (mouse.y - p.y) * 0.0009 * (i+1);
+        p.x += p.vx + dx;
+        p.y += p.vy + dy;
+
+        // wrap
+        if(p.x < -20) p.x = innerWidth + 20;
+        if(p.x > innerWidth + 20) p.x = -20;
+        if(p.y < -20) p.y = innerHeight + 20;
+        if(p.y > innerHeight + 20) p.y = -20;
+
+        // size pulse
+        p.r = p.baseR * (1 + Math.sin((Date.now()*0.002) + j) * 0.22);
+
+        // draw glow
+        ctxP.beginPath();
+        ctxP.fillStyle = `rgba(${cfg.color[0]},${cfg.color[1]},${cfg.color[2]},${cfg.alpha})`;
+        ctxP.globalCompositeOperation = 'lighter';
+        ctxP.arc(p.x, p.y, Math.max(0.3,p.r), 0, Math.PI*2);
+        ctxP.fill();
+        ctxP.closePath();
+        ctxP.globalCompositeOperation = 'source-over';
       }
-    } catch (err) {
-      errorMessage.textContent = err.message;
-      // restore button text
-      document.querySelectorAll('.btn').forEach((b, idx) => {
-        // reset to original text based on order
-        if (idx===0) b.textContent = 'Choose Beginner';
-        if (idx===1) b.textContent = 'Choose PRO';
-        if (idx===2) b.textContent = 'Choose Competent';
-        b.disabled = false;
-        b.style.opacity = '1';
-      });
-    }
-  };
 
-  /* ------------------------------
-     High-quality background: animated points + connecting lines + parallax
-     Single canvas draws multiple layers for depth.
-  -------------------------------*/
-  (function(){
-    const canvas = document.getElementById('c-lines');
-    const ctx = canvas.getContext('2d');
-    let w = canvas.width = innerWidth;
-    let h = canvas.height = innerHeight;
-    const DPR = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = w * DPR; canvas.height = h * DPR;
-    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-    ctx.scale(DPR, DPR);
-
-    // particles
-    const layers = [
-      {count: 32, speed: 0.15, size: 1.1, color: 'rgba(155,92,255,0.12)', linkDist: 160},
-      {count: 18, speed: 0.06, size: 1.8, color: 'rgba(255,115,217,0.08)', linkDist: 220},
-      {count: 10, speed: 0.02, size: 3.2, color: 'rgba(246,211,101,0.06)', linkDist: 260}
-    ];
-
-    let particleLayers = [];
-    let mouse = {x: w/2, y: h/2, moveX:0, moveY:0};
-
-    function rand(min,max){ return Math.random()*(max-min)+min; }
-
-    function createParticles(){
-      particleLayers = [];
-      layers.forEach((L,i)=> {
-        const arr = [];
-        for(let a=0;a<L.count;a++){
-          arr.push({
-            x: rand(0,w),
-            y: rand(0,h),
-            vx: rand(-L.speed,L.speed),
-            vy: rand(-L.speed,L.speed),
-            r: L.size * rand(0.6,1.6),
-            baseR: L.size,
-            hue: i
-          });
-        }
-        particleLayers.push(arr);
-      });
-    }
-    createParticles();
-
-    // mouse parallax
-    window.addEventListener('mousemove', (e)=>{
-      mouse.moveX = (e.clientX - mouse.x) * 0.06;
-      mouse.moveY = (e.clientY - mouse.y) * 0.06;
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-
-    // resize
-    addEventListener('resize', () => {
-      w = canvas.width = innerWidth;
-      h = canvas.height = innerHeight;
-      canvas.width = w * DPR; canvas.height = h * DPR;
-      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-      ctx.scale(DPR, DPR);
-      createParticles();
-    });
-
-    function draw(){
-      ctx.clearRect(0,0,w,h);
-      // subtle background gradient overlay
-      const g = ctx.createLinearGradient(0,0,w,h);
-      g.addColorStop(0, 'rgba(10,10,20,0.02)');
-      g.addColorStop(1, 'rgba(10,10,40,0.02)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,w,h);
-
-      // draw layers back-to-front
-      particleLayers.forEach((arr, idx) => {
-        const L = layers[idx];
-        // move & draw points
-        for(let i=0;i<arr.length;i++){
-          const p = arr[i];
-          // apply subtle parallax from mouse movement
-          p.x += p.vx + (mouse.moveX * (idx+1) * 0.0007);
-          p.y += p.vy + (mouse.moveY * (idx+1) * 0.0007);
-
-          // wrap edges
-          if(p.x < -20) p.x = w + 20;
-          if(p.x > w + 20) p.x = -20;
-          if(p.y < -20) p.y = h + 20;
-          if(p.y > h + 20) p.y = -20;
-
-          // pulsate radius
-          p.r = p.baseR * (1 + Math.sin((Date.now()*0.002) + i) * 0.25);
-
-          // draw glow dot
-          ctx.beginPath();
-          ctx.fillStyle = L.color;
-          ctx.globalCompositeOperation = 'lighter';
-          ctx.moveTo(p.x, p.y);
-          ctx.arc(p.x, p.y, Math.max(0.2, p.r), 0, Math.PI*2, false);
-          ctx.fill();
-          ctx.closePath();
-          ctx.globalCompositeOperation = 'source-over';
-        }
-
-        // draw connecting lines within this layer
-        ctx.beginPath();
-        for(let i=0;i<arr.length;i++){
-          for(let j=i+1;j<arr.length;j++){
-            const a = arr[i], b = arr[j];
-            const dx = a.x - b.x, dy = a.y - b.y;
-            const d = Math.sqrt(dx*dx + dy*dy);
-            if (d < L.linkDist) {
-              // alpha by distance
-              const alpha = 0.12 * (1 - (d / L.linkDist));
-              ctx.strokeStyle = L.color.replace('0.','') ? L.color : L.color;
-              // custom rgba with alpha
-              ctx.strokeStyle = L.color.replace('0.','').replace('rgba(','rgba(');
-              ctx.strokeStyle = `rgba(155,92,255,${alpha})`;
-              ctx.lineWidth = 0.7;
-              ctx.moveTo(a.x,a.y);
-              ctx.lineTo(b.x,b.y);
-            }
+      // draw connecting lines for this layer on lines canvas
+      ctxL.beginPath();
+      for(let a=0;a<arr.length;a++){
+        for(let b=a+1;b<arr.length;b++){
+          const p1 = arr[a], p2 = arr[b];
+          const dist = Math.hypot(p1.x-p2.x, p1.y-p2.y);
+          if(dist < cfg.link){
+            const alpha = (1 - dist/cfg.link) * (cfg.alpha*1.2);
+            ctxL.strokeStyle = `rgba(${cfg.color[0]},${cfg.color[1]},${cfg.color[2]},${alpha})`;
+            ctxL.lineWidth = 0.7;
+            ctxL.moveTo(p1.x,p1.y); ctxL.lineTo(p2.x,p2.y);
           }
         }
-        ctx.stroke();
-        ctx.closePath();
-      });
-
-      // subtle floating lines that travel across entire canvas
-      // create sin-wave lines
-      const time = Date.now() * 0.0004;
-      ctx.beginPath();
-      for(let x = 0; x < w; x += 20){
-        const y = h/2 + Math.sin((x * 0.008) + time) * 60;
-        if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
       }
-      ctx.strokeStyle = 'rgba(155,92,255,0.03)';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      ctx.closePath();
+      ctxL.stroke();
+      ctxL.closePath();
+    });
 
-      requestAnimationFrame(draw);
+    // flowing ribbon (sine wave) for futuristic feel
+    ctxL.beginPath();
+    const t = Date.now() * 0.0006;
+    for(let x=0;x<innerWidth;x+=12){
+      const y = innerHeight * 0.55 + Math.sin((x*0.009) + t) * 60 + Math.cos((x*0.003) + t*1.2)*18;
+      if(x===0) ctxL.moveTo(x,y); else ctxL.lineTo(x,y);
     }
-    draw();
-  })();
-  </script>
+    ctxL.strokeStyle = 'rgba(155,92,255,0.03)';
+    ctxL.lineWidth = 1.2;
+    ctxL.stroke();
+    ctxL.closePath();
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* small perf improvement: pause animations when the tab is not visible */
+document.addEventListener('visibilitychange', () => {
+  // noop (canvas anim continues via rAF), left intentionally for future enhancement
+});
+</script>
 </body>
 </html>
