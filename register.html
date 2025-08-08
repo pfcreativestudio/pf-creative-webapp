@@ -9,7 +9,8 @@
         body { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%); color: #e0e0e0; font-family: sans-serif; }
         .gradient-text { background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .btn-primary { background: linear-gradient(45deg, #f59e0b, #ec4899); transition: all 0.3s ease; }
-        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+        .btn-primary:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+        .btn-primary:disabled { background: #444; cursor: not-allowed; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
@@ -37,7 +38,7 @@
                 </button>
             </div>
         </form>
-        <p id="message" class="text-center text-sm"></p>
+        <p id="message" class="text-center text-sm h-4"></p>
         <div class="text-center text-sm text-gray-400">
             Already have an account? <a href="login.html" class="font-medium text-purple-400 hover:text-purple-300">Log in</a>
         </div>
@@ -47,6 +48,9 @@
         const form = document.getElementById('registerForm');
         const submitButton = document.getElementById('submitButton');
         const messageDiv = document.getElementById('message');
+
+        // 【核心修正】确保API地址是您Google Cloud Function的完整URL + 对应的路径
+        const apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api/register';
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -66,8 +70,7 @@
             messageDiv.textContent = '';
 
             try {
-                // 我们将在下一步创建这个 /api/register 后端文件
-                const response = await fetch('/api/register', {
+                const response = await fetch(apiUrl, { // <--- 已修改
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -77,7 +80,7 @@
 
                 if (response.ok) {
                     messageDiv.textContent = 'Registration successful! Redirecting to login...';
-                    messageDiv.style.color = 'green';
+                    messageDiv.style.color = 'lime';
                     setTimeout(() => {
                         window.location.href = 'login.html';
                     }, 2000);
