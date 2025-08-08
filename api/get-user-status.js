@@ -1,4 +1,4 @@
-import { db } from '../../lib/db';
+import { db } from '/lib/db';
 import jwt from 'jsonwebtoken'; // 我们需要jsonwebtoken库来验证token
 
 export default async function handler(req, res) {
@@ -52,4 +52,5 @@ export default async function handler(req, res) {
         console.error('Get User Status API Error:', error);
         res.status(500).json({ error: 'An internal server error occurred.' });
     }
+
 }
