@@ -1,213 +1,673 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="zh-Hans">
 <head>
-<meta charset="UTF-8">
-<title>Luxury Tech Pricing</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PF Creative AI Director — Pricing (Ultra Blast Finale)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-    /* 全局样式 */
-    * {margin:0;padding:0;box-sizing:border-box;}
-    body {
-        font-family: 'Segoe UI', sans-serif;
-        overflow-x: hidden;
-        background: #000;
-        color: #fff;
-    }
+/* ================= THEME & BASE ================= */
+:root{
+  --bg-1:#030114;
+  --bg-2:#070621;
+  --muted:#9aa0ad;
+  --text:#f2f5fb;
+  --purple:#8b5cff;
+  --pink:#ff3fa6;
+  --cyan:#35e1ff;
+  --gold1:#ffd66d;
+  --gold2:#ff9f5a;
+  --glass-border: rgba(255,255,255,0.08);
+  --card-radius:18px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  background: linear-gradient(180deg,var(--bg-1),var(--bg-2));
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+}
 
-    /* 全屏背景Canvas */
-    #bgCanvas {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        z-index: -2;
-        background: radial-gradient(circle at 20% 20%, rgba(60,0,80,0.6), rgba(0,0,0,1) 80%);
-    }
+/* ================ FULLSCREEN BACKGROUND ================ */
+.bg-full { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
 
-    /* 半透明光雾层 */
-    #nebula {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: conic-gradient(from 0deg, rgba(255,0,150,0.2), rgba(0,200,255,0.2), rgba(255,200,0,0.2), rgba(255,0,150,0.2));
-        animation: spin 60s linear infinite;
-        filter: blur(150px);
-        z-index: -1;
-    }
-    @keyframes spin {
-        0% {transform: rotate(0deg);}
-        100% {transform: rotate(360deg);}
-    }
+/* three canvases stacked for layers */
+canvas.layer { position:absolute; inset:0; width:100%; height:100%; display:block; }
 
-    /* 顶部Banner */
-    .promo-banner {
-        width: 100%;
-        padding: 12px;
-        text-align: center;
-        font-size: 1.2rem;
-        background: linear-gradient(270deg, #ff0080, #ff8c00, #40e0d0, #ff0080);
-        background-size: 600% 600%;
-        animation: bannerFlow 8s ease infinite;
-        font-weight: bold;
-        text-shadow: 0 0 10px rgba(0,0,0,0.6);
-    }
-    @keyframes bannerFlow {
-        0%{background-position:0% 50%}
-        50%{background-position:100% 50%}
-        100%{background-position:0% 50%}
-    }
+/* decorative SVG ribbons + flares */
+.svg-ribbons { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; mix-blend-mode:screen; z-index:1; }
 
-    /* 定价卡片容器 */
-    .pricing-container {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        padding: 80px 20px;
-        flex-wrap: wrap;
-        position: relative;
-        z-index: 1;
-    }
+/* strong bloom overlays */
+.bloom {
+  position:fixed; inset:0; z-index:2; pointer-events:none;
+  background:
+    radial-gradient(700px 300px at 12% 10%, rgba(139,92,246,0.12), transparent 8%),
+    radial-gradient(700px 300px at 88% 86%, rgba(255,63,166,0.09), transparent 8%),
+    radial-gradient(900px 420px at 50% 50%, rgba(65,217,255,0.04), transparent 10%);
+  mix-blend-mode:screen;
+  opacity:0.95;
+}
 
-    /* 卡片样式 */
-    .card {
-        width: 300px;
-        padding: 30px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.05);
-        backdrop-filter: blur(15px);
-        box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        border: 2px solid rgba(255,255,255,0.2);
-        text-align: center;
-        transition: all 0.4s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    .card::before {
-        content: "";
-        position: absolute;
-        top: -50%; left: -50%;
-        width: 200%; height: 200%;
-        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent);
-        transform: rotate(25deg);
-        animation: shine 4s infinite;
-    }
-    @keyframes shine {
-        0% {transform: translateX(-100%) rotate(25deg);}
-        100% {transform: translateX(100%) rotate(25deg);}
-    }
-    .card:hover {
-        transform: translateY(-15px) scale(1.05);
-        box-shadow: 0 0 30px rgba(255,255,255,0.3);
-    }
+/* vignette to deepen edges */
+.vignette {
+  position:fixed; inset:0; z-index:3; pointer-events:none;
+  background: radial-gradient(900px 400px at 50% 8%, rgba(0,0,0,0.0), transparent 10%),
+              linear-gradient(180deg, rgba(0,0,0,0.22), transparent 40%);
+  mix-blend-mode:multiply;
+}
 
-    /* PRO 卡片特效 */
-    .pro {
-        border: 2px solid gold;
-        box-shadow: 0 0 30px gold;
-    }
-    .pro::after {
-        content: "👑";
-        position: absolute;
-        top: 10px; right: 10px;
-        font-size: 1.5rem;
-    }
+/* ================ PAGE CONTENT ================ */
+.container { position:relative; z-index:6; max-width:1280px; margin:34px auto 110px; padding:28px 20px; }
 
-    /* 标题价格按钮 */
-    .card h2 {margin-bottom: 10px;}
-    .price {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #fff;
-        text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
-        margin-bottom: 20px;
-    }
-    .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        border-radius: 30px;
-        background: linear-gradient(90deg, #ff00cc, #3333ff);
-        color: #fff;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 0 15px rgba(255,255,255,0.2);
-        position: relative;
-        overflow: hidden;
-    }
-    .btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 25px rgba(255,255,255,0.5);
-    }
+/* Early bird banner */
+.early {
+  display:inline-flex; align-items:center; gap:12px; padding:10px 18px; border-radius:999px; margin:0 auto 18px;
+  background: linear-gradient(90deg, rgba(139,92,246,0.16), rgba(255,63,166,0.08));
+  color:white; font-weight:800; box-shadow: 0 10px 40px rgba(139,92,246,0.06); width:fit-content;
+}
+.early .dot { width:12px; height:12px; border-radius:999px; background: linear-gradient(90deg, var(--gold1), var(--gold2)); box-shadow:0 0 18px rgba(255,160,80,0.6); animation: earlyPulse 1.2s infinite; }
+@keyframes earlyPulse { 0%{transform:scale(.9)}50%{transform:scale(1.25)}100%{transform:scale(.9)} }
+.countdown { margin-left:10px; font-weight:800; font-size:13px; background: rgba(0,0,0,0.12); padding:6px 10px; border-radius:10px; }
 
+/* header */
+.header { text-align:center; margin-bottom:18px; }
+.header h1 {
+  margin:0; font-size:46px; font-weight:800;
+  background: linear-gradient(90deg,#fff, rgba(255,255,255,0.9));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 18px 50px rgba(0,0,0,0.6));
+}
+.header p { margin:12px auto 0; color:var(--muted); max-width:860px; font-size:15px; }
+
+/* grid */
+.grid { display:grid; grid-template-columns: repeat(3,1fr); gap:20px; align-items:stretch; margin-top:20px; }
+
+/* card */
+.card {
+  position:relative; border-radius:var(--card-radius); padding:28px; min-height:560px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid var(--glass-border); backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 22px 100px rgba(0,0,0,0.65);
+  transition: transform 0.36s cubic-bezier(.2,.9,.2,1), box-shadow 0.36s;
+  transform: translateY(10px);
+  overflow:visible;
+}
+.card:hover { transform: translateY(-36px) scale(1.02) rotateX(0.6deg); box-shadow: 0 80px 260px rgba(0,0,0,0.8), 0 0 120px rgba(139,92,246,0.06); }
+
+/* neon stroke */
+.card::before { content:""; position:absolute; inset:0; border-radius:var(--card-radius); padding:1px; pointer-events:none; background: linear-gradient(90deg, rgba(139,92,246,0.05), rgba(255,63,166,0.03)); mix-blend-mode:overlay; }
+
+/* sheen */
+.sheen { position:absolute; left:-40%; bottom:-18%; width:180%; height:40%; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06), rgba(255,255,255,0.02)); transform:rotate(9deg); filter:blur(20px); opacity:0.04; pointer-events:none; transition: all .9s; }
+.card:hover .sheen { left:100%; opacity:0.16; }
+
+/* PRO card gold look */
+.card.pro { border: 1px solid rgba(255,215,0,0.14); box-shadow: 0 80px 260px rgba(0,0,0,0.78), 0 0 120px rgba(255,215,0,0.06); }
+.card.pro::before { background: linear-gradient(90deg, rgba(255,215,0,0.06), rgba(139,92,246,0.02)); }
+
+/* top */
+.top { display:flex; justify-content:space-between; align-items:flex-start; }
+.plan-name { font-weight:800; color:var(--muted); font-size:13px; }
+.priceWrap { position:relative; margin-top:12px; }
+.price { font-size:64px; font-weight:900; line-height:0.92; background: linear-gradient(90deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow: 0 26px 80px rgba(139,92,246,0.08); }
+.duration { margin-top:8px; color:var(--muted); font-size:14px; }
+.price-dot { position:absolute; right:-12px; top:-18px; width:16px; height:16px; border-radius:99px; background: radial-gradient(circle, rgba(139,92,246,0.95), rgba(255,63,166,0.22)); box-shadow:0 0 36px rgba(139,92,246,0.16); }
+
+/* divider */
+.divider { height:1px; margin:18px 0; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03)); }
+
+/* features */
+.features { flex:1; margin-top:8px; }
+.features li { list-style:none; display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; color:var(--muted); font-size:15px; }
+.features svg { flex-shrink:0; margin-top:3px; color:var(--cyan); }
+
+/* cta */
+.cta { margin-top:16px; }
+.btn {
+  display:inline-block; width:100%; padding:14px 16px; border-radius:14px; border:none; font-weight:900; font-size:15px; cursor:pointer;
+  color:#08121a; background: linear-gradient(90deg,var(--gold1),var(--gold2)); box-shadow: 0 20px 80px rgba(255,200,120,0.14); position:relative; overflow:hidden; transition: transform .18s, box-shadow .18s;
+}
+.btn.alt { background: linear-gradient(90deg,var(--purple),var(--pink)); color:#fff; box-shadow: 0 18px 76px rgba(139,92,246,0.12); }
+.btn::after { content:""; position:absolute; left:-45%; top:-40%; width:40%; height:200%; background:linear-gradient(90deg, rgba(255,255,255,0.22), rgba(255,255,255,0.04)); transform:rotate(25deg); opacity:0.06; transition:all .6s; }
+.btn:hover::after { left:120%; opacity:0.14; transform:rotate(20deg); }
+.btn:active::before { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:8px; height:8px; border-radius:999px; background:rgba(0,0,0,0.06); animation:ripple .6s; }
+@keyframes ripple { from{opacity:0.9; transform:translate(-50%,-50%) scale(1)} to{opacity:0; transform:translate(-50%,-50%) scale(40)} }
+
+/* price-ring small canvas */
+.price-ring { position:absolute; right:-8px; top:-28px; width:88px; height:88px; pointer-events:none; }
+
+/* badge */
+.badge { position:absolute; top:-18px; left:50%; transform:translateX(-50%); padding:9px 18px; border-radius:999px; background: linear-gradient(90deg,var(--gold1),var(--gold2)); color:#08121a; font-weight:900; box-shadow:0 12px 40px rgba(255,200,120,0.12); z-index:7; }
+
+/* faq */
+.faq { margin-top:40px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.03); }
+.faq details { padding:12px 8px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--muted); }
+.faq summary { cursor:pointer; font-weight:700; color:var(--text); font-size:15px; }
+
+/* responsive */
+@media (max-width:1024px){
+  .grid{ grid-template-columns:1fr; }
+  .header h1{ font-size:34px; }
+  .price{ font-size:44px; }
+  .card{ min-height:460px; }
+}
 </style>
 </head>
 <body>
+  <!-- BACKGROUND LAYERS -->
+  <div class="bg-full" aria-hidden="true">
+    <!-- layer 1: nebula cloud & stars -->
+    <canvas id="layer-nebula" class="layer"></canvas>
+    <!-- layer 2: high-energy particles & beams -->
+    <canvas id="layer-particles" class="layer"></canvas>
+    <!-- layer 3: connecting lines / network -->
+    <canvas id="layer-lines" class="layer"></canvas>
 
-<canvas id="bgCanvas"></canvas>
-<div id="nebula"></div>
+    <!-- svg ribbons + beams -->
+    <svg class="svg-ribbons" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="grad1" x1="0" x2="1"><stop offset="0" stop-color="#8b5cff" stop-opacity="0.18"/><stop offset="1" stop-color="#ff3fa6" stop-opacity="0.14"/></linearGradient>
+        <linearGradient id="grad2" x1="0" x2="1"><stop offset="0" stop-color="#ffd66d" stop-opacity="0.12"/><stop offset="1" stop-color="#ff9f5a" stop-opacity="0.09"/></linearGradient>
+        <filter id="bigBlur"><feGaussianBlur stdDeviation="40"/></filter>
+      </defs>
+      <path id="ribbonA" d="M0,240 C420,120 820,340 1600,120 L1600,0 L0,0 Z" fill="url(#grad1)" opacity="0.16" filter="url(#bigBlur)"></path>
+      <path id="ribbonB" d="M0,680 C420,800 920,500 1600,660 L1600,900 L0,900 Z" fill="url(#grad2)" opacity="0.12" filter="url(#bigBlur)"></path>
+      <!-- animated center beam -->
+      <g id="centerBeams" transform="translate(800,450)">
+        <rect x="-4" y="-900" width="8" height="1800" fill="url(#grad1)" opacity="0.06" />
+        <rect x="-2" y="-900" width="4" height="1800" fill="url(#grad2)" opacity="0.04" />
+      </g>
+    </svg>
 
-<div class="promo-banner">🔥 EARLY BIRD — LIMITED TIME PROMOTION 🔥</div>
+    <div class="bloom"></div>
+    <div class="vignette"></div>
+  </div>
 
-<div class="pricing-container">
-    <div class="card">
-        <h2>Starter</h2>
-        <div class="price">$19</div>
-        <p>Basic features for personal use</p>
-        <a href="#" class="btn">Choose Starter</a>
+  <!-- MAIN CONTENT -->
+  <div class="container" role="main">
+    <div class="early" role="banner" aria-live="polite">
+      <div class="dot" aria-hidden="true"></div>
+      🔥 Early Bird — Limited Time Promotion!
+      <div class="countdown" id="countdown">--d --:--:--</div>
     </div>
-    <div class="card pro">
-        <h2>Pro</h2>
-        <div class="price">$49</div>
-        <p>Advanced features for professionals</p>
-        <a href="#" class="btn">Choose Pro</a>
-    </div>
-    <div class="card">
-        <h2>Growth</h2>
-        <div class="price">$99</div>
-        <p>Full features for growing teams</p>
-        <a href="#" class="btn">Choose Growth</a>
-    </div>
-</div>
+
+    <header class="header">
+      <h1>Choose Your Creative Journey</h1>
+      <p>All plans include <strong>Unlimited Projects</strong> — full creative styles access, AI Director features, and premium resources.</p>
+    </header>
+
+    <section class="grid" aria-label="Pricing plans">
+      <!-- Beginner -->
+      <article class="card" aria-labelledby="beginner-label">
+        <div class="sheen" aria-hidden="true"></div>
+        <div class="top">
+          <div>
+            <div id="beginner-label" class="plan-name">Beginner</div>
+            <div class="priceWrap">
+              <div class="price">RM99</div>
+              <div class="duration">Billed as one payment for <strong>1 Month</strong> access</div>
+              <div class="price-ring" id="ring-beginner"></div>
+            </div>
+          </div>
+          <div style="text-align:right;color:var(--muted);font-size:12px">Limited Launch Offer</div>
+        </div>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <ul class="features">
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--cyan)"/></svg>
+            <div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px">Create full multi-scene projects without caps</div></div>
+          </li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg><div>Access All Creative Styles</div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div>Creative Fusion & Wildcard AI</div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg><div>Email Support</div></li>
+        </ul>
+
+        <div class="cta">
+          <button class="btn alt" onclick="handlePurchase('beginner_1m','Beginner Plan (1 Month)', 9900)">Choose Beginner</button>
+        </div>
+      </article>
+
+      <!-- PRO -->
+      <article class="card pro" aria-labelledby="pro-label">
+        <div class="badge">👑 Best Value</div>
+        <div class="sheen" aria-hidden="true"></div>
+        <div class="top">
+          <div>
+            <div id="pro-label" class="plan-name">PRO</div>
+            <div class="priceWrap">
+              <div class="price">RM297</div>
+              <div class="duration">Billed as one payment for <strong>12 Months</strong> access</div>
+              <div class="price-ring" id="ring-pro"></div>
+            </div>
+          </div>
+          <div style="text-align:right;color:var(--muted);font-size:12px">SAVE 75% • FREE 9 MONTHS</div>
+        </div>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <ul class="features">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--cyan)"/></svg><div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px">For creators & agencies who scale</div></div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg><div>Access All Creative Styles</div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><strong>Creative Fusion & Wildcard AI</strong></div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg><div><strong>Priority</strong> Email Support</div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6"/></svg><div>Free AI Director Masterclass</div></li>
+        </ul>
+
+        <div class="cta">
+          <button class="btn" onclick="handlePurchase('pro_3m','PRO Plan (12 Months)', 29700)">Choose PRO</button>
+        </div>
+      </article>
+
+      <!-- Competent -->
+      <article class="card" aria-labelledby="comp-label">
+        <div class="sheen" aria-hidden="true"></div>
+        <div class="top">
+          <div>
+            <div id="comp-label" class="plan-name">Competent</div>
+            <div class="priceWrap">
+              <div class="price">RM198</div>
+              <div class="duration">Billed as one payment for <strong>6 Months</strong> access</div>
+              <div class="price-ring" id="ring-competent"></div>
+            </div>
+          </div>
+          <div style="text-align:right;color:var(--muted);font-size:12px">SAVE 67% • FREE 4 MONTHS</div>
+        </div>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <ul class="features">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--cyan)"/></svg><div><strong>Unlimited Projects</strong><div style="color:var(--muted);font-size:13px">Balanced for ongoing workflows</div></div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg><div>Access All Creative Styles</div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div>Creative Fusion & Wildcard AI</div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/></svg><div>Email Support</div></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7h18M3 12h10M3 17h6" stroke="currentColor" stroke-width="1.6"/></svg><div>Monthly Project Insights</div></li>
+        </ul>
+
+        <div class="cta">
+          <button class="btn alt" onclick="handlePurchase('competent_2m','Competent Plan (6 Months)', 19800)">Choose Competent</button>
+        </div>
+      </article>
+    </section>
+
+    <p id="errorMessage" role="status" aria-live="polite" style="margin-top:18px"></p>
+
+    <section class="faq" aria-labelledby="faqTitle">
+      <h2 id="faqTitle" class="faq-title" style="margin-bottom:18px; text-align:center; font-size:26px;">Frequently Asked Questions</h2>
+      <details><summary>Is this a one-time payment or a subscription?</summary><p>The plans listed are one-time payments for the specified access duration (e.g., 12 months for the PRO plan). Your access will expire at the end of the period, and you can choose to purchase a new plan at any time. There are no automatic recurring charges.</p></details>
+      <details><summary>What do I need to use the AI Film Director System?</summary><p>You only need a web browser. Project processing runs on our servers. To generate the final video you may need model credits (we provide docs).</p></details>
+      <details><summary>What does "Unlimited Projects" on the PRO plan mean?</summary><p>It means you can create as many complete, multi-scene projects as you need throughout your access period, subject to our fair use policy.</p></details>
+      <details><summary>Can I get a refund if I'm not satisfied?</summary><p>Due to digital delivery and AI costs, we do not offer refunds. Please review features before purchasing.</p></details>
+    </section>
+  </div>
 
 <script>
-    // 粒子背景效果
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let w, h;
+/* ============================
+   PRESERVE PURCHASE LOGIC (UNCHANGED)
+   planId -> amounts (sen): beginner_1m=9900, pro_3m=29700, competent_2m=19800
+   Endpoint: POST /api/create-bill with { planId, planName, amount }
+   ============================ */
+async function handlePurchase(planId, planName, amountInSen){
+  const allButtons = document.querySelectorAll('.btn');
+  const errorMessage = document.getElementById('errorMessage');
+  errorMessage.textContent = '';
+  allButtons.forEach(btn => { btn.disabled = true; btn.dataset.orig = btn.textContent; btn.textContent = 'Processing...'; btn.style.opacity = '0.7'; });
+  try {
+    const res = await fetch('/api/create-bill', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ planId, planName, amount: amountInSen })
+    });
+    if (!res.ok) throw new Error('Failed to create payment link. Please try again.');
+    const data = await res.json();
+    if (data && data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    throw new Error('Could not retrieve payment link.');
+  } catch (err) {
+    errorMessage.textContent = err.message;
+    allButtons.forEach(btn => { btn.disabled = false; btn.textContent = btn.dataset.orig; btn.style.opacity = '1'; });
+  }
+}
 
-    function init() {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-        particles = [];
-        for (let i = 0; i < 150; i++) {
-            particles.push({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                r: Math.random() * 2 + 1,
-                dx: (Math.random() - 0.5) * 0.5,
-                dy: (Math.random() - 0.5) * 0.5
-            });
+/* ============================
+   BACKGROUND: FULL "BLAST" EFFECT
+   - layer-nebula: large gradient clouds + animated noise
+   - layer-particles: burst particle emitters + fast trails
+   - layer-lines: connecting lines + flowing waves
+   - svg ribbons animated via transforms
+   - price-ring micro-canvas per card for orbiting dots
+   ============================ */
+(function(){
+  // canvases
+  const nebula = document.getElementById('layer-nebula');
+  const parts  = document.getElementById('layer-particles');
+  const lines  = document.getElementById('layer-lines');
+  const dpr = Math.min(window.devicePixelRatio || 1.5, 2);
+
+  function fit(c){
+    c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+    c.style.width = innerWidth + 'px'; c.style.height = innerHeight + 'px';
+    c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+  }
+  fit(nebula); fit(parts); fit(lines);
+  window.addEventListener('resize', ()=>{ fit(nebula); fit(parts); fit(lines); initAll(); });
+
+  const nCtx = nebula.getContext('2d');
+  const pCtx = parts.getContext('2d');
+  const lCtx = lines.getContext('2d');
+
+  // mouse
+  let mouse = { x: innerWidth/2, y: innerHeight/2 };
+  window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  // ---------- Nebula: layered gradient blobs with subtle motion ----------
+  let blobs = [];
+  function initNebula(){
+    blobs = [];
+    const count = 6;
+    for(let i=0;i<count;i++){
+      blobs.push({
+        x: Math.random()*innerWidth,
+        y: Math.random()*innerHeight,
+        rx: innerWidth*0.6*(0.4 + Math.random()*0.6),
+        ry: innerHeight*0.5*(0.4 + Math.random()*0.6),
+        hue: 200 + Math.random()*160,   // varied hue
+        phase: Math.random()*Math.PI*2,
+        speed: 0.0006 + Math.random()*0.0008
+      });
+    }
+  }
+
+  // ---------- Particles: burst emitters + trailing sparks ----------
+  let emitters = [];
+  function initEmitters(){
+    emitters = [];
+    const centers = [
+      { x: innerWidth*0.5, y: innerHeight*0.45 },
+      { x: innerWidth*0.2, y: innerHeight*0.6 },
+      { x: innerWidth*0.8, y: innerHeight*0.3 }
+    ];
+    centers.forEach((c, idx) => {
+      emitters.push({
+        x: c.x, y: c.y,
+        rate: 8 + Math.floor(Math.random()*8),
+        colorA: idx===1 ? [255,63,166] : (idx===2 ? [65,217,255] : [139,92,246]),
+        particles: []
+      });
+    });
+  }
+
+  // particle object
+  function spawnParticle(e){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 0.4 + Math.random()*4.2;
+    const life = 900 + Math.random()*1600;
+    return {
+      x: e.x + (Math.random()-0.5)*40,
+      y: e.y + (Math.random()-0.5)*40,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: 0.8 + Math.random()*3.2,
+      life: life,
+      age: 0,
+      color: e.colorA,
+      alpha: 0.9 * (0.6 + Math.random()*0.4)
+    };
+  }
+
+  // ---------- Network lines (flowing) ----------
+  let nodes = [];
+  function initNetwork(){
+    nodes = [];
+    const count = Math.max(20, Math.floor(innerWidth / 80));
+    for(let i=0;i<count;i++){
+      nodes.push({
+        x: Math.random()*innerWidth,
+        y: Math.random()*innerHeight,
+        vx: (Math.random()*2-1)*0.3,
+        vy: (Math.random()*2-1)*0.3,
+        baseR: 1 + Math.random()*2
+      });
+    }
+  }
+
+  function initAll(){
+    initNebula();
+    initEmitters();
+    initNetwork();
+  }
+  initAll();
+
+  // small helper: gradient overlay for nebula
+  function drawNebula(){
+    nCtx.clearRect(0,0,innerWidth,innerHeight);
+    // large radial gradient base
+    const g = nCtx.createLinearGradient(0,0,innerWidth,innerHeight);
+    g.addColorStop(0, 'rgba(6,6,10,0.35)');
+    g.addColorStop(1, 'rgba(10,10,20,0.35)');
+    nCtx.fillStyle = g;
+    nCtx.fillRect(0,0,innerWidth,innerHeight);
+
+    // draw blobs
+    blobs.forEach((b, idx) => {
+      b.phase += b.speed;
+      const ox = Math.sin(b.phase*1.1 + idx) * 60;
+      const oy = Math.cos(b.phase*0.9 + idx) * 40;
+      const cx = b.x + ox + (mouse.x - innerWidth/2) * 0.02 * (idx%2? -1:1);
+      const cy = b.y + oy + (mouse.y - innerHeight/2) * 0.02 * (idx%2? 1:-1);
+      const rx = b.rx * (0.9 + Math.sin(b.phase*0.7)*0.08);
+      const ry = b.ry * (0.9 + Math.cos(b.phase*0.5)*0.06);
+      // create gradient
+      const grad = nCtx.createRadialGradient(cx,cy,Math.min(rx,ry)*0.08, cx,cy, Math.max(rx,ry));
+      // choose colorful gradient stops to make it "bright"
+      const h = Math.floor(b.hue);
+      grad.addColorStop(0, `hsla(${h}, 85%, 65%, 0.18)`);
+      grad.addColorStop(0.4, `hsla(${(h+40)%360}, 80%, 55%, 0.09)`);
+      grad.addColorStop(1, `rgba(6,6,12,0)`);
+      nCtx.save();
+      nCtx.globalCompositeOperation = 'screen';
+      nCtx.fillStyle = grad;
+      nCtx.beginPath();
+      nCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2);
+      nCtx.fill();
+      nCtx.restore();
+    });
+  }
+
+  // render particles
+  function drawParticles(delta){
+    pCtx.clearRect(0,0,innerWidth,innerHeight);
+
+    // Emit new particles
+    emitters.forEach(em => {
+      // slight orbit of emitter center (gives motion)
+      em.x += Math.sin(Date.now()*0.0004 + em.x*0.00002)*0.4;
+      em.y += Math.cos(Date.now()*0.00035 + em.y*0.00002)*0.5;
+      for(let i=0;i<em.rate;i++){
+        if(Math.random() < 0.6){
+          em.particles.push(spawnParticle(em));
         }
-    }
+      }
+      // small occasional heavy burst
+      if(Math.random() < 0.002) {
+        for(let b=0;b<18;b++) em.particles.push(spawnParticle(em));
+      }
+    });
 
-    function draw() {
-        ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        particles.forEach(p => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fill();
-            p.x += p.dx;
-            p.y += p.dy;
-            if (p.x < 0 || p.x > w) p.dx *= -1;
-            if (p.y < 0 || p.y > h) p.dy *= -1;
-        });
-        requestAnimationFrame(draw);
-    }
+    // update & draw particles with trails
+    pCtx.globalCompositeOperation = 'lighter';
+    emitters.forEach(em => {
+      for(let i=em.particles.length-1;i>=0;i--){
+        const pt = em.particles[i];
+        pt.age += delta;
+        // motion damping and gravity-ish pull towards center
+        pt.vx *= 0.995; pt.vy *= 0.995;
+        pt.x += pt.vx; pt.y += pt.vy;
+        // trail (draw as small radial with blur)
+        const lifeRatio = Math.max(0, 1 - pt.age/pt.life);
+        const size = pt.size * (0.6 + (1 - lifeRatio)*1.6);
+        pCtx.beginPath();
+        pCtx.fillStyle = `rgba(${pt.color[0]},${pt.color[1]},${pt.color[2]},${pt.alpha * lifeRatio})`;
+        pCtx.arc(pt.x, pt.y, Math.max(0.2, size), 0, Math.PI*2);
+        pCtx.fill();
+        // remove dead
+        if(pt.age > pt.life) em.particles.splice(i,1);
+      }
+    });
+    pCtx.globalCompositeOperation = 'source-over';
+  }
 
-    window.addEventListener('resize', init);
-    init();
+  // draw network lines
+  function drawNetwork(){
+    lCtx.clearRect(0,0,innerWidth,innerHeight);
+    // nodes update
+    nodes.forEach(n => {
+      n.x += n.vx + (mouse.x - n.x) * 0.00012;
+      n.y += n.vy + (mouse.y - n.y) * 0.00012;
+      if(n.x < -20) n.x = innerWidth + 20;
+      if(n.x > innerWidth + 20) n.x = -20;
+      if(n.y < -20) n.y = innerHeight + 20;
+      if(n.y > innerHeight + 20) n.y = -20;
+    });
+
+    // connect close nodes
+    lCtx.beginPath();
+    nodes.forEach((a, i) => {
+      for(let j=i+1;j<nodes.length;j++){
+        const b = nodes[j];
+        const d = Math.hypot(a.x-b.x, a.y-b.y);
+        if(d < 180){
+          const alpha = 0.08 * (1 - d/180);
+          lCtx.strokeStyle = `rgba(139,92,246,${alpha})`;
+          lCtx.lineWidth = 0.6;
+          lCtx.moveTo(a.x,a.y); lCtx.lineTo(b.x,b.y);
+        }
+      }
+    });
+    lCtx.stroke();
+    lCtx.closePath();
+
+    // small node dots (glow)
+    nodes.forEach(n => {
+      lCtx.beginPath();
+      lCtx.fillStyle = 'rgba(255,255,255,0.02)';
+      lCtx.arc(n.x,n.y,1.6,0,Math.PI*2);
+      lCtx.fill();
+    });
+
+    // flowing sine wave (big)
+    lCtx.beginPath();
+    const tt = Date.now() * 0.0006;
+    for(let x=0;x<innerWidth;x+=12){
+      const y = innerHeight*0.5 + Math.sin((x*0.007)+tt) * 160 + Math.cos((x*0.002)+tt*1.4)*40;
+      if(x===0) lCtx.moveTo(x,y); else lCtx.lineTo(x,y);
+    }
+    lCtx.strokeStyle = 'rgba(255,255,255,0.02)';
+    lCtx.lineWidth = 1.2;
+    lCtx.stroke();
+    lCtx.closePath();
+  }
+
+  // main loop
+  let last = performance.now();
+  function frame(t){
+    const delta = t - last; last = t;
+    drawNebula();
+    drawParticles(delta);
+    drawNetwork();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // animate ribbons SVG (parallax) for extra motion
+  const rA = document.getElementById('ribbonA'), rB = document.getElementById('ribbonB'), centerBeams = document.getElementById('centerBeams');
+  let start = Date.now();
+  (function animateRibbons(){
+    const tt = (Date.now() - start) * 0.00008;
+    if(rA) rA.setAttribute('transform', `translate(${Math.sin(tt*1.3)*60}, ${Math.cos(tt*0.9)*18}) rotate(${Math.sin(tt)*2})`);
+    if(rB) rB.setAttribute('transform', `translate(${Math.cos(tt*1.1)*80}, ${Math.sin(tt*0.7)*15}) rotate(${Math.cos(tt)*1.2})`);
+    if(centerBeams) centerBeams.setAttribute('transform', `translate(${0 + Math.sin(tt*0.6)*6}, ${0 + Math.cos(tt*0.9)*4})`);
+    requestAnimationFrame(animateRibbons);
+  })();
+
+  // re-init on resize
+  window.addEventListener('resize', initAll);
+})();
+
+/* ============================
+   Price ring micro-particles around each price
+   (small canvases inside .price-ring)
+   ============================ */
+(function(){
+  function createRing(id, theme){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const c = document.createElement('canvas');
+    c.width = 160; c.height = 160; c.style.width = '80px'; c.style.height = '80px';
+    el.appendChild(c);
+    const ctx = c.getContext('2d');
+    const dots = [];
+    for(let i=0;i<26;i++){
+      dots.push({ ang: Math.random()*Math.PI*2, rad: 28 + Math.random()*24, sp: 0.002 + Math.random()*0.006, s: 0.6 + Math.random()*2 });
+    }
+    function draw(){
+      ctx.clearRect(0,0,c.width,c.height);
+      ctx.save(); ctx.translate(c.width/2, c.height/2);
+      // ring base
+      ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.lineWidth = 2; ctx.arc(0,0,40,0,Math.PI*2); ctx.stroke(); ctx.closePath();
+      for(let i=0;i<dots.length;i++){
+        const d = dots[i]; d.ang += d.sp;
+        const x = Math.cos(d.ang) * d.rad, y = Math.sin(d.ang) * d.rad;
+        ctx.beginPath();
+        if(theme === 'gold') ctx.fillStyle = (i%2 ? 'rgba(255,200,120,0.95)' : 'rgba(253,160,133,0.9)');
+        else ctx.fillStyle = (i%2 ? 'rgba(139,92,246,0.95)' : 'rgba(255,63,166,0.9)');
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.arc(x,y, d.s, 0, Math.PI*2); ctx.fill(); ctx.closePath();
+        ctx.globalCompositeOperation = 'source-over';
+      }
+      ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.arc(0,0,6,0,Math.PI*2); ctx.fill(); ctx.closePath();
+      ctx.restore();
+      requestAnimationFrame(draw);
+    }
     draw();
-</script>
+  }
+  createRing('ring-beginner','neon'); createRing('ring-pro','gold'); createRing('ring-competent','neon');
+})();
 
+/* ============================
+   EARLY BIRD COUNTDOWN (7 days default)
+   ============================ */
+(function(){
+  const el = document.getElementById('countdown');
+  const target = new Date(Date.now() + 7*24*60*60*1000);
+  function update(){
+    const now = new Date();
+    let diff = Math.max(0, target - now);
+    const d = Math.floor(diff / (1000*60*60*24)); diff -= d*24*60*60*1000;
+    const h = String(Math.floor(diff / (1000*60*60))).padStart(2,'0'); diff -= h*60*60*1000;
+    const m = String(Math.floor(diff / (1000*60))).padStart(2,'0'); diff -= m*60*1000;
+    const s = String(Math.floor(diff / 1000)).padStart(2,'0');
+    el.textContent = `${d}d ${h}:${m}:${s}`;
+    if(target - now <= 0) el.textContent = 'Ended';
+  }
+  update();
+  setInterval(update, 1000);
+})();
+
+/* ============================
+   Small perf: pause heavy anim when tab hidden (optional)
+   (left minimal) 
+   ============================ */
+document.addEventListener('visibilitychange', function(){
+  // Could implement pause/resume — left running for immediate demo
+});
+</script>
 </body>
 </html>
