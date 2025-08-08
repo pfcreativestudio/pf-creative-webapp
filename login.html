@@ -6,125 +6,80 @@
     <title>Login - PF Creative AI Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-            color: #e0e0e0;
-            font-family: sans-serif;
-        }
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .gradient-text {
-            background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .btn-primary {
-            background: linear-gradient(45deg, #f59e0b, #ec4899);
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
-        }
-        .btn-primary:disabled {
-            background: #444;
-            cursor: not-allowed;
-        }
+        body { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%); color: #e0e0e0; font-family: sans-serif; }
+        .gradient-text { background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .btn-primary { background: linear-gradient(45deg, #f59e0b, #ec4899); transition: all 0.3s ease; }
+        .btn-primary:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+        .btn-primary:disabled { background: #444; cursor: not-allowed; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
-    <div class="glass-effect rounded-2xl p-8 w-full max-w-md mx-4">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold gradient-text mb-2">Welcome Back</h1>
-            <p class="text-gray-200">Access Your AI Film Director</p>
+    <div class="w-full max-w-md p-8 space-y-8 bg-black/30 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold gradient-text">Welcome Back</h1>
+            <p class="mt-2 text-gray-400">Log in to access your AI Film Director</p>
         </div>
-        
         <form id="loginForm" class="space-y-6">
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-200 mb-2">Username</label>
-                <input type="text" id="username" name="username" required
-                    class="w-full px-4 py-3 rounded-lg bg-black/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Enter your username">
+                <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+                <input id="username" name="username" type="text" required class="w-full px-4 py-2 mt-1 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Enter your username">
             </div>
-            
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-200 mb-2">Password</label>
-                <input type="password" id="password" name="password" required
-                    class="w-full px-4 py-3 rounded-lg bg-black/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Enter your password">
+                <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+                <input id="password" name="password" type="password" required class="w-full px-4 py-2 mt-1 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Enter your password">
             </div>
-            
-            <div id="errorMessage" class="hidden text-red-400 text-sm text-center"></div>
-            
-            <button type="submit" id="loginBtn"
-                class="w-full btn-primary text-white font-semibold py-3 px-6 rounded-lg transition duration-300">
-                Login
-            </button>
+            <div>
+                <button type="submit" id="submitButton" class="w-full btn-primary px-6 py-3 rounded-lg text-white font-semibold">Log In</button>
+            </div>
         </form>
-        
-        <div class="mt-6 text-center text-sm text-gray-400">
+        <p id="message" class="text-center text-sm h-4"></p>
+        <div class="text-center text-sm text-gray-400">
             Don't have an account? <a href="register.html" class="font-medium text-purple-400 hover:text-purple-300">Register here</a>
         </div>
     </div>
 
     <script>
-        // --- 您的后端API地址 ---
-        const backendUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+        const form = document.getElementById('loginForm');
+        const submitButton = document.getElementById('submitButton');
+        const messageDiv = document.getElementById('message');
         
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
-        const errorDiv = document.getElementById('errorMessage');
+        // 【核心修正】确保API地址是您Google Cloud Function的完整URL + 对应的路径
+        const apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api/login';
 
-        loginForm.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            // 更新按钮状态为“登录中”
-            loginBtn.textContent = 'Logging in...';
-            loginBtn.disabled = true;
-            errorDiv.classList.add('hidden');
-            errorDiv.textContent = '';
-            
+            submitButton.disabled = true;
+            submitButton.textContent = 'Logging in...';
+            messageDiv.textContent = '';
+
             try {
-                const response = await fetch(`${backendUrl}/login`, {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({
+                        username: form.username.value,
+                        password: form.password.value
+                    })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok && result.token) {
-                    // ---【核心修正点 1】---
-                    // 登录成功后，将获取到的token安全地存入浏览器的localStorage
-                    // 'jwtToken'这个名字必须和 dashboard.html 中读取的名字完全一致
                     localStorage.setItem('jwtToken', result.token);
-                    
-                    // ---【核心修正点 2】---
-                    // 显示成功信息，并在一秒后跳转到用户仪表盘页面
-                    loginBtn.textContent = 'Success!';
+                    messageDiv.textContent = 'Login successful! Redirecting...';
+                    messageDiv.style.color = 'lime';
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 1000);
-
                 } else {
-                    // 如果登录失败，抛出错误
-                    throw new Error(result.message || 'Invalid username or password');
+                    throw new Error(result.message || 'Invalid username or password.');
                 }
             } catch (error) {
-                // 捕获所有错误（网络错误或登录失败错误）
-                errorDiv.textContent = error.message;
-                errorDiv.classList.remove('hidden');
-                
-                // 恢复按钮状态
-                loginBtn.textContent = 'Login';
-                loginBtn.disabled = false;
+                messageDiv.textContent = error.message;
+                messageDiv.style.color = 'red';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Log In';
             }
         });
     </script>
