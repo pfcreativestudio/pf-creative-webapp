@@ -133,7 +133,6 @@ body{
 </style>
 </head>
 <body>
-  <!-- BACKGROUND LAYERS -->
   <div class="bg-full" aria-hidden="true">
     <canvas id="nebula" class="canvas-layer"></canvas>
     <canvas id="particleLayer" class="canvas-layer"></canvas>
@@ -153,16 +152,13 @@ body{
     <div class="vignette"></div>
   </div>
 
-  <!-- beam overlay for initial blast -->
   <canvas id="beamCanvas"></canvas>
 
-  <!-- MAIN CONTENT -->
   <div class="wrap" role="main">
     <div class="early" role="banner" aria-live="polite">
       <div style="width:10px;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--gold-1),var(--gold-2));box-shadow:0 0 14px rgba(255,160,80,0.6)"></div>
       🔥 Early Bird — Limited Time Promotion!
-      <!-- countdown removed as requested -->
-    </div>
+      </div>
 
     <header class="header">
       <h1>Choose Your Creative Journey</h1>
@@ -170,7 +166,6 @@ body{
     </header>
 
     <section class="grid" aria-label="Pricing plans">
-      <!-- Beginner -->
       <article class="card" id="card-beginner" aria-labelledby="beginner-label">
         <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
@@ -199,7 +194,6 @@ body{
         </div>
       </article>
 
-      <!-- PRO -->
       <article class="card pro" id="card-pro" aria-labelledby="pro-label">
         <div class="badge">👑 Best Value</div>
         <div class="rim-highlight"></div>
@@ -230,7 +224,6 @@ body{
         </div>
       </article>
 
-      <!-- Competent -->
       <article class="card" id="card-competent" aria-labelledby="comp-label">
         <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
@@ -279,7 +272,7 @@ body{
     beginner_1m = 9900
     pro_3m = 29700
     competent_2m = 19800
-  Endpoint: POST /create-bill { planId, planName, amount }
+  Endpoint: POST /api/create-bill { planId, planName, amount }
    ============================ */
 async function handlePurchase(planId, planName, amountInSen){
   // --- Added login check logic ---
@@ -305,6 +298,7 @@ async function handlePurchase(planId, planName, amountInSen){
   });
   
   try {
+    // MODIFIED: Changed the fetch URL to '/create-bill' to match the backend
     const res = await fetch('/create-bill', {
       method: 'POST',
       headers: { 
