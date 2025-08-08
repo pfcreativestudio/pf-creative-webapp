@@ -1,36 +1,27 @@
 {
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/create-bill",
-      "destination": "/main.py"
+      "src": "main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/create-bill",
+      "dest": "/main.py"
     },
     {
-      "source": "/webhook-billplz",
-      "destination": "/main.py"
+      "src": "/login",
+      "dest": "/main.py"
     },
     {
-      "source": "/login",
-      "destination": "/main.py"
+      "src": "/register",
+      "dest": "/main.py"
     },
     {
-      "source": "/register",
-      "destination": "/main.py"
-    },
-    {
-      "source": "/get-user-status",
-      "destination": "/main.py"
-    },
-    {
-      "source": "/generate-script",
-      "destination": "/main.py"
-    },
-    {
-      "source": "/chat-with-image",
-      "destination": "/main.py"
-    },
-    {
-      "source": "/admin(.*)",
-      "destination": "/main.py"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
