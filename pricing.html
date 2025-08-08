@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PF Creative AI Director — Pricing</title>
+<title>Pricing - PF Creative AI Director System</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ---------------- THEME ---------------- */
+/* ---------------- THEME & DESIGN (FROM CHATGPT VERSION) ---------------- */
 :root{
   --bg-0:#030114;
   --bg-1:#070621;
@@ -60,7 +60,7 @@ body{
 .features{flex:1;margin-top:8px}
 .features li{list-style:none;display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;color:var(--text);font-size:15px}
 .features svg{flex-shrink:0;margin-top:4px;color:var(--cyan)}
-.features .muted{color:var(--muted); opacity: 0.6;}
+.features .muted{color:var(--muted); opacity: 0.6; text-decoration: line-through;}
 .cta{margin-top:24px}
 .btn{display:inline-block;width:100%;padding:14px 16px;border-radius:14px;border:none;font-weight:900;font-size:15px;cursor:pointer;color:#08121a;background:linear-gradient(90deg,var(--gold-1),var(--gold-2));box-shadow:0 18px 70px rgba(255,200,120,0.12);position:relative;overflow:hidden; transition: transform 0.2s;}
 .btn.alt{background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); color:#fff; box-shadow:none;}
@@ -97,7 +97,7 @@ body{
           <div>
             <div class="plan-name">Beginner</div>
             <div class="priceWrap">
-              <div class="price" id="price-beginner">RM99</div>
+              <div class="price">RM99</div>
               <div class="duration"><strong>1 Month</strong> Access</div>
               <div class="bonus" style="color:#ff9f5a;">(RM30 OFF)</div>
             </div>
@@ -116,12 +116,12 @@ body{
       </article>
 
       <article class="card pro" id="card-pro">
-        <div class="badge">👑 Best Value</div>
+        <div class="badge">👑 PRO</div>
         <div class="top">
           <div>
             <div class="plan-name">PRO</div>
             <div class="priceWrap">
-              <div class="price" id="price-pro">RM297</div>
+              <div class="price">RM297</div>
               <div class="duration"><strong>3 Months</strong> Payment</div>
               <div class="bonus">(FREE 9 MONTHS) TOTAL 12 MONTHS</div>
             </div>
@@ -144,7 +144,7 @@ body{
           <div>
             <div class="plan-name">Competent</div>
             <div class="priceWrap">
-              <div class="price" id="price-competent">RM198</div>
+              <div class="price">RM198</div>
               <div class="duration"><strong>2 Months</strong> Payment</div>
               <div class="bonus">(FREE 4 MONTHS) TOTAL 6 MONTHS</div>
             </div>
@@ -163,37 +163,38 @@ body{
       </article>
     </section>
 
-    <p id="errorMessage" role="status" aria-live="polite" style="margin-top:2rem; text-align:center; height: 20px;"></p>
+    <p id="errorMessage" role="alert" style="text-align:center; color: var(--pink); margin-top: 2rem; height: 20px;"></p>
 
     <section class="faq" aria-labelledby="faqTitle" style="margin-top:80px; max-width: 800px; width:100%;">
       <h2 id="faqTitle" style="text-align:center;font-size:26px;margin-bottom:18px;font-weight:800">Frequently Asked Questions</h2>
       <details style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 0;">
-          <summary style="font-size: 1.125rem; font-weight: 600; cursor: pointer;">Is this a one-time payment?</summary>
+          <summary style="font-size: 1.125rem; font-weight: 600;">Is this a one-time payment?</summary>
           <p style="color:var(--muted); margin-top: 1rem; line-height: 1.6;">Yes. The plans are one-time payments for the specified access duration. There are no automatic recurring charges.</p>
       </details>
       <details style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 0;">
-          <summary style="font-size: 1.125rem; font-weight: 600; cursor: pointer;">What else do I need?</summary>
+          <summary style="font-size: 1.125rem; font-weight: 600;">What else do I need?</summary>
           <p style="color:var(--muted); margin-top: 1rem; line-height: 1.6;">You only need a web browser. To generate the final video, you will need access to Google's Veo video model, and we provide a guide on how to get 1000 free credits to start.</p>
       </details>
        <details style="border-bottom: 1px solid var(--glass-border); padding: 1.5rem 0;">
-          <summary style="font-size: 1.125rem; font-weight: 600; cursor: pointer;">What is your refund policy?</summary>
+          <summary style="font-size: 1.125rem; font-weight: 600;">What is your refund policy?</summary>
           <p style="color:var(--muted); margin-top: 1rem; line-height: 1.6;">Due to the digital nature of our service and the costs associated with AI generation, all purchases are final and non-refundable. Please review the features before purchasing.</p>
       </details>
     </section>
   </div>
 
 <script>
+// --- START: FUNCTIONAL LOGIC FROM GOOGLE GEMINI VERSION ---
+
 async function handlePurchase(planId, planName, amountInSen){
-  // --- 新增的登录检查逻辑 ---
+  // 1. Check if user is logged in
   const token = localStorage.getItem('jwtToken');
   if (!token) {
       alert('Please log in or register first to make a purchase.');
-      // 记录用户想买什么，登录后可以直接跳转回来或自动处理
+      // Temporarily save the user's choice
       localStorage.setItem('pendingPurchase', JSON.stringify({ planId, planName, amountInSen }));
       window.location.href = 'login.html';
-      return; // 终止后续操作
+      return; 
   }
-  // --- 检查结束 ---
 
   const allButtons = document.querySelectorAll('.btn');
   const errorMessage = document.getElementById('errorMessage');
@@ -207,11 +208,11 @@ async function handlePurchase(planId, planName, amountInSen){
   });
   
   try {
+    // 2. Call the correct backend API (Vercel serverless function)
     const res = await fetch('/api/create-bill', {
       method: 'POST',
       headers: { 
           'Content-Type':'application/json',
-          // 在请求中带上用户的token，以便后端识别用户
           'Authorization': `Bearer ${token}` 
       },
       body: JSON.stringify({ planId, planName, amount: amountInSen })
@@ -234,10 +235,13 @@ async function handlePurchase(planId, planName, amountInSen){
   }
 }
 
-// --- 以下是ChatGPT生成的视觉效果代码，保持不变 ---
+// --- END: FUNCTIONAL LOGIC ---
+
+
+// --- VISUAL EFFECTS LOGIC FROM CHATGPT VERSION (UNCHANGED) ---
 (function(){
   const nebula = document.getElementById('nebula');
-  if (!nebula) return; // 如果找不到canvas就不执行，避免报错
+  if (!nebula) return; 
   const dpr = Math.min(window.devicePixelRatio || 1.5, 2);
 
   function fit(c){
