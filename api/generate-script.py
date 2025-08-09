@@ -11,8 +11,7 @@ from api.utils import (
     cors_preflight,
     JWT_SECRET,
     GEMINI_API_KEY,
-    summarize_chat_history,
-    MAX_HISTORY_LENGTH_FOR_FULL_CONTEXT
+    summarize_chat_history
 )
 
 # A massive prompt string, it's better to put it in a separate file for clarity.
@@ -198,8 +197,10 @@ def handler(request):
 
     headers = get_cors_headers()
     conn = None
+    cursor = None # Initialize cursor to None
+    username = None # Initialize username to None
     try:
-        # Authentication and subscription check
+        # --- Authentication and subscription check ---
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
             return (json.dumps({'error': 'Authorization token required'}), 401, headers)
@@ -225,7 +226,7 @@ def handler(request):
         if active_token_from_db != token:
             return (json.dumps({'error': 'This account has been logged in on another device. Please log in again.'}), 409, headers)
 
-        now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.timezone.utc)
         if not subscription_expires_at or subscription_expires_at < now:
             return (json.dumps({'error': 'Your subscription has expired. Please renew to continue.'}), 403, headers)
 
@@ -234,10 +235,17 @@ def handler(request):
     except jwt.InvalidTokenError:
         return (json.dumps({'error': 'Invalid token, please log in again'}), 401, headers)
     except Exception as e:
-        logging.error(f"Auth/Subscription check error for user {username}: {e}")
+        user_context = f" for user {username}" if username else ""
+        logging.error(f"Auth/Subscription check error{user_context}: {e}", exc_info=True)
         return (json.dumps({'error': f'An internal server error occurred during authentication: {e}'}), 500, headers)
+    finally:
+        # Close connection and cursor after auth check is complete
+        if cursor:
+            cursor.close()
+        if conn:
+            release_db_connection(conn)
 
-    # Gemini API call
+    # --- Gemini API call - This part does not need a persistent DB connection ---
     try:
         request_json = request.get_json(silent=True) or {}
         user_project_info = request_json.get('project_info')
@@ -255,12 +263,32 @@ def handler(request):
         full_conversation_for_gemini = []
         full_conversation_for_gemini.append({'role': 'user', 'parts': [{'text': MASTER_PROMPT_V13_1}]}) 
 
-        if len(chat_history_from_frontend) > MAX_HISTORY_LENGTH_FOR_FULL_CONTEXT:
-            summary = summarize_chat_history(chat_history_from_frontend)
-            full_conversation_for_gemini.append({'role': 'user', 'parts': [{'text': summary}]})
-        else: 
-            for entry in chat_history_from_frontend:
-                full_conversation_for_gemini.append(entry)
+        # --- MODIFIED: New chat history handling logic ---
+        # Strategy: Summarize old history, keep recent history intact.
+        HISTORY_SUMMARY_THRESHOLD = 12 # Start summarizing when history exceeds this length
+        HISTORY_TO_KEEP = 8          # Always keep this many recent messages
+
+        if len(chat_history_from_frontend) > HISTORY_SUMMARY_THRESHOLD:
+            # 1. Split history into old and recent parts
+            history_to_summarize = chat_history_from_frontend[:-HISTORY_TO_KEEP]
+            recent_history = chat_history_from_frontend[-HISTORY_TO_KEEP:]
+
+            # 2. Summarize the old part (using Flash model for cost-efficiency)
+            # The summarize_chat_history function (from api.utils) is assumed to use gemini-1.5-flash
+            summary = summarize_chat_history(history_to_summarize)
+            
+            # 3. Build the new context: Summary of old + full recent history
+            full_conversation_for_gemini.append({
+                'role': 'user', 
+                'parts': [{'text': "CONTEXT SUMMARY OF EARLIER PARTS OF THE CONVERSATION:\n" + summary}]
+            })
+            full_conversation_for_gemini.extend(recent_history)
+            logging.info(f"Chat history summarized for user '{username}'. Kept last {len(recent_history)} messages.")
+
+        else:
+            # If history is not long, keep it all
+            full_conversation_for_gemini.extend(chat_history_from_frontend)
+        # --- END OF MODIFICATION ---
 
         current_user_input_parts = []
         if user_project_info:
@@ -273,7 +301,9 @@ def handler(request):
                 }
             })
         
-        full_conversation_for_gemini.append({'role': 'user', 'parts': current_user_input_parts})
+        # Only append the user input part if it's not empty
+        if current_user_input_parts:
+            full_conversation_for_gemini.append({'role': 'user', 'parts': current_user_input_parts})
         
         safety_settings = [
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
@@ -288,8 +318,10 @@ def handler(request):
         )
         
         script_content = ""
-        if hasattr(response, 'text'): 
+        # Check for response.text first for simpler API responses
+        if hasattr(response, 'text') and response.text: 
             script_content = response.text
+        # Then check the candidates for more complex/streamed responses
         elif response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
             for part in response.candidates[0].content.parts:
                 if hasattr(part, 'text'):
@@ -298,16 +330,10 @@ def handler(request):
         if script_content: 
             return (json.dumps({'success': True, 'script': script_content}), 200, headers)
         else:
-            logging.error(f"Gemini API returned no usable content or an error: {response}")
-            return (json.dumps({'error': 'Failed to generate script. No valid content returned from AI.'}), 500, headers)
+            # Provide more detailed logging for empty responses
+            logging.error(f"Gemini API for user '{username}' returned no usable content. Prompt block count: {response.prompt_feedback.block_reason if response.prompt_feedback else 'N/A'}. Candidates: {response.candidates}")
+            return (json.dumps({'error': 'Failed to generate script. The AI returned no valid content.'}), 500, headers)
 
     except Exception as e:
-        logging.error(f"Error calling Gemini API: {e}", exc_info=True)
+        logging.error(f"Error calling Gemini API for user '{username}': {e}", exc_info=True)
         return (json.dumps({'error': f'An AI service error occurred: {str(e)}'}), 500, headers)
-    finally:
-        if conn:
-            try:
-                cursor.close()
-            except Exception as e:
-                logging.error(f"Error closing cursor: {e}")
-            release_db_connection(conn)
