@@ -259,7 +259,8 @@ Execution Flow (UPGRADED FOR AUTOMATED RULE ENFORCEMENT):
         C) Generate in Batches of Two: You must generate the VEO Prompt Blueprints (as defined in Part 4) in pairs (two scenes at a time). Never generate more than two at once before getting confirmation.
         D) Request Feedback After Each Batch: After generating a pair of prompts, you MUST pause and ask the user for feedback. Use this exact phrase: "Here are the prompts for scenes [X] and [Y]. Please review them. If the content is accurate, I will proceed to generate the next two scenes. Please feel free to suggest any necessary changes.".
         E) Await Confirmation: You must wait for the user to respond (e.g., "OK," "Continue," "Proceed," or provide specific edits) before generating the next batch of two prompts.
-        F) Repeat: Continue this iterative cycle of generating two prompts and asking for confirmation until all required scenes have been created and approved by the user.
+        F) Return to Conversational Language: CRITICAL: After generating the batch of English blueprints, the final sentence where you ask the user for feedback (e.g., "Here are the prompts for scenes [X] and [Y]...") MUST switch back to the user's chosen conversational language. This is mandatory.
+        G) Repeat: Continue this iterative cycle of generating two prompts and asking for confirmation until all required scenes have been created and approved by the user.
 
     **Step 7: Generate Final Review Summary:** After the user has sequentially approved all generated prompts, add the final section titled "--- SCRIPT OVERVIEW (SHOT LIST) ---". In this section, list, in order, only the content from the Scene Description & Action field of every prompt you have generated.
 
@@ -280,7 +281,7 @@ Part 3: [YOUR PROJECT INFORMATION]
 
 Part 4: VEO PROMPT BLUEPRINT (Forced Execution Blueprint)
 AI Director Attention: This is the definitive structure for generating every single prompt. Your primary task is to completely fill in this blueprint for each scene. DO NOT DEVIATE FROM THIS STRUCTURE.
-Formatting Rule: When you generate the filled-in blueprint, you must insert a blank line between each section (e.g., between 'Scene Description & Action:' and 'Environment Bible:') to ensure a clean and readable layout.
+Formatting Rule (NON-NEGOTIABLE): You MUST insert a blank line between each and every section of the blueprint. For example, after the line ending with 'Scene Description & Action:', you MUST output a blank line before outputting 'Environment Bible:'. This applies to all sections for every blueprint you generate. This is a mandatory rule for readability.
 --- [PROMPT [Number]] [SCENE TITLE] ---
 Scene Description & Action: (Describe the core action within the 8-second limit here. Use Jump To: at the start if this is a continuous scene.)
 Environment Bible: (Fully describe the scene's environment here. This description must be repeated for every prompt within the same environment.)
@@ -455,7 +456,7 @@ This section contains critical operational facts about the Veo 3 platform that a
                 logging.error(f"Get user status error: {e}")
                 return (json.dumps({'error': 'Internal server error'}), 500, headers)
         
-        # --- CREATE BILL ENDPOINT (Billplz Integration) ---
+        # --- CREATE BILL ENDPOINT (Billplz集成) ---
         elif path == '/create-bill' and method == 'POST':
             try:
                 auth_header = request.headers.get('Authorization')
@@ -481,13 +482,13 @@ This section contains critical operational facts about the Veo 3 platform that a
                 if not plan_name or not amount:
                     return (json.dumps({'error': 'Plan information is missing'}), 400, headers)
 
-                # Construct Billplz request
+                # 构建Billplz请求
                 billplz_payload = {
                     'collection_id': BILLPLZ_COLLECTION_ID,
                     'email': f"{username}@pfcreative.system",
                     'name': username,
-                    'amount': str(int(amount)),  # Ensure the amount is an integer string (unit: sen)
-                    'description': plan_name[:200],  # Limit description length
+                    'amount': str(int(amount)),  # 确保金额为整数字符串 (单位: sen)
+                    'description': plan_name[:200],  # 限制描述长度
                     'callback_url': f"{BASE_URL}/api/webhook-billplz",
                     'redirect_url': f"{BASE_URL}/payment-success.html",
                     'reference_1_label': 'Username',
@@ -496,13 +497,13 @@ This section contains critical operational facts about the Veo 3 platform that a
                     'reference_2': plan_id
                 }
                 
-                # Construct API request headers
+                # 构建API请求头
                 req_headers = {
                     'Content-Type': 'application/json',
                     'Authorization': f'Basic {base64.b64encode(f"{BILLPLZ_API_KEY}:".encode()).decode()}'
                 }
                 
-                # Create request
+                # 创建请求
                 req = urllib.request.Request(
                     'https://www.billplz.com/api/v3/bills',
                     method='POST',
@@ -510,7 +511,7 @@ This section contains critical operational facts about the Veo 3 platform that a
                     headers=req_headers
                 )
 
-                # Send request
+                # 发送请求
                 with urllib.request.urlopen(req) as response:
                     if response.getcode() == 200:
                         billplz_result = json.loads(response.read().decode())
@@ -521,7 +522,7 @@ This section contains critical operational facts about the Veo 3 platform that a
                                 'bill_id': billplz_result.get('id', '')
                             }), 200, headers)
                     
-                    # Handle error response
+                    # 处理错误响应
                     error_body = response.read().decode()
                     logging.error(f"Billplz API error: {response.getcode()} - {error_body}")
                     return (json.dumps({'error': 'Failed to create payment link'}), 502, headers)
@@ -537,31 +538,31 @@ This section contains critical operational facts about the Veo 3 platform that a
                 logging.error(f"Create Bill Error: {str(e)}", exc_info=True)
                 return (json.dumps({'error': 'Internal server error'}), 500, headers)
                 
-        # --- WEBHOOK ENDPOINT (Handle Billplz callback) ---
+        # --- WEBHOOK ENDPOINT (处理Billplz回调) ---
         elif path == '/webhook-billplz' and method == 'POST':
             try:
-                # Verify signature
+                # 验证签名
                 incoming_signature = request.headers.get('X-Signature')
                 if incoming_signature != BILLPLZ_X_SIGNATURE:
                     logging.warning("Invalid signature in webhook")
                     return (json.dumps({'error': 'Invalid signature'}), 403, headers)
                 
                 data = request.get_json()
-                paid_str = data.get('paid', 'false').lower() # Ensure handling of 'true'/'false' strings
+                paid_str = data.get('paid', 'false').lower() # 确保处理 'true'/'false' 字符串
                 paid = paid_str == 'true'
                 username = data.get('reference_1', '')
                 plan_id = data.get('reference_2', '')
                 
                 if paid and username:
-                    # Determine subscription duration based on Plan ID (fixed)
+                    # 根据计划ID确定订阅时长 (已修正)
                     if plan_id == 'pro_3m':
-                        subscription_days = 90  # 3 months
+                        subscription_days = 90  # 3个月
                     elif plan_id == 'competent_2m':
-                        subscription_days = 60  # 2 months
+                        subscription_days = 60  # 2个月
                     else:  # beginner_1m or default
-                        subscription_days = 30  # 1 month
+                        subscription_days = 30  # 1个月
                     
-                    # Calculate new subscription expiration time
+                    # 计算新的订阅到期时间
                     now = datetime.datetime.now(datetime.timezone.utc)
                     cursor.execute('SELECT subscription_expires_at FROM users WHERE username = %s', (username,))
                     current_expiry_record = cursor.fetchone()
@@ -569,12 +570,12 @@ This section contains critical operational facts about the Veo 3 platform that a
                     
                     start_date = now
                     if current_expiry and current_expiry > now:
-                        # If the subscription has not expired, extend it
+                        # 如果订阅未过期，则续期
                         start_date = current_expiry
 
                     new_expiry = start_date + datetime.timedelta(days=subscription_days)
                     
-                    # Update the database
+                    # 更新数据库
                     cursor.execute('''
                         UPDATE users 
                         SET subscription_expires_at = %s 
@@ -597,7 +598,7 @@ This section contains critical operational facts about the Veo 3 platform that a
             password = request_json.get('password')
             if not username or not password: return (json.dumps({'success': False, 'message': 'Username and password required'}), 400, headers)
             
-            # Security reminder: Hashed password verification should be used here, not plaintext comparison
+            # 安全提示: 此处应使用哈希密码验证，而非明文比较
             cursor.execute('SELECT password FROM users WHERE username = %s', (username,))
             user_record = cursor.fetchone()
             if not user_record or user_record[0] != password: return (json.dumps({'success': False, 'message': 'Invalid username or password'}), 401, headers)
@@ -765,52 +766,50 @@ This section contains critical operational facts about the Veo 3 platform that a
             file_mime_type = request_json.get('file_mime_type')
 
             if not user_project_info and not file_data:
-                # In the new flow, an empty first message is expected, so we check history.
-                # If there's no history, it's the first interaction, and the AI should send the language prompt.
                 if not chat_history_from_frontend: 
-                    pass # Allow the process to continue so the AI can send the Step 0 prompt.
+                    pass
                 else:
                     return (json.dumps({'error': 'Project information or file is required.'}), 400, headers)
 
             try:
                 genai.configure(api_key=GEMINI_API_KEY)
-
+                
                 # ==================================================================
-                # --- START: Applied fix for AI call logic ---
+                # --- START: 已应用修复的AI调用逻辑 ---
                 # ==================================================================
                 
-                # Step 1: Initialize the model using the `system_instruction` parameter with the refactored Master Prompt.
-                # This separates the core rules from the turn-by-turn conversation.
+                # 步骤 1: 使用 `system_instruction` 参数传入您的主提示词来初始化模型。
                 model = genai.GenerativeModel(
                     'gemini-1.5-pro',
                     system_instruction=MASTER_PROMPT_V15_FULL_ENGLISH
                 )
 
-                # Step 2: Build the conversation history directly from the frontend's history.
-                # The Master Prompt is no longer inserted here, preventing the AI from resetting.
+                # 步骤 2: 直接基于前端历史构建对话，并应用您文件中已有的、更优的摘要逻辑。
                 full_conversation_for_gemini = []
-                
-                # A robust history summarization logic is applied to prevent context overflow.
-                if 'MAX_HISTORY_LENGTH_FOR_FULL_CONTEXT' in globals() and len(chat_history_from_frontend) > MAX_HISTORY_LENGTH_FOR_FULL_CONTEXT:
-                    # Keep the most recent turns to maintain immediate context
-                    num_to_keep = 4 
-                    history_to_summarize = chat_history_from_frontend[:-num_to_keep]
-                    recent_history = chat_history_from_frontend[-num_to_keep:]
+                HISTORY_SUMMARY_THRESHOLD = 12 # 当历史记录超过12条时开始总结
+                HISTORY_TO_KEEP = 8          # 始终保留最近的8条消息
 
+                if len(chat_history_from_frontend) > HISTORY_SUMMARY_THRESHOLD:
+                    # 1. 分割历史记录
+                    history_to_summarize = chat_history_from_frontend[:-HISTORY_TO_KEEP]
+                    recent_history = chat_history_from_frontend[-HISTORY_TO_KEEP:]
+
+                    # 2. 总结旧的记录
                     summary = summarize_chat_history(history_to_summarize, GEMINI_API_KEY)
                     
-                    # Build the new context: a summary of the old parts, followed by the full recent history.
+                    # 3. 构建新的上下文：旧总结 + 完整的近期记录
                     full_conversation_for_gemini.append({
                         'role': 'user', 
                         'parts': [{'text': "CONTEXT SUMMARY OF EARLIER PARTS OF THE CONVERSATION:\n" + summary}]
                     })
                     full_conversation_for_gemini.extend(recent_history)
-                    logging.info(f"Chat history summarized. Kept last {num_to_keep} messages.")
+                    logging.info(f"Chat history summarized for user '{username}'. Kept last {len(recent_history)} messages.")
+
                 else:
-                    # If history is short, use it all.
+                    # 如果历史记录不长，则全部保留
                     full_conversation_for_gemini.extend(chat_history_from_frontend)
 
-                # Step 3: Append the user's current input as the latest message.
+                # 步骤 3: 将当前用户的输入作为最新的消息附加到对话末尾。
                 current_user_input_parts = []
                 if user_project_info:
                     current_user_input_parts.append({'text': user_project_info})
@@ -832,15 +831,14 @@ This section contains critical operational facts about the Veo 3 platform that a
                     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
                 ]
 
-                # Step 4: Call the API with the clean conversation history. The model's behavior
-                # is now guided by the system instruction set during initialization.
+                # 步骤 4: 调用已配置好系统指令的API，发送纯粹的对话历史。
                 response = model.generate_content(
                     full_conversation_for_gemini,
                     safety_settings=safety_settings
                 )
                 
                 # ==================================================================
-                # --- END: End of fix ---
+                # --- END: 修复结束 ---
                 # ==================================================================
                 
                 script_content = ""
@@ -854,8 +852,6 @@ This section contains critical operational facts about the Veo 3 platform that a
                 if script_content:
                     return (json.dumps({'success': True, 'script': script_content}), 200, headers)
                 else:
-                    # If this is the very first interaction and the AI is correctly sending the language prompt,
-                    # the response might not have 'text' but still be valid. Let's check the candidate content.
                     if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
                          for part in response.candidates[0].content.parts:
                             if hasattr(part, 'text'):
@@ -872,9 +868,12 @@ This section contains critical operational facts about the Veo 3 platform that a
 
         # --- CHAT WITH IMAGE ENDPOINT ---
         elif path == '/chat-with-image' and method == 'POST':
+            # Note: This section is for chat-with-image, but is currently a placeholder in your original code.
+            # You would need to implement the full logic here if this feature is required.
             return (json.dumps({'error': 'Endpoint not yet implemented'}), 501, headers)
 
         else:
+            # IMPROVED: Added a default return for all unhandled paths
             return (json.dumps({'error': 'Endpoint not found'}), 404, headers)
 
     except Exception as e:
