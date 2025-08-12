@@ -9,6 +9,7 @@ import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import urllib.request
 import base64
+import time # --- NEW ADDITION 1 of 3: Import time module for caching ---
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -16,6 +17,14 @@ logging.basicConfig(level=logging.INFO)
 # Global variables and constants
 db_pool = None
 MAX_HISTORY_LENGTH_FOR_FULL_CONTEXT = 8
+
+# --- NEW ADDITION 2 of 3: Cache variables for the master prompt ---
+# Cache for the master prompt to avoid frequent DB lookups
+PROMPT_CACHE = {
+    'data': None,
+    'last_fetched': 0
+}
+CACHE_TTL = 300  # Cache for 5 minutes (300 seconds)
 
 # Vercel Environment variables will be automatically loaded
 # Billplz configuration - these should be set as Vercel environment variables
@@ -154,3 +163,52 @@ def summarize_chat_history(history_to_summarize_raw):
         logging.error(f"Error during chat summarization: {e}", exc_info=True)
         return "Previous conversation context has been summarized (error occurred)."
 
+# --- NEW ADDITION 3 of 3: Function to get master prompt ---
+def get_active_master_prompt(conn):
+    """
+    Retrieves the active master prompt from the database, with caching.
+    If the cache is valid, returns the cached data. Otherwise, fetches from DB.
+    """
+    global PROMPT_CACHE
+    now = time.time()
+
+    # Check if the cache is still valid
+    if PROMPT_CACHE['data'] and (now - PROMPT_CACHE['last_fetched']) < CACHE_TTL:
+        logging.info("Returning master prompt from cache.")
+        return PROMPT_CACHE['data']
+
+    # If cache is invalid or empty, fetch from the database
+    logging.info("Fetching master prompt from database.")
+    cursor = conn.cursor()
+    try:
+        # Query for the single active prompt version
+        cursor.execute("SELECT prompt_content FROM prompt_versions WHERE is_active = TRUE LIMIT 1")
+        record = cursor.fetchone()
+        if not record:
+            raise Exception("No active master prompt found in the database.")
+        
+        prompt_json = record[0]
+
+        # Dynamically build the full prompt string from JSON parts
+        # This order can be easily changed in the future if needed
+        full_prompt_string = "\n".join(filter(None, [
+            prompt_json.get('part1_system_guide'),
+            prompt_json.get('part2_director_mission'),
+            prompt_json.get('part3_project_info_template'),
+            prompt_json.get('part4_blueprint_format'),
+            prompt_json.get('part5_rules_and_appendices')
+        ]))
+
+        # Update the cache
+        PROMPT_CACHE['data'] = full_prompt_string
+        PROMPT_CACHE['last_fetched'] = now
+        
+        logging.info("Master prompt fetched from DB and cached successfully.")
+        return full_prompt_string
+
+    except Exception as e:
+        logging.error(f"Failed to get or build active master prompt: {e}", exc_info=True)
+        # As a fallback, you could return a hardcoded minimal prompt or raise the exception
+        raise e
+    finally:
+        cursor.close()
