@@ -305,7 +305,8 @@ async function handlePurchase(planId, planName, amountInSen){
   });
   
   // 【核心修正】: 使用完整的 Google Cloud Functions URL
-  const apiUrl = '/api/create-bill';
+const backendUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+const apiUrl = `${backendUrl}/create-bill`;
 
   try {
     const res = await fetch(apiUrl, {
