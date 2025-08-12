@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hans">
 <head>
-<meta charset="utf-t" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>PF Creative AI Director — Pricing (Ultimate Luxe)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -83,24 +83,24 @@ body{
   transform:translateZ(0);
   transition:opacity .6s ease;
 }
-/* animated highlight sweep */
-.card .rim-highlight{ position:absolute; inset:-1.2px; border-radius:calc(var(--card-radius) + 1.2px); pointer-events:none; z-index:7;
-  background: linear-gradient(90deg, rgba(255,255,255,0.0), rgba(255,255,255,0.85) 45%, rgba(255,255,255,0.0) 65%);
-  transform:translateX(-120%); filter:blur(12px); opacity:0; transition:opacity .35s; }
-/* on hover sweep */
-.card:hover .rim-highlight{ transform:translateX(120%); opacity:0.7; transition:transform .9s cubic-bezier(.2,.9,.2,1), opacity .35s; }
+
+/* --- FINAL MODIFICATION START --- */
+/* animated highlight sweep for border - This effect has been disabled as requested. */
+.card .rim-highlight {
+  display: none;
+}
+/* --- FINAL MODIFICATION END --- */
 
 /* PRO stronger gold rim */
 .card.pro::after{ background: conic-gradient(from 90deg at 50% 50%, rgba(255,240,200,0.02), rgba(255,215,120,0.32), rgba(255,200,100,0.36), rgba(255,240,200,0.02)); opacity:0.54; filter:blur(8px) }
-.card.pro .rim-highlight{ background: linear-gradient(90deg, rgba(255,240,200,0.0), rgba(255,255,255,0.95) 40%, rgba(255,240,200,0.0) 72%); filter:blur(14px) }
 
 
-/* --- MODIFICATION START --- */
+/* --- FIRST MODIFICATION START --- */
 /* sheen inside - This effect has been disabled as requested. */
 .sheen {
   display: none;
 }
-/* --- MODIFICATION END --- */
+/* --- FIRST MODIFICATION END --- */
 
 
 /* other card content */
