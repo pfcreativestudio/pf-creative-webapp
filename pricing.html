@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hans">
 <head>
-<meta charset="utf-8" />
+<meta charset="utf-t" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>PF Creative AI Director — Pricing (Ultimate Luxe)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -94,9 +94,14 @@ body{
 .card.pro::after{ background: conic-gradient(from 90deg at 50% 50%, rgba(255,240,200,0.02), rgba(255,215,120,0.32), rgba(255,200,100,0.36), rgba(255,240,200,0.02)); opacity:0.54; filter:blur(8px) }
 .card.pro .rim-highlight{ background: linear-gradient(90deg, rgba(255,240,200,0.0), rgba(255,255,255,0.95) 40%, rgba(255,240,200,0.0) 72%); filter:blur(14px) }
 
-/* sheen inside */
-.sheen{position:absolute;left:-40%;bottom:-18%;width:180%;height:40%;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06), rgba(255,255,255,0.02));transform:rotate(9deg);filter:blur(16px);opacity:0.04;pointer-events:none;transition:all .9s}
-.card:hover .sheen{left:100%;opacity:0.14}
+
+/* --- MODIFICATION START --- */
+/* sheen inside - This effect has been disabled as requested. */
+.sheen {
+  display: none;
+}
+/* --- MODIFICATION END --- */
+
 
 /* other card content */
 .top{display:flex;justify-content:space-between;align-items:flex-start}
@@ -133,7 +138,6 @@ body{
 </style>
 </head>
 <body>
-  <!-- BACKGROUND LAYERS -->
   <div class="bg-full" aria-hidden="true">
     <canvas id="nebula" class="canvas-layer"></canvas>
     <canvas id="particleLayer" class="canvas-layer"></canvas>
@@ -153,16 +157,13 @@ body{
     <div class="vignette"></div>
   </div>
 
-  <!-- beam overlay for initial blast -->
   <canvas id="beamCanvas"></canvas>
 
-  <!-- MAIN CONTENT -->
   <div class="wrap" role="main">
     <div class="early" role="banner" aria-live="polite">
       <div style="width:10px;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--gold-1),var(--gold-2));box-shadow:0 0 14px rgba(255,160,80,0.6)"></div>
       🔥 Early Bird — Limited Time Promotion!
-      <!-- countdown removed as requested -->
-    </div>
+      </div>
 
     <header class="header">
       <h1>Choose Your Creative Journey</h1>
@@ -170,7 +171,6 @@ body{
     </header>
 
     <section class="grid" aria-label="Pricing plans">
-      <!-- Beginner -->
       <article class="card" id="card-beginner" aria-labelledby="beginner-label">
         <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
@@ -199,7 +199,6 @@ body{
         </div>
       </article>
 
-      <!-- PRO -->
       <article class="card pro" id="card-pro" aria-labelledby="pro-label">
         <div class="badge">👑 Best Value</div>
         <div class="rim-highlight"></div>
@@ -230,7 +229,6 @@ body{
         </div>
       </article>
 
-      <!-- Competent -->
       <article class="card" id="card-competent" aria-labelledby="comp-label">
         <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
