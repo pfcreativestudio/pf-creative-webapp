@@ -4,5 +4,14 @@
       "src": "api/**/*.py",
       "use": "@vercel/python"
     }
+  ],
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/api/.*",
+      "dest": "/api"
+    }
   ]
 }
