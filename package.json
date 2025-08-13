@@ -1,9 +1,0 @@
-{
-  "name": "pf-creative-webapp-backend",
-  "version": "1.0.0",
-  "description": "Dependencies for Vercel Serverless Functions",
-  "dependencies": {
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.3"
-  }
-}
