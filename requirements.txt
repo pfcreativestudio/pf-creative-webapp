@@ -1,4 +1,0 @@
-PyJWT
-psycopg2-binary
-google-generativeai
-langdetect
