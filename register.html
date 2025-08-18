@@ -89,11 +89,25 @@
                 }
             } catch (error) {
                 messageDiv.textContent = error.message;
+                try { __pfLog('register_fail', {username: (document.getElementById('username')||{}).value}); } catch(e){}
                 messageDiv.style.color = 'red';
                 submitButton.disabled = false;
                 submitButton.textContent = 'Register';
             }
         });
     </script>
+
+<script>
+  async function __pfLog(action, details, actor){
+    try {
+      const base = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+      await fetch(base + '/activity/log', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({actor: actor||'user', action, details})
+      });
+    } catch(e) { /* ignore */ }
+  }
+</script>
 </body>
 </html>
