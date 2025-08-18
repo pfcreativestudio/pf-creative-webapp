@@ -1,120 +1,120 @@
+// admin-activity.js
+// 完整活动日志模块：保存管理员密码、日期转换、空筛选不传参、加载与渲染、分页
 
-// Admin Activity & User sorting extensions
 (function(){
-  function fmtTs(ts){
-    try { return new Date(ts).toLocaleString(); } catch(e){ return ts; }
-  }
-  async function fetchActivity(params={}){
-    const usp = new URLSearchParams(params);
-    const res = await fetch(`${window.adminApiUrl}/admin/activity?${usp.toString()}`, {headers:{'X-Admin-Password': window.__adminPassword || ''}});
-    if(!res.ok) throw new Error("Failed to load activity");
-    return await res.json();
+  const apiUrl = window.adminApiUrl;
+  const tbody = document.getElementById('activityTbody');
+  const loadBtn = document.getElementById('loadActivityBtn');
+  const prevBtn = document.getElementById('prevPageBtn');
+  const nextBtn = document.getElementById('nextPageBtn');
+
+  const actorInput = document.getElementById('actorInput');
+  const actionInput = document.getElementById('actionInput');
+  const sinceInput = document.getElementById('sinceInput');
+  const untilInput = document.getElementById('untilInput');
+  const sortSelect = document.getElementById('sortSelect');
+
+  let offset = 0;
+  const limit = 50;
+  let lastFetched = 0;
+
+  function toISO(raw){
+    if(!raw) return null;
+    // 支持: "dd/mm/yyyy" 或 "dd/mm/yyyy HH:mm"
+    const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?$/);
+    if(!m) return null;
+    const [_, dd, mm, yyyy, HH='00', MM='00'] = m;
+    const d = new Date(`${yyyy}-${mm}-${dd}T${HH}:${MM}:00Z`);
+    return isNaN(d.getTime()) ? null : d.toISOString();
   }
 
-  // Render activity UI
-  window.renderActivityPanel = async function(containerId){
-    const root = document.getElementById(containerId);
-    root.innerHTML = `
-      <div class="glass-effect rounded-lg p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-semibold text-white">Activity Log</h3>
-          <div class="flex gap-2">
-            <input id="actActor" placeholder="Actor" class="px-3 py-2 rounded bg-gray-800 text-sm">
-            <input id="actAction" placeholder="Action" class="px-3 py-2 rounded bg-gray-800 text-sm">
-            <input id="actSince" type="datetime-local" class="px-3 py-2 rounded bg-gray-800 text-sm">
-            <input id="actUntil" type="datetime-local" class="px-3 py-2 rounded bg-gray-800 text-sm">
-            <select id="actSort" class="px-3 py-2 rounded bg-gray-800 text-sm">
-              <option value="desc">Newest first</option>
-              <option value="asc">Oldest first</option>
-            </select>
-            <button id="actReload" class="btn-primary px-3 py-2 rounded text-white">Load</button>
-          </div>
-        </div>
-        <div class="overflow-auto max-h-[60vh] border border-gray-700 rounded-lg">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-800 sticky top-0">
-              <tr>
-                <th class="px-3 py-2 text-left">Time</th>
-                <th class="px-3 py-2 text-left">Actor</th>
-                <th class="px-3 py-2 text-left">Action</th>
-                <th class="px-3 py-2 text-left">Details</th>
-                <th class="px-3 py-2 text-left">IP</th>
-              </tr>
-            </thead>
-            <tbody id="actRows" class="divide-y divide-gray-800"></tbody>
-          </table>
-        </div>
-        <div class="flex items-center justify-between mt-3">
-          <div id="actInfo" class="text-gray-400 text-xs"></div>
-          <div class="flex gap-2">
-            <button id="actPrev" class="px-3 py-1 rounded bg-gray-800">Prev</button>
-            <button id="actNext" class="px-3 py-1 rounded bg-gray-800">Next</button>
-          </div>
-        </div>
-      </div>
-    `;
-    let offset=0, limit=50, total=0;
-    async function load(){
-      const params = {
-        limit, offset,
-        actor: document.getElementById('actActor').value || '',
-        action: document.getElementById('actAction').value || '',
-        sort: document.getElementById('actSort').value || 'desc',
-      };
-      const sinceV = document.getElementById('actSince').value;
-      const untilV = document.getElementById('actUntil').value;
-      if(sinceV) params.since = new Date(sinceV).toISOString();
-      if(untilV) params.until = new Date(untilV).toISOString();
-
-      const data = await fetchActivity(params);
-      total = data.total || 0;
-      const rows = data.items || [];
-      const tbody = document.getElementById('actRows');
-      tbody.innerHTML = rows.map(r=>`
-        <tr>
-          <td class="px-3 py-2 whitespace-nowrap">${fmtTs(r.ts)}</td>
-          <td class="px-3 py-2">${r.actor||''}</td>
-          <td class="px-3 py-2">${r.action||''}</td>
-          <td class="px-3 py-2 text-xs"><pre class="whitespace-pre-wrap">${JSON.stringify(r.details||{}, null, 2)}</pre></td>
-          <td class="px-3 py-2">${r.ip||''}</td>
-        </tr>
-      `).join('');
-      document.getElementById('actInfo').textContent = `Showing ${rows.length} / ${total} (offset ${offset})`;
+  function renderRows(items){
+    tbody.innerHTML = '';
+    if(!items || !items.length){
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 6;
+      td.className = 'muted';
+      td.textContent = 'No activities.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
     }
-    document.getElementById('actReload').onclick = ()=>{ offset=0; load(); };
-    document.getElementById('actPrev').onclick = ()=>{ offset=Math.max(0, offset-50); load(); };
-    document.getElementById('actNext').onclick = ()=>{ offset=offset+50; if(offset>=total) offset=total-50; if(offset<0) offset=0; load(); };
-    await load();
+    items.forEach(it=>{
+      const tr = document.createElement('tr');
+      const tdTs = document.createElement('td');
+      const tdActor = document.createElement('td');
+      const tdAction = document.createElement('td');
+      const tdDetails = document.createElement('td');
+      const tdIp = document.createElement('td');
+      const tdUa = document.createElement('td');
+
+      tdTs.textContent = it.ts ? it.ts.replace('T',' ').substring(0,19) : '';
+      tdActor.textContent = it.actor || '';
+      tdAction.textContent = it.action || '';
+      tdDetails.textContent = typeof it.details === 'object' ? JSON.stringify(it.details) : (it.details || '');
+      tdIp.textContent = it.ip || '';
+      tdUa.textContent = it.user_agent || '';
+
+      tr.append(tdTs, tdActor, tdAction, tdDetails, tdIp, tdUa);
+      tbody.appendChild(tr);
+    });
   }
 
-  // User sorting helpers (if AdminPanel exposes loadUsers, we can intercept rendering via DOM)
-  window.applyUserListSorting = function(){
-    const sortSelect = document.getElementById('userSort');
-    if(!sortSelect) return;
-    sortSelect.addEventListener('change', ()=>{
-      const val = sortSelect.value;
-      const container = document.getElementById('usersContainer') || document;
-      const cards = Array.from(container.querySelectorAll('[data-user-created]'));
-      cards.sort((a,b)=>{
-        const ta = Date.parse(a.getAttribute('data-user-created')||'')||0;
-        const tb = Date.parse(b.getAttribute('data-user-created')||'' )||0;
-        return val==='oldest' ? (ta-tb) : (tb-ta);
+  async function fetchActivity(reset=false){
+    try{
+      if(reset){ offset = 0; }
+
+      const adminPw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
+      if(!adminPw) throw new Error('Missing admin password');
+
+      const params = new URLSearchParams();
+      const actor = (actorInput.value || '').trim();
+      const action = (actionInput.value || '').trim();
+      const sinceISO = toISO((sinceInput.value||'').trim());
+      const untilISO = toISO((untilInput.value||'').trim());
+      const sort = sortSelect.value || 'desc';
+
+      if(actor) params.set('actor', actor);
+      if(action) params.set('action', action);
+      if(sinceISO) params.set('since', sinceISO);
+      if(untilISO) params.set('until', untilISO);
+      params.set('sort', sort);
+      params.set('limit', String(limit));
+      params.set('offset', String(offset));
+
+      const res = await fetch(`${apiUrl}/admin/activity?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'X-Admin-Password': adminPw }
       });
-      const list = container.querySelector('.user-list');
-      if(list){
-        list.innerHTML = '';
-        cards.forEach(c=>list.appendChild(c));
+
+      if(!res.ok){
+        const txt = await res.text().catch(()=> '');
+        throw new Error(`Activity load failed: ${res.status} ${txt}`);
       }
-    });
+
+      const data = await res.json();
+      lastFetched = (data.items || []).length;
+      renderRows(data.items || []);
+    }catch(err){
+      console.error(err);
+      renderRows([]); // 显示空态
+    }
   }
+
+  // expose for other scripts
+  window.PFActivity = { fetchActivity };
+
+  // events
+  loadBtn.addEventListener('click', ()=> fetchActivity(true));
+  prevBtn.addEventListener('click', ()=>{
+    offset = Math.max(0, offset - limit);
+    fetchActivity(false);
+  });
+  nextBtn.addEventListener('click', ()=>{
+    // 简单前进；如果上一页已取数量 < limit，可以阻断（可选）
+    if(lastFetched < limit) return;
+    offset += limit;
+    fetchActivity(false);
+  });
 })();
-// Public logging helper for admin UI actions
-window.logActivity = async function(action, details){
-  try {
-    await fetch(`${window.adminApiUrl}/activity/log`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({actor:'admin', action, details})
-    });
-  } catch(e){ /* ignore */ }
-}
