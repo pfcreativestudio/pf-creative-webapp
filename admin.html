@@ -66,13 +66,14 @@
     .ribbon.amber{background:#291c0c;border-color:#3b2a13;color:#f8d28c}
     .ribbon.red{background:#2a1010;border-color:#3f1a1a;color:#fca5a5}
 
-    /* 完全遮挡的隐私蒙层（未验证时显示，黑幕+噪点） */
+    /* 完全遮挡的隐私蒙层（未验证时显示，黑幕+模糊） */
     #privacyMask{
       position:fixed; inset:0; z-index:30;
       background: radial-gradient(transparent, rgba(0,0,0,.6)) , rgba(0,0,0,.72);
       backdrop-filter: blur(6px);
     }
     #privacyMask.hidden{ display:none; }
+
     /* 密码弹窗在遮挡层之上 */
     .modal-backdrop{position:fixed;inset:0;background:transparent;display:flex;align-items:center;justify-content:center;z-index:35}
     .modal{width:480px;max-width:calc(100% - 32px);background:#0f1215;border:1px solid #243141;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
@@ -82,7 +83,7 @@
   </style>
 </head>
 <body>
-  <!-- 完全遮挡层：默认显示，验证成功后隐藏 -->
+  <!-- 遮挡层：默认显示 -->
   <div id="privacyMask"></div>
 
   <div id="appRoot" class="container" aria-hidden="true">
@@ -168,13 +169,19 @@
   <script>
     // ===== Global Config =====
     window.adminApiUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
+
+    // 强制清除任何历史残留（防止自动解锁）
+    try{
+      localStorage.removeItem('pf_admin_pw');
+      sessionStorage.removeItem('pf_admin_pw');
+    }catch(_){}
   </script>
 
   <!-- 活动日志模块 -->
   <script src="admin-activity.js"></script>
 
   <script>
-  // ===== Users + Admin Bootstrapping with Privacy Shield =====
+  // ===== Users + Admin Bootstrapping (Always Require Password) =====
   (function(){
     const apiUrl = window.adminApiUrl;
     const usersGrid = document.getElementById('usersGrid');
@@ -188,6 +195,8 @@
     const sortExpiry = document.getElementById('sortExpiry');
 
     let rawUsers = [];
+    // 内存变量（本次页面会话使用，不持久化）
+    window.__adminPassword = '';
 
     function showToast(msg, type){
       toast.textContent = msg;
@@ -259,8 +268,8 @@
     }
 
     async function loadUsers(){
-      const pw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
-      if(!pw){ lockUI(); return; }  // 安全：没有密码就不加载 & 继续遮挡
+      const pw = window.__adminPassword || '';
+      if(!pw){ lockUI(); return; }  // 没有密码 → 不加载 & 继续遮挡
       const res = await fetch(`${apiUrl}/admin/users`,{
         headers:{'X-Admin-Password':pw}
       });
@@ -275,6 +284,7 @@
     }
 
     function renderUsers(list){
+      const usersGrid = document.getElementById('usersGrid');
       usersGrid.innerHTML = '';
       if(!list.length){
         usersGrid.innerHTML = `<div class="muted">No users found.</div>`;
@@ -319,7 +329,7 @@
 
     async function confirmDelete(username){
       if(!confirm(`Delete user ${username}?`)) return;
-      const pw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
+      const pw = window.__adminPassword || '';
       const res = await fetch(`${apiUrl}/admin/delete-user`,{
         method:'DELETE',
         headers:{'Content-Type':'application/json','X-Admin-Password':pw},
@@ -333,7 +343,7 @@
     async function promptEdit(username){
       const password = prompt(`New password for ${username}:`,'');
       if(!password) return;
-      const pw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
+      const pw = window.__adminPassword || '';
       const res = await fetch(`${apiUrl}/admin/update-user`,{
         method:'PUT',
         headers:{'Content-Type':'application/json','X-Admin-Password':pw},
@@ -347,7 +357,7 @@
     async function promptAdjust(username){
       const days = prompt(`Adjust days (+/-) for ${username}:`,'30');
       if(days===null) return;
-      const pw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
+      const pw = window.__adminPassword || '';
       const res = await fetch(`${apiUrl}/admin/add-subscription-time`,{
         method:'PUT',
         headers:{'Content-Type':'application/json','X-Admin-Password':pw},
@@ -364,9 +374,8 @@
       if(!inputPassword){ showToast('Please enter password','error'); return; }
       try{
         await verifyPassword(inputPassword);
-        localStorage.setItem('pf_admin_pw', inputPassword);
-        window.__adminPassword = inputPassword;
-        unlockUI(); // ← 验证成功才解除遮挡
+        window.__adminPassword = inputPassword;  // 仅当前页面内存保存
+        unlockUI();                               // 验证成功才解除遮挡
         showToast('Verified');
         await loadUsers();
         window.PFActivity && PFActivity.fetchActivity(true);
@@ -378,35 +387,12 @@
 
     document.getElementById('refreshUsersBtn').onclick = ()=> loadUsers();
 
-    document.getElementById('addUserBtn').onclick = async ()=>{
-      const username = prompt('Username:','');
-      if(!username) return;
-      const password = prompt('Password:','');
-      if(!password) return;
-      const pw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
-      const res = await fetch(`${apiUrl}/admin/add-user`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-Admin-Password':pw},
-        body:JSON.stringify({username,password})
-      });
-      if(!res.ok){ showToast(`Add failed (${res.status})`,'error'); return; }
-      showToast('Added'); await loadUsers();
-      window.PFActivity && PFActivity.fetchActivity(true);
-    };
-
+    // 筛选/排序
     filterStatus.addEventListener('change', applyFilterAndSort);
     sortExpiry.addEventListener('change', applyFilterAndSort);
 
-    // ===== 首次进入：没有密码 → 锁定并不加载；有密码 → 解锁并加载 =====
-    const saved = localStorage.getItem('pf_admin_pw');
-    if(saved){
-      window.__adminPassword = saved;
-      unlockUI();
-      loadUsers().catch(()=>lockUI());
-      window.addEventListener('load', ()=> window.PFActivity && PFActivity.fetchActivity(true));
-    }else{
-      lockUI();
-    }
+    // ===== 启动：总是要求输入密码（不从任何存储读取） =====
+    lockUI();
   })();
   </script>
 </body>
