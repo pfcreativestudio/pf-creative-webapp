@@ -13,7 +13,14 @@
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-    .container{max-width:1200px;margin:24px auto;padding:0 16px}
+
+    /* 容器：未验证时被模糊并禁用交互 */
+    .container{max-width:1200px;margin:24px auto;padding:0 16px;transition:filter .2s ease, opacity .2s ease}
+    .container[aria-hidden="true"]{
+      filter: blur(18px) saturate(0.6) brightness(0.6);
+      pointer-events:none; user-select:none; opacity:.2;
+    }
+
     h1{margin:0 0 16px}
     h2{margin:0}
     .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
@@ -49,7 +56,7 @@
     .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap}
     .right{margin-left:auto}
     .gradient{background:linear-gradient(90deg,var(--amber),var(--accent1),var(--accent2))}
-    .message{position:fixed;top:18px;right:18px;background:#1b1f23;border:1px solid #374151;color:#e5e7eb;padding:10px 14px;border-radius:10px;z-index:25}
+    .message{position:fixed;top:18px;right:18px;background:#1b1f23;border:1px solid #374151;color:#e5e7eb;padding:10px 14px;border-radius:10px;z-index:40}
     .message.error{border-color:#ef4444;color:#fecaca}
     .hidden{display:none}
 
@@ -58,10 +65,27 @@
     .ribbon.green{background:#0e1b12;border-color:#1d3a25;color:#6ee7b7}
     .ribbon.amber{background:#291c0c;border-color:#3b2a13;color:#f8d28c}
     .ribbon.red{background:#2a1010;border-color:#3f1a1a;color:#fca5a5}
+
+    /* 完全遮挡的隐私蒙层（未验证时显示，黑幕+噪点） */
+    #privacyMask{
+      position:fixed; inset:0; z-index:30;
+      background: radial-gradient(transparent, rgba(0,0,0,.6)) , rgba(0,0,0,.72);
+      backdrop-filter: blur(6px);
+    }
+    #privacyMask.hidden{ display:none; }
+    /* 密码弹窗在遮挡层之上 */
+    .modal-backdrop{position:fixed;inset:0;background:transparent;display:flex;align-items:center;justify-content:center;z-index:35}
+    .modal{width:480px;max-width:calc(100% - 32px);background:#0f1215;border:1px solid #243141;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .modal .hd{padding:18px 20px;border-bottom:1px solid #1f2937}
+    .modal .bd{padding:18px 20px}
+    .modal .ft{padding:18px 20px;border-top:1px solid #1f2937;display:flex;justify-content:flex-end;gap:10px}
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- 完全遮挡层：默认显示，验证成功后隐藏 -->
+  <div id="privacyMask"></div>
+
+  <div id="appRoot" class="container" aria-hidden="true">
     <h1>Admin Panel <span id="statusDot" class="badge-dot" title="connected"></span></h1>
 
     <!-- Users Section -->
@@ -69,7 +93,6 @@
       <div class="row wrap" style="justify-content:space-between;align-items:center;margin-bottom:10px">
         <h2>Users</h2>
         <div class="row">
-          <!-- 新增：状态筛选 + 排序 -->
           <select id="filterStatus">
             <option value="all" selected>All</option>
             <option value="active">Active</option>
@@ -127,14 +150,14 @@
     </section>
   </div>
 
-  <!-- Admin Password Modal -->
-  <div id="adminModal" class="modal-backdrop hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:20">
-    <div class="modal" style="width:480px;max-width:calc(100% - 32px);background:#0f1215;border:1px solid #243141;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
-      <div class="hd" style="padding:18px 20px;border-bottom:1px solid #1f2937"><strong>Enter Admin Password</strong></div>
-      <div class="bd" style="padding:18px 20px">
+  <!-- Admin Password Modal（始终在遮挡层上方） -->
+  <div id="adminModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="hd"><strong>Enter Admin Password</strong></div>
+      <div class="bd">
         <input id="adminPwInput" type="password" placeholder="Admin password" style="width:100%"/>
       </div>
-      <div class="ft" style="padding:18px 20px;border-top:1px solid #1f2937;display:flex;justify-content:flex-end;gap:10px">
+      <div class="ft">
         <button id="adminSubmitBtn" class="btn gradient">Submit</button>
       </div>
     </div>
@@ -151,18 +174,20 @@
   <script src="admin-activity.js"></script>
 
   <script>
-  // ===== Users + Admin Bootstrapping with Status Visualization =====
+  // ===== Users + Admin Bootstrapping with Privacy Shield =====
   (function(){
     const apiUrl = window.adminApiUrl;
     const usersGrid = document.getElementById('usersGrid');
     const toast = document.getElementById('toast');
     const modal = document.getElementById('adminModal');
     const adminPwInput = document.getElementById('adminPwInput');
+    const root = document.getElementById('appRoot');
+    const mask = document.getElementById('privacyMask');
 
     const filterStatus = document.getElementById('filterStatus');
     const sortExpiry = document.getElementById('sortExpiry');
 
-    let rawUsers = []; // 最新用户数组，供筛选/排序
+    let rawUsers = [];
 
     function showToast(msg, type){
       toast.textContent = msg;
@@ -171,13 +196,20 @@
       setTimeout(()=>toast.classList.add('hidden'), 3000);
     }
 
-    function openModal(){ modal.classList.remove('hidden'); adminPwInput.focus(); }
-    function closeModal(){ modal.classList.add('hidden'); }
+    function lockUI(){
+      root.setAttribute('aria-hidden','true');
+      mask.classList.remove('hidden');
+      modal.style.display = 'flex';
+    }
+    function unlockUI(){
+      root.setAttribute('aria-hidden','false');
+      mask.classList.add('hidden');
+      modal.style.display = 'none';
+    }
 
     async function verifyPassword(pw){
       const res = await fetch(`${apiUrl}/admin/verify-password`,{
-        method:'POST',
-        headers:{'X-Admin-Password':pw}
+        method:'POST', headers:{'X-Admin-Password':pw}
       });
       if(!res.ok) throw new Error(`Verify failed: ${res.status}`);
       const data = await res.json().catch(()=>({success:false}));
@@ -186,9 +218,7 @@
     }
 
     // ===== Status helpers =====
-    function parseISO(s){
-      try{ return s ? new Date(s) : null; }catch{ return null; }
-    }
+    function parseISO(s){ try{ return s ? new Date(s) : null; }catch{ return null; } }
     function daysDiff(from, to){ return Math.floor((to - from)/86400000); }
     function computeStatus(user){
       const now = new Date();
@@ -199,10 +229,14 @@
       if(d <= 7) return {state:'soon', daysLeft:d, label:`${d}d left`};
       return {state:'active', daysLeft:d, label:`${d}d left`};
     }
+    function statusClasses(state){
+      if(state==='active') return {badge:'green', ribbon:'green', chip:''};
+      if(state==='soon') return {badge:'amber', ribbon:'amber', chip:'amber'};
+      return {badge:'red', ribbon:'red', chip:'red'};
+    }
 
     function applyFilterAndSort(){
       let list = rawUsers.slice();
-      // Filter
       const f = filterStatus.value;
       if(f !== 'all'){
         list = list.filter(u => {
@@ -213,7 +247,6 @@
           return true;
         });
       }
-      // Sort
       const s = sortExpiry.value;
       if(s !== 'none'){
         list.sort((a,b)=>{
@@ -227,24 +260,18 @@
 
     async function loadUsers(){
       const pw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
-      if(!pw){ openModal(); return; }
+      if(!pw){ lockUI(); return; }  // 安全：没有密码就不加载 & 继续遮挡
       const res = await fetch(`${apiUrl}/admin/users`,{
         headers:{'X-Admin-Password':pw}
       });
       if(!res.ok){
-        if(res.status===401){ openModal(); return; }
+        if(res.status===401){ lockUI(); return; }
         const body = await res.text();
         throw new Error(`Load users failed: ${res.status} ${body}`);
       }
       const data = await res.json();
       rawUsers = data.users || [];
       applyFilterAndSort();
-    }
-
-    function statusClasses(state){
-      if(state==='active') return {badge:'green', ribbon:'green', chip:''};
-      if(state==='soon') return {badge:'amber', ribbon:'amber', chip:'amber'};
-      return {badge:'red', ribbon:'red', chip:'red'};
     }
 
     function renderUsers(list){
@@ -283,7 +310,6 @@
             <button class="btn red btn-del">Delete</button>
           </div>
         `;
-        // Buttons
         el.querySelector('.btn-del').onclick = ()=> confirmDelete(u.username);
         el.querySelector('.btn-edit').onclick = ()=> promptEdit(u.username);
         el.querySelector('.btn-adjust').onclick = ()=> promptAdjust(u.username);
@@ -332,25 +358,26 @@
       window.PFActivity && PFActivity.fetchActivity(true);
     }
 
-    // ==== Events ====
+    // ===== 事件绑定 =====
     document.getElementById('adminSubmitBtn').onclick = async ()=>{
       const inputPassword = adminPwInput.value.trim();
       if(!inputPassword){ showToast('Please enter password','error'); return; }
       try{
         await verifyPassword(inputPassword);
-        // 保存密码（刷新不丢）
         localStorage.setItem('pf_admin_pw', inputPassword);
         window.__adminPassword = inputPassword;
-        closeModal();
+        unlockUI(); // ← 验证成功才解除遮挡
         showToast('Verified');
         await loadUsers();
         window.PFActivity && PFActivity.fetchActivity(true);
       }catch(err){
         showToast('Password invalid','error');
+        lockUI(); // 失败时继续遮挡
       }
     };
 
     document.getElementById('refreshUsersBtn').onclick = ()=> loadUsers();
+
     document.getElementById('addUserBtn').onclick = async ()=>{
       const username = prompt('Username:','');
       if(!username) return;
@@ -367,18 +394,18 @@
       window.PFActivity && PFActivity.fetchActivity(true);
     };
 
-    // 新增：筛选/排序事件
     filterStatus.addEventListener('change', applyFilterAndSort);
     sortExpiry.addEventListener('change', applyFilterAndSort);
 
-    // 启动：若已存密码则直接加载，否则弹窗
+    // ===== 首次进入：没有密码 → 锁定并不加载；有密码 → 解锁并加载 =====
     const saved = localStorage.getItem('pf_admin_pw');
     if(saved){
       window.__adminPassword = saved;
-      loadUsers().catch(()=>openModal());
+      unlockUI();
+      loadUsers().catch(()=>lockUI());
       window.addEventListener('load', ()=> window.PFActivity && PFActivity.fetchActivity(true));
     }else{
-      openModal();
+      lockUI();
     }
   })();
   </script>
