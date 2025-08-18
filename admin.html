@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,6 +84,7 @@
             text-align: center;
         }
     </style>
+    <script src="admin-activity.js"></script>
 </head>
 <body>
     <!-- Admin Password Prompt -->
@@ -176,7 +178,7 @@
     <script>
         class AdminPanel {
             constructor() {
-                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api'; 
+                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api'; window.adminApiUrl = this.apiUrl; 
                 this.adminPassword = null; 
                 this.allUsers = []; // Store a copy of all users for searching
                 this.init();
@@ -212,6 +214,8 @@
                         document.getElementById("adminContent").classList.remove("hidden");
                         this.setupEventListeners();
                         this.loadUsers();
+                        window.__adminPassword = inputPassword;
+                        if(window.renderActivityPanel){ window.renderActivityPanel('activityPanel'); }
                     } else {
                         const errorData = await response.json();
                         this.showMessage(errorData.error || "Incorrect Admin Password", "error");
@@ -486,5 +490,28 @@
         }
         const adminPanel = new AdminPanel();
     </script>
-</body>
+
+    <script>
+      // Try render activity panel when admin content shows
+      document.addEventListener('DOMContentLoaded', function(){
+        // Create a new section if not exists
+        let main = document.querySelector('main') || document.body;
+        const wrap = document.createElement('div');
+        wrap.className = "mt-6";
+        wrap.innerHTML = `
+          <div id="activityPanel"></div>
+        `;
+        main.appendChild(wrap);
+        if(window.renderActivityPanel){
+          window.renderActivityPanel('activityPanel');
+        }
+      });
+    </script>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', function(){
+            if(window.applyUserListSorting) window.applyUserListSorting();
+          });
+        </script>
+    </body>
 </html>
