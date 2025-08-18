@@ -1,5 +1,5 @@
 // admin-activity.js
-// 完整活动日志模块：保存管理员密码、日期转换、空筛选不传参、加载与渲染、分页
+// 活动日志模块：仅使用内存中的 window.__adminPassword，不持久化；日期转换、空筛选不传参、分页
 
 (function(){
   const apiUrl = window.adminApiUrl;
@@ -65,7 +65,7 @@
     try{
       if(reset){ offset = 0; }
 
-      const adminPw = window.__adminPassword || localStorage.getItem('pf_admin_pw') || '';
+      const adminPw = window.__adminPassword || '';
       if(!adminPw) throw new Error('Missing admin password');
 
       const params = new URLSearchParams();
