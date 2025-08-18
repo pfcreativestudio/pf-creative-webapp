@@ -112,7 +112,6 @@
     fetchActivity(false);
   });
   nextBtn.addEventListener('click', ()=>{
-    // 简单前进；如果上一页已取数量 < limit，可以阻断（可选）
     if(lastFetched < limit) return;
     offset += limit;
     fetchActivity(false);
