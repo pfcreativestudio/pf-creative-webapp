@@ -133,7 +133,6 @@ body{
 </style>
 </head>
 <body>
-  <!-- BACKGROUND LAYERS -->
   <div class="bg-full" aria-hidden="true">
     <canvas id="nebula" class="canvas-layer"></canvas>
     <canvas id="particleLayer" class="canvas-layer"></canvas>
@@ -153,16 +152,13 @@ body{
     <div class="vignette"></div>
   </div>
 
-  <!-- beam overlay for initial blast -->
   <canvas id="beamCanvas"></canvas>
 
-  <!-- MAIN CONTENT -->
   <div class="wrap" role="main">
     <div class="early" role="banner" aria-live="polite">
       <div style="width:10px;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--gold-1),var(--gold-2));box-shadow:0 0 14px rgba(255,160,80,0.6)"></div>
       🔥 Early Bird — Limited Time Promotion!
-      <!-- countdown removed as requested -->
-    </div>
+      </div>
 
     <header class="header">
       <h1>Choose Your Creative Journey</h1>
@@ -170,7 +166,6 @@ body{
     </header>
 
     <section class="grid" aria-label="Pricing plans">
-      <!-- Beginner -->
       <article class="card" id="card-beginner" aria-labelledby="beginner-label">
         <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
@@ -195,11 +190,13 @@ body{
         </ul>
 
         <div class="cta">
-          <button class="btn alt" onclick="handlePurchase('beginner_1m','Beginner Plan (1 Month)', 9900)">Choose Beginner</button>
+          <button class="btn alt" 
+                  data-plan-id="beginner_1m" 
+                  data-plan-name="Beginner Plan (1 Month)" 
+                  data-amount="9900">Choose Beginner</button>
         </div>
       </article>
 
-      <!-- PRO -->
       <article class="card pro" id="card-pro" aria-labelledby="pro-label">
         <div class="badge">👑 Best Value</div>
         <div class="rim-highlight"></div>
@@ -226,11 +223,13 @@ body{
         </ul>
 
         <div class="cta">
-          <button class="btn" onclick="handlePurchase('pro_3m','PRO Plan (12 Months)', 29700)">Choose PRO</button>
+          <button class="btn" 
+                  data-plan-id="pro_3m" 
+                  data-plan-name="PRO Plan (12 Months)" 
+                  data-amount="29700">Choose PRO</button>
         </div>
       </article>
 
-      <!-- Competent -->
       <article class="card" id="card-competent" aria-labelledby="comp-label">
         <div class="rim-highlight"></div>
         <div class="sheen" aria-hidden="true"></div>
@@ -256,12 +255,15 @@ body{
         </ul>
 
         <div class="cta">
-          <button class="btn alt" onclick="handlePurchase('competent_2m','Competent Plan (6 Months)', 19800)">Choose Competent</button>
+          <button class="btn alt" 
+                  data-plan-id="competent_2m" 
+                  data-plan-name="Competent Plan (6 Months)" 
+                  data-amount="19800">Choose Competent</button>
         </div>
       </article>
     </section>
 
-    <p id="errorMessage" role="status" aria-live="polite" style="margin-top:18px"></p>
+    <p id="errorMessage" role="status" aria-live="polite" style="margin-top:18px; color: #ff5a5a;"></p>
 
     <section class="faq" aria-labelledby="faqTitle" style="margin-top:40px">
       <h2 id="faqTitle" style="text-align:center;font-size:26px;margin-bottom:18px;font-weight:800">Frequently Asked Questions</h2>
@@ -274,38 +276,32 @@ body{
 
 <script>
 /* ============================
-  UPDATED Purchase logic with login check
-  planId -> amounts (sen):
-    beginner_1m = 9900
-    pro_3m = 29700
-    competent_2m = 19800
+  [!!] 全面更新的购买逻辑
    ============================ */
-// MODIFIED: Move handlePurchase to global scope for onclick to work
+// 购买处理函数
 async function handlePurchase(planId, planName, amountInSen){
-  // --- Added login check logic ---
   const token = localStorage.getItem('jwtToken');
   if (!token) {
     alert('Please log in or register first to make a purchase.');
-    // Save intended purchase for after login
     localStorage.setItem('pendingPurchase', JSON.stringify({ planId, planName, amountInSen }));
     window.location.href = 'login.html';
-    return; // Stop further processing
+    return;
   }
 
   const allButtons = document.querySelectorAll('.btn');
   const errorMessage = document.getElementById('errorMessage');
   errorMessage.textContent = '';
   
-  // Disable buttons during processing
   allButtons.forEach(btn => { 
     btn.disabled = true; 
     btn.dataset.orig = btn.textContent; 
     btn.textContent = 'Processing...'; 
     btn.style.opacity = '0.7'; 
+    btn.style.cursor = 'wait';
   });
   
-  // 【核心修正】: 使用完整的 Google Cloud Functions URL
-  const backendUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+  // 你需要将此URL替换为你的Google Cloud Function的实际URL
+  const backendUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
   const apiUrl = `${backendUrl}/create-bill`;
 
   try {
@@ -313,38 +309,46 @@ async function handlePurchase(planId, planName, amountInSen){
       method: 'POST',
       headers: { 
         'Content-Type':'application/json',
-        // Include JWT token for authentication
         'Authorization': `Bearer ${token}` 
       },
       body: JSON.stringify({ planId, planName, amount: amountInSen })
     });
     
-    if (!res.ok) throw new Error('Failed to create payment link. Please try again later.');
-    
     const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.error || `Failed to create payment link. Status: ${res.status}`);
+    }
+    
     if (data && data.url) { 
       window.location.href = data.url; 
       return; 
     }
     throw new Error('Could not retrieve payment link from the server.');
   } catch (err) {
-    errorMessage.textContent = err.message;
-    // Re-enable buttons on error
+    errorMessage.textContent = 'Error: ' + err.message;
     allButtons.forEach(btn => { 
       btn.disabled = false; 
       btn.textContent = btn.dataset.orig; 
       btn.style.opacity = '1'; 
+      btn.style.cursor = 'pointer';
     });
   }
 }
 
+// [!!] 安全更新：使用 Event Listeners 绑定事件
+document.addEventListener('DOMContentLoaded', () => {
+    const purchaseButtons = document.querySelectorAll('.cta .btn');
+    purchaseButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const { planId, planName, amount } = button.dataset;
+            handlePurchase(planId, planName, parseInt(amount, 10));
+        });
+    });
+});
+
+
 /* ============================
-   Visual Effects:
-   - Nebula canvas (soft moving blobs)
-   - Particle burst layer (emitters)
-   - Network lines
-   - Initial beam blast (one-time)
-   - Price-centered particle explosion on card mouseenter (and initial page enter)
+   视觉效果 (无改动)
    ============================ */
 (function(){
   // Setup canvases
@@ -528,10 +532,7 @@ async function handlePurchase(planId, planName, amountInSen){
     requestAnimationFrame(animRibbons);
   })();
 
-  /* ---------- INITIAL BEAM BLAST (one-time) ----------
-     Strong radial beams from center that rapidly fade.
-     Plays once on page load.
-  ----------------------------------------------------*/
+  /* ---------- INITIAL BEAM BLAST (one-time) ---------- */
   function playBeamBlast(){
     const ctx = bCtx;
     const W = beamCanvas.width / dpr, H = beamCanvas.height / dpr;
@@ -542,13 +543,11 @@ async function handlePurchase(planId, planName, amountInSen){
       ctx.clearRect(0,0,beamCanvas.width,beamCanvas.height);
       ctx.save();
       ctx.scale(dpr,dpr);
-      // center flash (very bright short)
       const flashAlpha = Math.max(0, 1 - t/650);
       ctx.beginPath();
       ctx.fillStyle = `rgba(255,255,255, ${0.25 * flashAlpha})`;
       ctx.fillRect(0,0,W,H);
       ctx.closePath();
-      // radial beams
       const cx = W/2, cy = H/2;
       for(let i=0;i<beams;i++){
         const ang = (i / beams) * Math.PI*2 + (t*0.004);
@@ -569,23 +568,16 @@ async function handlePurchase(planId, planName, amountInSen){
     }
     requestAnimationFrame(drawBlast);
   }
-
-  // call once after small delay (so initial layout ready)
   window.addEventListener('load', ()=>{ setTimeout(playBeamBlast, 260); });
 
-  /* ---------- PRICE-CENTERED PARTICLE EXPLOSION ----------
-     Create a small transient canvas positioned over the price element,
-     spawn many particles outward + little glow + trigger price pop shake.
-  -------------------------------------------------------*/
+  /* ---------- PRICE-CENTERED PARTICLE EXPLOSION ---------- */
   function createExplosionAt(elem, theme){
     if(!elem) return;
-    // compute position & size
     const rect = elem.getBoundingClientRect();
     const cx = rect.left + rect.width/2;
     const cy = rect.top + rect.height/2;
-    // create overlay canvas
     const c = document.createElement('canvas');
-    const s = 1; // scale in CSS pixels
+    const s = 1; 
     c.width = rect.width * 2;
     c.height = rect.height * 2;
     c.style.position = 'fixed';
@@ -599,7 +591,6 @@ async function handlePurchase(planId, planName, amountInSen){
     const ctx = c.getContext('2d');
     let particles = [];
     const baseColor = (theme === 'gold') ? [[255,200,120],[253,160,133]] : [[139,92,246],[255,63,166]];
-    // spawn many particles
     const count = 48 + Math.floor(Math.random()*36);
     for(let i=0;i<count;i++){
       const ang = Math.random()*Math.PI*2;
@@ -615,23 +606,19 @@ async function handlePurchase(planId, planName, amountInSen){
         color: col
       });
     }
-    // also a few bright sparks
     let start = performance.now();
     function explode(now){
       const t = now - start;
       const dt = 16;
       ctx.clearRect(0,0,c.width,c.height);
-      // draw glow center
       const gg = ctx.createRadialGradient(c.width/2,c.height/2,0,c.width/2,c.height/2,c.width*0.5);
       gg.addColorStop(0, 'rgba(255,255,255,0.25)');
       gg.addColorStop(0.2, 'rgba(255,255,255,0.08)');
       gg.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = gg; ctx.fillRect(0,0,c.width,c.height);
-      // particles
       for(let i=particles.length-1;i>=0;i--){
         const p = particles[i];
         p.age += dt;
-        // motion
         p.vx *= 0.985; p.vy *= 0.985;
         p.x += p.vx; p.y += p.vy;
         const lifeRatio = Math.max(0, 1 - p.age/p.life);
@@ -646,7 +633,6 @@ async function handlePurchase(planId, planName, amountInSen){
     requestAnimationFrame(explode);
   }
 
-  // link explosions to cards (mouseenter)
   function bindCardExplosions(){
     const cards = [
       { card: document.getElementById('card-beginner'), price: document.getElementById('price-beginner'), theme:'neon' },
@@ -656,14 +642,12 @@ async function handlePurchase(planId, planName, amountInSen){
     cards.forEach(({card, price, theme}) => {
       if(!card || !price) return;
       let triggered = false;
-      // initial "enter" explosion once per page load for emphasis
       setTimeout(()=>{ price.classList.add('pop'); createExplosionAt(price, theme); setTimeout(()=>price.classList.remove('pop'), 800); }, 500 + Math.random()*400);
       card.addEventListener('mouseenter', ()=> {
         price.classList.add('pop');
         createExplosionAt(price, theme);
         setTimeout(()=> price.classList.remove('pop'), 900);
       });
-      // also support keyboard focus
       card.addEventListener('focusin', ()=> {
         price.classList.add('pop');
         createExplosionAt(price, theme);
@@ -671,10 +655,9 @@ async function handlePurchase(planId, planName, amountInSen){
       });
     });
   }
-  // bind after content loaded
   window.addEventListener('load', ()=>{ bindCardExplosions(); });
 
-})(); // end IIFE
+})();
 </script>
 </body>
 </html>
