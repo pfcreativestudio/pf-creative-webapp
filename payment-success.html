@@ -144,9 +144,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const params = getUrlParams();
-    const paid = (params.paid || '').toLowerCase();
 
-    if (paid === 'true') {
+    // Check the 'paid' status from the URL
+    if (params.paid === 'true') {
         // Show success message
         document.getElementById('success-section').style.display = 'block';
         // Optional: Redirect to dashboard after a few seconds
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/dashboard.html';
         }, 5000); // 5-second delay
 
-    } else if (paid === 'false') {
+    } else if (params.paid === 'false') {
         // Show cancellation message
         document.getElementById('cancel-section').style.display = 'block';
     } else {
