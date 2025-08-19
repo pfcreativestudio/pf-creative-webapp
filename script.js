@@ -14,6 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- End Configuration Area ---
 
     generateBtn.addEventListener('click', async () => {
+        // [!!] 安全更新：检查用户是否已登录
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('Please log in to generate a script.');
+            // 可选：跳转到登录页面
+            // window.location.href = '/login.html'; 
+            return;
+        }
+
         const brandName = document.getElementById('brandName').value;
         const productName = document.getElementById('productName').value;
         const targetAudience = document.getElementById('targetAudience').value;
@@ -23,25 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const projectInfo = `
-
-Part 3: [YOUR PROJECT INFORMATION]
-Brand Name: [${brandName}]
-
-Product Name: [${productName}]
-
-Target Audience: [${targetAudience}]
-
-Target Culture (Optional): []
-
-Core Advantages: []
-
-Offer & CTA: []
-
-Avatar Concept (if applicable): []
-
-Director's Vision (Overall Tone & Mood): []
-`;
+        // [!!] 修正：后端现在只需要核心信息，由它来组装完整的 prompt。
+        // 我们只发送用户输入的核心数据。
+        const projectInfo = `Brand Name: ${brandName}\nProduct Name: ${productName}\nTarget Audience: ${targetAudience}`;
 
         loadingDiv.classList.remove('hidden');
         resultContainer.classList.add('hidden');
@@ -49,22 +42,28 @@ Director's Vision (Overall Tone & Mood): []
         generateBtn.textContent = 'Generating...';
 
         try {
-            // NOTE: This is a simplified call for the main page which doesn't require login.
-            // The /chat endpoint in the backend is the one that uses the full master prompt.
-            // This endpoint might need adjustment depending on final logic.
-            const response = await fetch(BACKEND_URL, {
+            // [!!] 逻辑修正：使用正确的 API 端点
+            const apiUrl = `${BACKEND_URL}/generate-script`;
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    // [!!] 安全更新：在请求头中附带 JWT 令牌
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ project_info: projectInfo }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
+                // 后端可能会返回具体的错误信息，如 "Active subscription required"
                 throw new Error(data.error || `HTTP error! status: ${response.status}`);
             }
 
-            resultDiv.textContent = data.result;
+            // [!!] 逻辑修正：根据后端 /generate-script 的返回格式，结果在 data.script 中
+            resultDiv.textContent = data.script;
             resultContainer.classList.remove('hidden');
 
         } catch (error) {
