@@ -1,82 +1,100 @@
-// script.js - fixed full version
+// PF Creative WebApp - Script Generator Logic
+console.log("PF Creative WebApp loaded.");
 
-const BACKEND_URL = "https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api";
+document.addEventListener('DOMContentLoaded', () => {
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const resultDiv = document.getElementById('result');
+    const resultContainer = document.getElementById('result-container');
+    const loadingDiv = document.getElementById('loading');
 
-// Utility: get stored JWT
-function getAuthHeaders() {
-    const token = localStorage.getItem("jwtToken");
-    const headers = {
-        "Content-Type": "application/json"
-    };
-    if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-    }
-    return headers;
-}
+    // --- Configuration Area ---
+    // The backend URL configured with the deployed Google Cloud Function
+    const BACKEND_URL = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
+    // --- End Configuration Area ---
 
-// Example: Generate Script button click
-async function generateScript(promptText) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/generate-script`, {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ prompt: promptText })
-        });
+    generateBtn.addEventListener('click', async () => {
+        const brandName = document.getElementById('brandName').value;
+        const productName = document.getElementById('productName').value;
+        const targetAudience = document.getElementById('targetAudience').value;
 
-        if (!response.ok) {
-            throw new Error("Failed to generate script: " + response.status);
+        if (!brandName || !productName || !targetAudience) {
+            alert('Please fill in all project information!');
+            return;
         }
 
-        const data = await response.json();
-        console.log("Generated script:", data);
-        // 在页面显示结果
-        document.getElementById("scriptOutput").textContent = data.script || "No script generated.";
-    } catch (err) {
-        console.error("Error generating script:", err);
-        alert("Error generating script. Please try again.");
-    }
-}
+        const projectInfo = `
 
-// Example: Payment (保持原样)
-async function createPaymentPlan(planId) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/create-bill`, {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ planId })
-        });
+Part 3: [YOUR PROJECT INFORMATION]
+Brand Name: [${brandName}]
 
-        if (!response.ok) {
-            throw new Error("Payment request failed: " + response.status);
+Product Name: [${productName}]
+
+Target Audience: [${targetAudience}]
+
+Target Culture (Optional): []
+
+Core Advantages: []
+
+Offer & CTA: []
+
+Avatar Concept (if applicable): []
+
+Director's Vision (Overall Tone & Mood): []
+`;
+
+        loadingDiv.classList.remove('hidden');
+        resultContainer.classList.add('hidden');
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generating...';
+
+        try {
+            // NOTE: This is a simplified call for the main page which doesn't require login.
+            // The /chat endpoint in the backend is the one that uses the full master prompt.
+            // This endpoint might need adjustment depending on final logic.
+            const response = await fetch(BACKEND_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_info: projectInfo }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`);
+            }
+
+            resultDiv.textContent = data.result;
+            resultContainer.classList.remove('hidden');
+
+        } catch (error) {
+            resultDiv.textContent = 'Error occurred:\n' + error.message;
+            resultContainer.classList.remove('hidden');
+        } finally {
+            loadingDiv.classList.add('hidden');
+            generateBtn.disabled = false;
+            generateBtn.textContent = '🚀 Generate My Veo 3 Script';
         }
+    });
 
-        const data = await response.json();
-        if (data.url) {
-            window.location.href = data.url;
+    copyBtn.addEventListener('click', () => {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(resultDiv.textContent).then(() => {
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => { copyBtn.textContent = '📋 Copy Script'; }, 2000);
+            }).catch(err => {
+                alert('Copy failed: ', err);
+            });
         } else {
-            alert("Error creating payment link.");
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = resultDiv.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = '📋 Copy Script'; }, 2000);
         }
-    } catch (err) {
-        console.error("Error creating payment:", err);
-        alert("Error creating payment. Please try again.");
-    }
-}
-
-// DOM 绑定示例
-document.addEventListener("DOMContentLoaded", () => {
-    const genBtn = document.getElementById("generateBtn");
-    if (genBtn) {
-        genBtn.addEventListener("click", () => {
-            const promptText = document.getElementById("promptInput").value;
-            generateScript(promptText);
-        });
-    }
-
-    const payBtns = document.querySelectorAll(".payBtn");
-    payBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const planId = btn.dataset.plan;
-            createPaymentPlan(planId);
-        });
     });
 });
