@@ -134,7 +134,7 @@
         class DirectorChatroom {
             constructor() {
                 // 【核心修改】请将下面的占位符替换成您正确的 Cloud Run 服务 URL
-                this.apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+                this.apiUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
                 
                 // --- 核心修正：统一使用 jwtToken 和 username ---
                 this.token = localStorage.getItem('jwtToken');
@@ -396,4 +396,5 @@
     </script>
 </body>
 </html>
+
 
