@@ -1,17 +1,17 @@
 {
-  "version": 2,
-  "headers": [
+  &quot;version&quot;: 2,
+  &quot;headers&quot;: [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" },
+      &quot;source&quot;: &quot;/(.*)&quot;,
+      &quot;headers&quot;: [
+        { &quot;key&quot;: &quot;Strict-Transport-Security&quot;, &quot;value&quot;: &quot;max-age=63072000; includeSubDomains; preload&quot; },
+        { &quot;key&quot;: &quot;X-Content-Type-Options&quot;, &quot;value&quot;: &quot;nosniff&quot; },
+        { &quot;key&quot;: &quot;X-Frame-Options&quot;, &quot;value&quot;: &quot;DENY&quot; },
+        { &quot;key&quot;: &quot;Referrer-Policy&quot;, &quot;value&quot;: &quot;strict-origin-when-cross-origin&quot; },
+        { &quot;key&quot;: &quot;Permissions-Policy&quot;, &quot;value&quot;: &quot;geolocation=(), microphone=(), camera=()&quot; },
         {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://www.billplz.com https://pay.billplz.com https://asia-southeast1-pf-studio-prod.cloudfunctions.net https://pfsystem-api-902383636494.asia-southeast1.run.app; style-src 'self' https://fonts.googleapis.com; img-src 'self' data: https://www.billplz.com https://pay.billplz.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.billplz.com https://pay.billplz.com https://asia-southeast1-pf-studio-prod.cloudfunctions.net https://pfsystem-api-902383636494.asia-southeast1.run.app; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://www.billplz.com https://pay.billplz.com"
+          &quot;key&quot;: &quot;Content-Security-Policy&quot;,
+          &quot;value&quot;: &quot;default-src &#39;self&#39;; script-src &#39;self&#39; &#39;unsafe-inline&#39; https://cdn.tailwindcss.com https://www.billplz.com https://pay.billplz.com https://asia-southeast1-pf-studio-prod.cloudfunctions.net https://pfsystem-api-902383636494.asia-southeast1.run.app; style-src &#39;self&#39; &#39;unsafe-inline&#39; https://fonts.googleapis.com; img-src &#39;self&#39; data: https://www.billplz.com https://pay.billplz.com; font-src &#39;self&#39; https://fonts.gstatic.com; connect-src &#39;self&#39; https://www.billplz.com https://pay.billplz.com https://asia-southeast1-pf-studio-prod.cloudfunctions.net https://pfsystem-api-902383636494.asia-southeast1.run.app; frame-ancestors &#39;none&#39;; base-uri &#39;self&#39;; form-action &#39;self&#39; https://www.billplz.com https://pay.billplz.com&quot;
         }
       ]
     }
