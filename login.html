@@ -50,7 +50,8 @@
     </div>
 
     <script>
-        const backendUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+        // 【核心修改】请将下面的占位符替换成您正确的 Cloud Run 服务 URL
+        const backendUrl = 'YOUR_NEW_CLOUD_RUN_URL_HERE';
         
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
@@ -89,7 +90,7 @@
                     throw new Error(result.message || 'Invalid username or password');
                 }
             } catch (error) {
-                errorDiv.textContent = error.message;
+                errorDiv.textContent = 'Failed to fetch. Please check the API URL and backend status.';
                 errorDiv.classList.remove('hidden');
                 loginBtn.textContent = 'Login';
                 loginBtn.disabled = false;
