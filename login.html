@@ -87,10 +87,10 @@
                     }, 1000);
 
                 } else {
-                    throw new Error(result.message || 'Invalid username or password');
+                    throw new Error(result.error || 'Invalid username or password');
                 }
             } catch (error) {
-                errorDiv.textContent = 'Failed to fetch. Please check the API URL and backend status.';
+                errorDiv.textContent = error.message;
                 errorDiv.classList.remove('hidden');
                 loginBtn.textContent = 'Login';
                 loginBtn.disabled = false;
