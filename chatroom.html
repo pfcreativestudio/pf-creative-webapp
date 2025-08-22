@@ -133,26 +133,19 @@
 
         class DirectorChatroom {
             constructor() {
-                // 【核心修改】请将下面的占位符替换成您正确的 Cloud Run 服务 URL
                 this.apiUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
-                
-                // --- 核心修正：统一使用 jwtToken 和 username ---
                 this.token = localStorage.getItem('jwtToken');
                 this.username = localStorage.getItem('username');
-                // --- 修正结束 ---
-
                 this.savedChats = [];
                 this.currentChat = { id: null, history: [] };
                 this.attachedFile = null;
                 this.sidebarOpen = false;
-                // We only call init if the token check above passed
                 if (this.token && this.username) {
                     this.init();
                 }
             }
 
             init() {
-                // The check is already done outside, but this is a good fallback.
                 if (!this.token || !this.username) { 
                     window.location.href = 'login.html'; 
                     return; 
@@ -163,8 +156,6 @@
                 this.startNewChat(); 
             }
             
-            // ... (您的所有其他函数 setupEventListeners, loadAndRenderHistory, sendMessage 等都保持不变)
-            // (The user's original functions are preserved here)
             setupEventListeners() {
                 document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
                 const messageInput = document.getElementById('messageInput');
@@ -315,10 +306,22 @@
                     formData.append('file', userFile);
                     body = formData;
                 } else {
-                    endpoint = `${this.apiUrl}/generate-script`;
+                    // ==========================================================
+                    // === START: MODIFICATIONS FOR NEW MULTI-AGENT WORKFLOW ===
+                    // ==========================================================
+                    endpoint = `${this.apiUrl}/v1/projects`;
                     headers['Content-Type'] = 'application/json';
-                    const textHistory = this.currentChat.history.filter(m => !m.parts.some(p => p.file));
-                    body = JSON.stringify({ project_info: userMessageContent, history: textHistory });
+                    
+                    // Create the structured payload for the new endpoint
+                    const payload = {
+                        "project_title": `Project based on: ${userMessageContent.substring(0, 50)}...`,
+                        "video_length_sec": 30, // Default length, can be made dynamic later
+                        "user_input": userMessageContent
+                    };
+                    body = JSON.stringify(payload);
+                    // ========================================================
+                    // === END: MODIFICATIONS FOR NEW MULTI-AGENT WORKFLOW ===
+                    // ========================================================
                 }
 
                 this.showTypingIndicator();
@@ -326,16 +329,40 @@
                 try {
                     const response = await fetch(endpoint, { method: 'POST', headers, body });
                     const result = await response.json();
-                    if (response.ok && result.success) {
-                        const aiResponse = result.response || result.script;
-                        this.addMessage(aiResponse, 'model'); // Changed 'ai' to 'model' to match history
+
+                    if (response.ok) {
+                        let aiResponse;
+                        // ==========================================================
+                        // === START: MODIFICATIONS FOR NEW RESPONSE FORMAT ===
+                        // ==========================================================
+                        if (userFile) {
+                            // This is the old response format for chat-with-image, which is fine
+                            aiResponse = result.response;
+                        } else {
+                            // This is the new response format for /v1/projects
+                            // We need to format the creative options into a readable string
+                            const options = result.creative_options;
+                            let formattedOptions = "Great! I've come up with three creative directions for your project. Please choose which one you'd like to develop further:\n\n";
+                            options.forEach((opt, index) => {
+                                formattedOptions += `OPTION ${index + 1}: **${this.escapeHtml(opt.title)}**\n`;
+                                formattedOptions += `*Logline:* ${this.escapeHtml(opt.logline)}\n`;
+                                formattedOptions += `*Why it works:* ${this.escapeHtml(opt.why_it_works)}\n\n`;
+                            });
+                            aiResponse = formattedOptions;
+                        }
+                        // ========================================================
+                        // === END: MODIFICATIONS FOR NEW RESPONSE FORMAT ===
+                        // ========================================================
+
+                        this.addMessage(aiResponse, 'model');
                         this.currentChat.history.push({ role: 'model', parts: [{ text: aiResponse }] });
+
                     } else {
-                        const errorMessage = result.error || result.message || 'An unexpected error occurred.';
-                        this.addMessage(errorMessage, 'model', null, true); // Changed 'ai' to 'model'
+                        const errorMessage = result.error || result.detail || 'An unexpected error occurred.';
+                        this.addMessage(errorMessage, 'model', null, true);
                     }
                 } catch (error) {
-                    this.addMessage('Network error. Please check your connection.', 'model', null, true); // Changed 'ai' to 'model'
+                    this.addMessage('Network error. Please check your connection.', 'model', null, true);
                 } finally {
                     this.hideTypingIndicator();
                     this.toggleSendButton(true);
@@ -349,9 +376,12 @@
                 const messageDiv = document.createElement('div');
                 const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const avatar = sender === 'user' ? 'fa-user' : 'fa-robot';
-                const senderName = sender === 'user' ? this.username : 'AI Film Director';
-                const senderClass = sender === 'user' ? 'user-message' : 'ai-message';
-                const formattedContent = this.escapeHtml(content).replace(/\n/g, '<br>');
+                
+                // Use a simple markdown-to-html converter
+                let formattedContent = this.escapeHtml(content)
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')     // Italics
+                    .replace(/\n/g, '<br>');
 
                 let filePreviewHtml = '';
                 if (file && sender === 'user') {
@@ -379,22 +409,17 @@
             scrollToBottom() { const container = document.getElementById('messagesContainer'); setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); }
             
             logout() {
-                // --- 核心修正：确保登出时清除正确的键名 ---
                 localStorage.removeItem('jwtToken');
                 localStorage.removeItem('username');
                 window.location.href = 'index.html';
-                // --- 修正结束 ---
             }
 
             escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
         }
         
-        // 只有在确认登录后才初始化聊天室
         if (token && username) {
             const chatroom = new DirectorChatroom();
         }
     </script>
 </body>
 </html>
-
-

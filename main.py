@@ -22,7 +22,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- NEW IMPORTS FOR V1 MULTI-AGENT ARCHITECTURE ---
 import services
-from schemas import ValidationError # 用于捕获 Pydantic 错误
+from pydantic import ValidationError # 用于捕获 Pydantic 错误
 # --- END NEW IMPORTS ---
 
 # Gemini SDK (optional)
