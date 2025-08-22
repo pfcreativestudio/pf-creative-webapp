@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PF Creative AI Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%); color: #e0e0e0; font-family: sans-serif; }
+        .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .gradient-text { background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold gradient-text">My Dashboard</h1>
+            <button id="logoutButton" class="text-gray-400 hover:text-white">Logout</button>
+        </header>
+
+        <main>
+            <div id="loadingState" class="text-center">
+                <p>Loading your account details...</p>
+            </div>
+
+            <div id="errorState" class="hidden text-center text-red-400 glass-effect rounded-lg p-6">
+                <p id="errorMessage">Error loading data. Please try logging in again.</p>
+            </div>
+
+            <div id="contentState" class="hidden space-y-6">
+                <div class="glass-effect rounded-lg p-6">
+                    <h2 class="text-xl font-semibold">Subscription Status</h2>
+                    <p class="text-gray-400 mt-2">
+                        Your current plan expires in: 
+                        <span id="daysRemaining" class="text-2xl font-bold text-green-400">--</span> days
+                    </p>
+                    <p class="text-sm text-gray-500 mt-1">
+                        (Expires on: <span id="expiryDate">----/--/--</span>)
+                    </p>
+                    <a href="pricing.html" class="inline-block mt-4 px-5 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-semibold">
+                        Manage Subscription
+                    </a>
+                </div>
+
+                <div class="glass-effect rounded-lg p-6">
+                    <h2 class="text-xl font-semibold">Start Creating</h2>
+                    <p class="text-gray-400 mt-2">Ready to bring your ideas to life? Jump into the AI Film Director system.</p>
+                    <a href="chatroom.html" class="inline-block mt-4 px-5 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-semibold">
+                        Go to Script Generator
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', async () => {
+            const loadingDiv = document.getElementById('loadingState');
+            const contentDiv = document.getElementById('contentState');
+            const errorDiv = document.getElementById('errorState');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                // 【核心修正】确保API地址是您Google Cloud Function的完整URL + 对应的路径
+                const apiUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app/get-user-status';
+                
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('jwtToken');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Failed to fetch user status.');
+                }
+
+                const userData = await response.json();
+                
+                const expiryDateSpan = document.getElementById('expiryDate');
+                const daysRemainingSpan = document.getElementById('daysRemaining');
+
+                if (userData.subscription_expires_at) {
+                    const expiryDate = new Date(userData.subscription_expires_at);
+                    const now = new Date();
+                    const diffTime = expiryDate - now;
+                    const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+                    daysRemainingSpan.textContent = diffDays;
+                    expiryDateSpan.textContent = expiryDate.toISOString().split('T')[0];
+                    
+                    if (diffDays < 7 && diffDays > 0) {
+                        daysRemainingSpan.classList.remove('text-green-400');
+                        daysRemainingSpan.classList.add('text-yellow-400');
+                    } else if (diffDays === 0) {
+                        daysRemainingSpan.classList.remove('text-green-400');
+                        daysRemainingSpan.classList.add('text-red-500');
+                    }
+
+                } else {
+                    daysRemainingSpan.textContent = 0;
+                    daysRemainingSpan.classList.remove('text-green-400');
+                    daysRemainingSpan.classList.add('text-red-500');
+                    expiryDateSpan.textContent = 'Not Subscribed';
+                }
+
+                loadingDiv.classList.add('hidden');
+                contentDiv.classList.remove('hidden');
+
+            } catch (error) {
+                console.error(error);
+                errorMessage.textContent = `Error: ${error.message}. Please try logging in again.`;
+                loadingDiv.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

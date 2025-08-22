@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PF Creative AI Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%); color: #e0e0e0; font-family: sans-serif; }
+        .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .gradient-text { background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .btn-primary { background: linear-gradient(45deg, #f59e0b, #ec4899); transition: all 0.3s ease; }
+        .btn-primary:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+        .btn-primary:disabled { background: #444; cursor: not-allowed; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="glass-effect rounded-2xl p-8 w-full max-w-md mx-4">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold gradient-text mb-2">Welcome Back</h1>
+            <p class="text-gray-200">Access Your AI Film Director</p>
+        </div>
+        
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-200 mb-2">Username</label>
+                <input type="text" id="username" name="username" required
+                    class="w-full px-4 py-3 rounded-lg bg-black/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter your username">
+            </div>
+            
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-200 mb-2">Password</label>
+                <input type="password" id="password" name="password" required
+                    class="w-full px-4 py-3 rounded-lg bg-black/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter your password">
+            </div>
+            
+            <div id="errorMessage" class="hidden text-red-400 text-sm text-center"></div>
+            
+            <button type="submit" id="loginBtn"
+                class="w-full btn-primary text-white font-semibold py-3 px-6 rounded-lg transition duration-300">
+                Login
+            </button>
+        </form>
+        
+        <div class="mt-6 text-center text-sm text-gray-400">
+            Don't have an account? <a href="register.html" class="font-medium text-purple-400 hover:text-purple-300">Register here</a>
+        </div>
+    </div>
+
+    <script>
+        // 【核心修改】请将下面的占位符替换成您正确的 Cloud Run 服务 URL
+        const backendUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
+        
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorDiv = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            loginBtn.textContent = 'Logging in...';
+            loginBtn.disabled = true;
+            errorDiv.classList.add('hidden');
+            
+            try {
+                const response = await fetch(`${backendUrl}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.token) {
+                    // 【核心修正】统一保存Token和Username
+                    localStorage.setItem('jwtToken', result.token);
+                    localStorage.setItem('username', username);
+                    
+                    loginBtn.textContent = 'Success!';
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+
+                } else {
+                    throw new Error(result.error || 'Invalid username or password');
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.classList.remove('hidden');
+                loginBtn.textContent = 'Login';
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

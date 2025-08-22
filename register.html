@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - PF Creative AI Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%); color: #e0e0e0; font-family: sans-serif; }
+        .gradient-text { background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .btn-primary { background: linear-gradient(45deg, #f59e0b, #ec4899); transition: all 0.3s ease; }
+        .btn-primary:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+        .btn-primary:disabled { background: #444; cursor: not-allowed; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 space-y-8 bg-black/30 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl">
+        <div>
+            <h1 class="text-3xl font-bold text-center gradient-text">Create Your Account</h1>
+            <p class="mt-2 text-center text-gray-400">Join the future of AI filmmaking</p>
+        </div>
+        <form id="registerForm" class="space-y-6">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+                <input id="username" name="username" type="text" required class="w-full px-4 py-2 mt-1 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Choose a username">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+                <input id="password" name="password" type="password" required class="w-full px-4 py-2 mt-1 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Create a password">
+            </div>
+             <div>
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-300">Confirm Password</label>
+                <input id="confirmPassword" name="confirmPassword" type="password" required class="w-full px-4 py-2 mt-1 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Confirm your password">
+            </div>
+            <div>
+                <button type="submit" id="submitButton" class="w-full btn-primary px-6 py-3 rounded-lg text-white font-semibold">
+                    Register
+                </button>
+            </div>
+        </form>
+        <p id="message" class="text-center text-sm h-4"></p>
+        <div class="text-center text-sm text-gray-400">
+            Already have an account? <a href="login.html" class="font-medium text-purple-400 hover:text-purple-300">Log in</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const submitButton = document.getElementById('submitButton');
+        const messageDiv = document.getElementById('message');
+
+        // 【核心修正】确保API地址是您Google Cloud Function的完整URL + 对应的路径
+        const apiUrl = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api/register';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = form.username.value;
+            const password = form.password.value;
+            const confirmPassword = form.confirmPassword.value;
+
+            if (password !== confirmPassword) {
+                messageDiv.textContent = 'Passwords do not match.';
+                messageDiv.style.color = 'red';
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Registering...';
+            messageDiv.textContent = '';
+
+            try {
+                const response = await fetch(apiUrl, { // <--- 已修改
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageDiv.textContent = 'Registration successful! Redirecting to login...';
+                    messageDiv.style.color = 'lime';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Registration failed.');
+                }
+            } catch (error) {
+                messageDiv.textContent = error.message;
+                try { __pfLog('register_fail', {username: (document.getElementById('username')||{}).value}); } catch(e){}
+                messageDiv.style.color = 'red';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Register';
+            }
+        });
+    </script>
+
+<script>
+  async function __pfLog(action, details, actor){
+    try {
+      const base = 'https://asia-southeast1-pf-studio-prod.cloudfunctions.net/pfsystem-api';
+      await fetch(base + '/activity/log', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({actor: actor||'user', action, details})
+      });
+    } catch(e) { /* ignore */ }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PF Creative AI Director — Payment Status</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ---------------- THEME (Consistent with pricing.html) ---------------- */
+:root{
+  --bg-0:#030114;
+  --bg-1:#070621;
+  --muted:#9aa0ad;
+  --text:#f4f7fb;
+  --purple:#8b5cff;
+  --pink:#ff3fa6;
+  --cyan:#35e1ff;
+  --gold-1:#ffd66d;
+  --gold-2:#ff9f5a;
+  --success: #35ff9a;
+  --error: #ff5a5a;
+  --pending: #ffc45a;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  background: linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+/* ---------- Card Styling ---------- */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-radius: 20px;
+  padding: 40px 50px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 18px 70px rgba(0,0,0,0.6);
+}
+
+.card h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+#status-icon svg {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+}
+
+.success-color { color: var(--success); }
+.error-color { color: var(--error); }
+.pending-color { color: var(--pending); }
+
+#message {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+/* ---------- Button Styling ---------- */
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn:hover {
+    transform: translateY(-2px);
+}
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(90deg,var(--purple),var(--pink));
+  box-shadow: 0 16px 64px rgba(139,92,246,0.12);
+}
+
+/* Hide sections by default */
+#success-section, #cancel-section, #error-section, #verifying-section {
+    display: none;
+}
+</style>
+</head>
+<body>
+
+  <div class="card">
+    
+    <div id="success-section">
+      <div id="status-icon" class="success-color">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+      <h1 class="success-color">Payment Successful!</h1>
+      <p id="message">Thank you for your purchase. Your subscription has been activated or extended. You will be redirected to your dashboard shortly.</p>
+      <a href="/dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+
+    <div id="cancel-section">
+      <div id="status-icon" class="error-color">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+      </div>
+      <h1 class="error-color">Payment Canceled</h1>
+      <p id="message">Your payment process was canceled. Your account has not been charged. You can return to the pricing page to try again.</p>
+      <a href="/pricing.html" class="btn btn-primary">Back to Pricing</a>
+    </div>
+
+    <div id="error-section">
+        <div id="status-icon" class="error-color">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+        <h1 class="error-color">Something Went Wrong</h1>
+        <p id="message">We couldn't confirm your payment status. Please check your dashboard or contact support if you believe your payment was successful.</p>
+        <a href="/dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+
+    <div id="verifying-section">
+        <div id="status-icon" class="pending-color">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.8-2.8"/><path d="M18 12h4"/><path d="m16.2 16.2 2.8 2.8"/><path d="M12 18v4"/><path d="m7.8 16.2-2.8 2.8"/><path d="M6 12H2"/><path d="m7.8 7.8-2.8-2.8"/></svg>
+        </div>
+        <h1 class="pending-color">Verifying Payment...</h1>
+        <p id="message">We have received your payment confirmation and are now updating your account. Please wait a moment.</p>
+    </div>
+
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- [!!] 安全更新：后端 API 地址 ---
+    // 你需要将此URL替换为你的Google Cloud Function的实际URL
+    const backendApiUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
+
+    // 显示对应的UI板块
+    const showSection = (sectionId) => {
+        document.getElementById('success-section').style.display = 'none';
+        document.getElementById('cancel-section').style.display = 'none';
+        document.getElementById('error-section').style.display = 'none';
+        document.getElementById('verifying-section').style.display = 'none';
+        document.getElementById(sectionId).style.display = 'block';
+    };
+
+    // 从URL获取参数
+    const getUrlParams = () => {
+        const params = new URLSearchParams(window.location.search);
+        const billplzParams = {};
+        for (const [key, value] of params.entries()) {
+            const match = key.match(/billplz\[(.*?)\]/);
+            if (match) {
+                billplzParams[match[1]] = value;
+            }
+        }
+        return billplzParams;
+    };
+    
+    // 安全地从后端验证订阅状态
+    const verifySubscriptionStatus = async () => {
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            showSection('error-section');
+            document.querySelector('#error-section #message').textContent = 'Could not find login token. Please log in and check your dashboard to confirm your subscription status.';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${backendApiUrl}/get-user-status`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch status from server.');
+            }
+
+            const data = await response.json();
+            
+            // is_subscribed 字段由后端根据 subscription_expires_at 是否在未来决定
+            if (data && data.is_subscribed) {
+                showSection('success-section');
+                // 5秒后自动跳转到仪表盘
+                setTimeout(() => { window.location.href = '/dashboard.html'; }, 5000);
+            } else {
+                throw new Error('Subscription does not appear to be active.');
+            }
+        } catch (error) {
+            console.error('Verification failed:', error);
+            showSection('error-section');
+            document.querySelector('#error-section #message').textContent = 'Verification failed. It might take a few moments for the update to reflect. Please check your dashboard or contact support.';
+        }
+    };
+
+    const params = getUrlParams();
+
+    // 根据URL参数决定初始状态
+    if (params.paid === 'true') {
+        // 显示“验证中”并开始从后端验证
+        showSection('verifying-section');
+        // 等待2-3秒让后端webhook有时间处理，然后再查询
+        setTimeout(verifySubscriptionStatus, 3000);
+    } else if (params.paid === 'false') {
+        // 显示取消信息
+        showSection('cancel-section');
+    } else {
+        // 状态不明确，显示通用错误
+        showSection('error-section');
+    }
+});
+</script>
+
+</body>
+</html>

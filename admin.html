@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PF Admin Panel</title>
+  <style>
+    :root{
+      --bg:#101214; --card:#1b1f23; --text:#eaeef2; --muted:#9aa5b1;
+      --green:#22c55e; --blue:#3b82f6; --red:#ef4444; --amber:#f59e0b;
+      --accent1:#ff7a59; --accent2:#ff4d9d;
+      --border:#263041; --card-dim:#15181c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+
+    /* 容器：未验证时被模糊并禁用交互 */
+    .container{max-width:1200px;margin:24px auto;padding:0 16px;transition:filter .2s ease, opacity .2s ease}
+    .container[aria-hidden="true"]{
+      filter: blur(18px) saturate(0.6) brightness(0.6);
+      pointer-events:none; user-select:none; opacity:.2;
+    }
+
+    h1{margin:0 0 16px}
+    h2{margin:0}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    @media (min-width:1100px){ .grid{grid-template-columns:repeat(3,1fr);} }
+
+    .card{background:var(--card);border-radius:14px;padding:16px;border:1px solid var(--border);box-shadow:0 2px 10px rgba(0,0,0,.25);position:relative}
+    .card.inactive{background:var(--card-dim);opacity:.9;border-color:rgba(239,68,68,.35)}
+    .card.soon{border-color:rgba(245,158,11,.45); box-shadow:0 0 0 1px rgba(245,158,11,.15) inset}
+    .row{display:flex;gap:8px;align-items:center}
+    .row.wrap{flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .badge-dot{width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;margin-left:6px}
+    .badge{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid;display:inline-flex;align-items:center;gap:6px}
+    .badge.green{background:#0e1b12;border-color:#1d3a25;color:#6ee7b7}
+    .badge.amber{background:#291c0c;border-color:#3b2a13;color:#f8d28c}
+    .badge.red{background:#2a1010;border-color:#3f1a1a;color:#fca5a5}
+    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#0f172a;border:1px solid #1e293b;color:#93c5fd}
+    .chip.red{background:#2a0f0f;border-color:#3f1a1a;color:#fecaca}
+    .chip.amber{background:#291c0c;border-color:#3b2a13;color:#f8d28c}
+
+    .btn{border:0;border-radius:10px;padding:8px 12px;color:#fff;cursor:pointer}
+    .btn.green{background:var(--green)}
+    .btn.blue{background:var(--blue)}
+    .btn.red{background:var(--red)}
+    .btn.ghost{background:#2a2f35}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    input,select{background:#0f1215;border:1px solid #2a2f35;color:var(--text);border-radius:10px;padding:8px 10px}
+    table{width:100%;border-collapse:separate;border-spacing:0 10px}
+    thead th{font-weight:600;text-align:left;color:var(--muted)}
+    tbody td{background:#0f1215;padding:10px;border-top:1px solid #222;border-bottom:1px solid #222}
+    tbody td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px}
+    tbody td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap}
+    .right{margin-left:auto}
+    .gradient{background:linear-gradient(90deg,var(--amber),var(--accent1),var(--accent2))}
+    .message{position:fixed;top:18px;right:18px;background:#1b1f23;border:1px solid #374151;color:#e5e7eb;padding:10px 14px;border-radius:10px;z-index:40}
+    .message.error{border-color:#ef4444;color:#fecaca}
+    .hidden{display:none !important}
+
+    /* 右上角状态角标 */
+    .ribbon{position:absolute;top:10px;right:10px;font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid;opacity:.95}
+    .ribbon.green{background:#0e1b12;border-color:#1d3a25;color:#6ee7b7}
+    .ribbon.amber{background:#291c0c;border-color:#3b2a13;color:#f8d28c}
+    .ribbon.red{background:#2a1010;border-color:#3f1a1a;color:#fca5a5}
+
+    /* 完全遮挡的隐私蒙层（未验证时显示，黑幕+模糊） */
+    #privacyMask{
+      position:fixed; inset:0; z-index:30;
+      background: radial-gradient(transparent, rgba(0,0,0,.6)) , rgba(0,0,0,.72);
+      backdrop-filter: blur(6px);
+    }
+    #privacyMask.hidden{ display:none; }
+
+    /* 密码弹窗在遮挡层之上 */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:35}
+    .modal{width:480px;max-width:calc(100% - 32px);background:#0f1215;border:1px solid #243141;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .modal .hd{padding:18px 20px;border-bottom:1px solid #1f2937}
+    .modal .bd{padding:18px 20px; display:flex; flex-direction:column; gap:12px;}
+    .modal .ft{padding:18px 20px;border-top:1px solid #1f2937;display:flex;justify-content:flex-end;gap:10px}
+  </style>
+</head>
+<body>
+  <div id="privacyMask"></div>
+
+  <div id="appRoot" class="container" aria-hidden="true">
+    <h1>Admin Panel <span id="statusDot" class="badge-dot" title="connected"></span></h1>
+
+    <section class="card">
+      <div class="row wrap" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h2>Users</h2>
+        <div class="row">
+          <input type="text" id="userSearchInput" placeholder="Search by username...">
+          <select id="filterStatus">
+            <option value="all" selected>All</option>
+            <option value="active">Active</option>
+            <option value="soon">Expiring soon (≤7d)</option>
+            <option value="inactive">Inactive / Expired</option>
+          </select>
+          <select id="sortExpiry">
+            <option value="none" selected>Sort by</option>
+            <option value="asc">Expiry ↑</option>
+            <option value="desc">Expiry ↓</option>
+            <option value="newest">Newest Registered</option>
+            <option value="oldest">Oldest Registered</option>
+          </select>
+          <button class="btn ghost" id="refreshUsersBtn">Refresh</button>
+          <button class="btn green" id="addUserBtn">Add New</button>
+        </div>
+      </div>
+
+      <div class="grid" id="usersGrid"></div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <h2 style="margin:0 0 10px">Activity Log</h2>
+
+      <div class="toolbar">
+        <input id="actorInput" placeholder="Actor"/>
+        <input id="actionInput" placeholder="Action"/>
+        <input id="sinceInput" placeholder="dd/mm/yyyy HH:mm"/>
+        <input id="untilInput" placeholder="dd/mm/yyyy HH:mm"/>
+        <select id="sortSelect">
+          <option value="desc" selected>Newest first</option>
+          <option value="asc">Oldest first</option>
+        </select>
+        <span class="right"></span>
+        <button class="btn gradient" id="loadActivityBtn">Load</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:180px">Time</th>
+            <th style="width:160px">Actor</th>
+            <th style="width:160px">Action</th>
+            <th>Details</th>
+            <th style="width:160px">IP</th>
+            <th style="width:220px">User-Agent</th>
+          </tr>
+        </thead>
+        <tbody id="activityTbody"></tbody>
+      </table>
+
+      <div class="toolbar" style="justify-content:flex-end">
+        <button class="btn ghost" id="prevPageBtn">Prev</button>
+        <button class="btn ghost" id="nextPageBtn">Next</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="adminModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="hd"><strong>Enter Admin Password</strong></div>
+      <div class="bd">
+        <input id="adminPwInput" type="password" placeholder="Admin password" style="width:100%"/>
+      </div>
+      <div class="ft">
+        <button id="adminSubmitBtn" class="btn gradient">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addUserModal" class="modal-backdrop hidden">
+      <div class="modal">
+        <div class="hd"><strong>Add New User</strong></div>
+        <div class="bd">
+            <input id="addUserInput" type="text" placeholder="Username" style="width:100%">
+            <input id="addUserPasswordInput" type="password" placeholder="Password" style="width:100%">
+        </div>
+        <div class="ft">
+            <button id="cancelUserBtn" class="btn ghost">Cancel</button>
+            <button id="saveUserBtn" class="btn green">Save User</button>
+        </div>
+      </div>
+  </div>
+
+
+  <div id="toast" class="message hidden"></div>
+
+  <script>
+    // ===== Global Config =====
+    window.adminApiUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
+
+    // 强制清除任何历史残留（防止自动解锁）
+    try{
+      localStorage.removeItem('pf_admin_pw');
+      sessionStorage.removeItem('pf_admin_pw');
+    }catch(_){}
+  </script>
+
+  <script src="admin-activity.js"></script>
+
+  <script>
+  // ===== Users + Admin Bootstrapping (Always Require Password) =====
+  (function(){
+    const apiUrl = window.adminApiUrl;
+    const usersGrid = document.getElementById('usersGrid');
+    const toast = document.getElementById('toast');
+    const modal = document.getElementById('adminModal');
+    const adminPwInput = document.getElementById('adminPwInput');
+    const root = document.getElementById('appRoot');
+    const mask = document.getElementById('privacyMask');
+
+    const filterStatus = document.getElementById('filterStatus');
+    const sortExpiry = document.getElementById('sortExpiry');
+    const userSearchInput = document.getElementById('userSearchInput');
+
+    // Add User Modal elements
+    const addUserModal = document.getElementById('addUserModal');
+    const addUserInput = document.getElementById('addUserInput');
+    const addUserPasswordInput = document.getElementById('addUserPasswordInput');
+
+    let rawUsers = [];
+    // 内存变量（本次页面会话使用，不持久化）
+    window.__adminPassword = '';
+
+    function showToast(msg, type){
+      toast.textContent = msg;
+      toast.classList.remove('hidden','error');
+      if(type==='error') toast.classList.add('error');
+      setTimeout(()=>toast.classList.add('hidden'), 3000);
+    }
+
+    function lockUI(){
+      root.setAttribute('aria-hidden','true');
+      mask.classList.remove('hidden');
+      modal.style.display = 'flex';
+    }
+    function unlockUI(){
+      root.setAttribute('aria-hidden','false');
+      mask.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+
+    async function verifyPassword(pw){
+      const res = await fetch(`${apiUrl}/admin/verify-password`,{
+        method:'POST', headers:{'X-Admin-Password':pw}
+      });
+      if(!res.ok) throw new Error(`Verify failed: ${res.status}`);
+      const data = await res.json().catch(()=>({success:false}));
+      if(!data.success) throw new Error('Verify payload invalid');
+      return true;
+    }
+
+    // ===== Status helpers =====
+    function parseISO(s){ try{ return s ? new Date(s) : null; }catch{ return null; } }
+    function daysDiff(from, to){ return Math.floor((to - from)/86400000); }
+    function computeStatus(user){
+      const now = new Date();
+      const exp = parseISO(user.subscription_expires_at);
+      if(!exp) return {state:'inactive', daysLeft:null, label:'Not Subscribed'};
+      const d = daysDiff(now, exp);
+      if(d < 0) return {state:'inactive', daysLeft:d, label:`Expired ${-d}d`};
+      if(d <= 7) return {state:'soon', daysLeft:d, label:`${d}d left`};
+      return {state:'active', daysLeft:d, label:`${d}d left`};
+    }
+    function statusClasses(state){
+      if(state==='active') return {badge:'green', ribbon:'green', chip:''};
+      if(state==='soon') return {badge:'amber', ribbon:'amber', chip:'amber'};
+      return {badge:'red', ribbon:'red', chip:'red'};
+    }
+
+    function applyClientSideFilter(list){
+      const f = filterStatus.value;
+      if(f === 'all'){
+        return list;
+      }
+      return list.filter(u => {
+        const st = computeStatus(u).state;
+        if(f==='active') return st==='active';
+        if(f==='soon') return st==='soon';
+        if(f==='inactive') return st==='inactive';
+        return true;
+      });
+    }
+
+    async function loadUsers(){
+      const pw = window.__adminPassword || '';
+      if(!pw){ lockUI(); return; }
+
+      const searchTerm = userSearchInput.value.trim();
+      const sortOption = sortExpiry.value;
+
+      const params = new URLSearchParams();
+      if(searchTerm) params.set('search', searchTerm);
+      if(sortOption !== 'none') params.set('sort', sortOption);
+
+      const res = await fetch(`${apiUrl}/admin/users?${params.toString()}`,{
+        headers:{'X-Admin-Password':pw}
+      });
+
+      if(!res.ok){
+        if(res.status===401){ lockUI(); return; }
+        const body = await res.text();
+        throw new Error(`Load users failed: ${res.status} ${body}`);
+      }
+      const data = await res.json();
+      rawUsers = data.users || [];
+      const filteredList = applyClientSideFilter(rawUsers);
+      renderUsers(filteredList);
+    }
+
+    function renderUsers(list){
+      const usersGrid = document.getElementById('usersGrid');
+      usersGrid.innerHTML = '';
+      if(!list.length){
+        usersGrid.innerHTML = `<div class="muted">No users found.</div>`;
+        return;
+      }
+      list.forEach(u=>{
+        const el = document.createElement('div');
+        const st = computeStatus(u);
+        const cls = statusClasses(st.state);
+        el.className = 'card';
+        if(st.state==='inactive') el.classList.add('inactive');
+        if(st.state==='soon') el.classList.add('soon');
+
+        el.innerHTML = `
+          <div class="ribbon ${cls.ribbon}">${st.state==='active'?'Active':(st.state==='soon'?'Expiring soon':'Inactive')}</div>
+          <div class="row" style="justify-content:space-between;margin-bottom:10px">
+            <div>
+              <div style="font-weight:700">${u.username || '(no name)'}</div>
+              <div class="muted">Password: ${u.password || '-'}</div>
+              <div class="muted">Subscribed Until: ${u.subscription_expires_at ? u.subscription_expires_at.split('T')[0] : 'Not Subscribed'}</div>
+              <div class="row" style="margin-top:6px;gap:6px">
+                <span class="badge ${cls.badge}">
+                  <span style="width:8px;height:8px;border-radius:50%;background:${st.state==='active'?'#22c55e':(st.state==='soon'?'#f59e0b':'#ef4444')};display:inline-block"></span>
+                  ${st.state==='active'?'Active':(st.state==='soon'?'Expiring soon':'Inactive')}
+                </span>
+                <span class="chip ${cls.chip}">${st.label}</span>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn green btn-adjust">Adjust</button>
+            <button class="btn blue btn-edit">Edit</button>
+            <button class="btn red btn-del">Delete</button>
+          </div>
+        `;
+        el.querySelector('.btn-del').onclick = ()=> confirmDelete(u.username);
+        el.querySelector('.btn-edit').onclick = ()=> promptEdit(u.username);
+        el.querySelector('.btn-adjust').onclick = ()=> promptAdjust(u.username);
+        usersGrid.appendChild(el);
+      });
+    }
+
+    async function confirmDelete(username){
+      if(!confirm(`Delete user ${username}?`)) return;
+      const pw = window.__adminPassword || '';
+      const res = await fetch(`${apiUrl}/admin/delete-user`,{
+        method:'DELETE',
+        headers:{'Content-Type':'application/json','X-Admin-Password':pw},
+        body:JSON.stringify({username})
+      });
+      if(!res.ok){ showToast(`Delete failed (${res.status})`,'error'); return; }
+      showToast('Deleted'); await loadUsers();
+      window.PFActivity && PFActivity.fetchActivity(true);
+    }
+
+    async function promptEdit(username){
+      const password = prompt(`New password for ${username}:`,'');
+      if(!password) return;
+      const pw = window.__adminPassword || '';
+      const res = await fetch(`${apiUrl}/admin/update-user`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Admin-Password':pw},
+        body:JSON.stringify({username,password})
+      });
+      if(!res.ok){ showToast(`Update failed (${res.status})`,'error'); return; }
+      showToast('Updated'); await loadUsers();
+      window.PFActivity && PFActivity.fetchActivity(true);
+    }
+
+    async function promptAdjust(username){
+      const days = prompt(`Adjust days (+/-) for ${username}:`,'30');
+      if(days===null) return;
+      const pw = window.__adminPassword || '';
+      const res = await fetch(`${apiUrl}/admin/add-subscription-time`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Admin-Password':pw},
+        body:JSON.stringify({username,days_to_add: Number(days)})
+      });
+      if(!res.ok){ showToast(`Adjust failed (${res.status})`,'error'); return; }
+      showToast('Adjusted'); await loadUsers();
+      window.PFActivity && PFActivity.fetchActivity(true);
+    }
+
+    // ===== 事件绑定 =====
+    document.getElementById('adminSubmitBtn').onclick = async ()=>{
+      const inputPassword = adminPwInput.value.trim();
+      if(!inputPassword){ showToast('Please enter password','error'); return; }
+      try{
+        await verifyPassword(inputPassword);
+        window.__adminPassword = inputPassword;  // 仅当前页面内存保存
+        unlockUI();                               // 验证成功才解除遮挡
+        showToast('Verified');
+        await loadUsers();
+        window.PFActivity && PFActivity.fetchActivity(true);
+      }catch(err){
+        showToast('Password invalid','error');
+        lockUI(); // 失败时继续遮挡
+      }
+    };
+
+    document.getElementById('refreshUsersBtn').onclick = ()=> loadUsers();
+
+    // 筛选/排序
+    filterStatus.addEventListener('change', () => {
+        const filteredList = applyClientSideFilter(rawUsers);
+        renderUsers(filteredList);
+    });
+    sortExpiry.addEventListener('change', loadUsers);
+    userSearchInput.addEventListener('input', loadUsers);
+
+
+    // Add User Modal events
+    document.getElementById('addUserBtn').addEventListener('click', () => {
+        addUserModal.classList.remove('hidden');
+    });
+
+    document.getElementById('cancelUserBtn').addEventListener('click', () => {
+        addUserModal.classList.add('hidden');
+        addUserInput.value = '';
+        addUserPasswordInput.value = '';
+    });
+
+    document.getElementById('saveUserBtn').addEventListener('click', async () => {
+        const username = addUserInput.value.trim();
+        const password = addUserPasswordInput.value.trim();
+        if(!username || !password){
+            showToast('Username and password are required', 'error');
+            return;
+        }
+
+        const pw = window.__adminPassword || '';
+        const res = await fetch(`${apiUrl}/admin/add-user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Password': pw
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        if(!res.ok){
+            const data = await res.json().catch(() => ({error: `Request failed with status ${res.status}`}));
+            showToast(`Failed to add user: ${data.error || 'Unknown error'}`, 'error');
+            return;
+        }
+
+        showToast('User added successfully');
+        addUserModal.classList.add('hidden');
+        addUserInput.value = '';
+        addUserPasswordInput.value = '';
+        await loadUsers();
+        window.PFActivity && PFActivity.fetchActivity(true);
+    });
+
+
+    // ===== 启动：总是要求输入密码（不从任何存储读取） =====
+    lockUI();
+  })();
+  </script>
+</body>
+</html>

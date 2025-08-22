@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PF Creative AI Film Director</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.5) transparent; }
+        *::-webkit-scrollbar { width: 6px; }
+        *::-webkit-scrollbar-track { background: transparent; }
+        *::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.5); border-radius: 3px; }
+        *::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.7); }
+        body { background: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0a 50%, #000000 100%); color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .glass-effect { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-sidebar { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(25px); border-right: 1px solid rgba(139, 92, 246, 0.2); }
+        .gradient-text { background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-size: 300% 300%; animation: gradient-shift 3s ease infinite; }
+        .message-bubble { max-width: 85%; word-wrap: break-word; animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; }
+        .user-message { background: linear-gradient(135deg, #667eea, #764ba2); margin-left: auto; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3); }
+        .ai-message { background: linear-gradient(135deg, #8b5cf6, #ec4899); margin-right: auto; box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3); }
+        .typing-indicator { display: none; align-items: center; padding: 16px 20px; background: rgba(139, 92, 246, 0.15); border-radius: 24px; margin-right: auto; max-width: 100px; backdrop-filter: blur(10px); }
+        .typing-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #ec4899); margin: 0 3px; animation: typing 1.4s infinite ease-in-out; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; } .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .sidebar-toggle { position: fixed; top: 15px; left: 15px; z-index: 1000; background: linear-gradient(135deg, #8b5cf6, #ec4899); border: none; border-radius: 10px; padding: 10px; color: white; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .sidebar-toggle:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 8px 30px rgba(139, 92, 246, 0.6); }
+        .sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); z-index: 999; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar.open { transform: translateX(0); }
+        .main-content { transition: margin-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .main-content.shifted { margin-left: 280px; }
+        .sidebar-content { flex: 1; display: flex; flex-direction: column; padding: 24px; }
+        .chat-history-section { flex: 1; overflow-y: auto; }
+        .chat-history-item { padding: 12px 16px; margin: 8px 0; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; background: rgba(255, 255, 255, 0.02); }
+        .chat-history-item:hover { background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.3); transform: translateX(4px); }
+        .chat-history-item.active { background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)); border-color: rgba(139, 92, 246, 0.5); }
+        .user-info-section { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 16px; margin-top: 16px; }
+        .send-button { background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6); background-size: 200% 200%; animation: gradient-shift 3s ease infinite; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: 0 6px 25px rgba(245, 158, 11, 0.3); }
+        .send-button:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 8px 30px rgba(245, 158, 11, 0.5); }
+        .send-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .upload-button { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 10px; padding: 12px; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+        .upload-button:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5); }
+        .floating-orb { position: fixed; border-radius: 50%; opacity: 0.6; animation: float 8s ease-in-out infinite; pointer-events: none; z-index: -1; }
+        .orb-1 { top: 10%; left: 5%; width: 120px; height: 120px; background: radial-gradient(circle, #f59e0b, #ec4899); animation-delay: 0s; }
+        .orb-2 { top: 60%; right: 10%; width: 180px; height: 180px; background: radial-gradient(circle, #8b5cf6, #3b82f6); animation-delay: 3s; }
+        .orb-3 { bottom: 15%; left: 15%; width: 100px; height: 100px; background: radial-gradient(circle, #ec4899, #8b5cf6); animation-delay: 6s; }
+        .premium-input { background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(139, 92, 246, 0.2); transition: all 0.3s ease; backdrop-filter: blur(10px); }
+        .premium-input:focus { border-color: #8b5cf6; box-shadow: 0 0 25px rgba(139, 92, 246, 0.3); background: rgba(0, 0, 0, 0.6); }
+        .new-chat-btn { background: linear-gradient(135deg, #667eea, #764ba2); transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3); }
+        .new-chat-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5); }
+        .welcome-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 30px; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; max-width: 700px; }
+        .feature-card { background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 14px; padding: 18px; transition: all 0.3s ease; backdrop-filter: blur(10px); }
+        .feature-card:hover { transform: translateY(-4px); border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2); }
+        .quick-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; }
+        .quick-action-btn { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 20px; padding: 8px 18px; color: #f59e0b; cursor: pointer; transition: all 0.3s ease; font-weight: 500; font-size: 0.85rem; }
+        .quick-action-btn:hover { background: rgba(245, 158, 11, 0.2); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3); }
+        .mobile-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 998; }
+        @media (max-width: 768px) { .main-content.shifted { margin-left: 0; } .mobile-overlay.active { display: block; } .feature-grid { grid-template-columns: 1fr; } }
+        .file-preview-container { padding: 8px; background-color: rgba(0,0,0,0.2); border-radius: 6px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .file-preview-container img { max-height: 50px; border-radius: 4px; }
+        .file-preview-container .file-name { font-size: 12px; color: #ccc; }
+        .file-preview-container .remove-file-btn { background: none; border: none; color: #ff4747; cursor: pointer; margin-left: auto; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; } 40% { transform: scale(1.2); opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0px) rotate(0deg); } 33% { transform: translateY(-30px) rotate(120deg); } 66% { transform: translateY(-15px) rotate(240deg); } }
+        @keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); } 50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); } }
+    </style>
+</head>
+<body>
+    <div class="floating-orb orb-1"></div> <div class="floating-orb orb-2"></div> <div class="floating-orb orb-3"></div>
+    <div id="mobileOverlay" class="mobile-overlay"></div>
+    <button id="sidebarToggle" class="sidebar-toggle"><i class="fas fa-bars text-sm"></i></button>
+    
+    <div id="sidebar" class="sidebar glass-sidebar">
+        <div class="sidebar-content">
+            <div class="mb-6 mt-8">
+                <a href="index.html" class="cursor-pointer">
+                    <h1 class="text-xl font-bold gradient-text mb-2">PF Creative AI</h1>
+                    <p class="text-sm text-gray-400">Film Director</p>
+                </a>
+            </div>
+            <div class="flex items-center space-x-2 mb-6">
+                <button id="newChatBtn" class="new-chat-btn w-full py-3 px-4 rounded-xl text-white font-semibold flex items-center justify-center space-x-2"><i class="fas fa-plus"></i><span>New Chat</span></button>
+                <a href="index.html" title="Back to Home" class="new-chat-btn flex-shrink-0 py-3 px-4 rounded-xl text-white font-semibold"><i class="fas fa-home"></i></a>
+            </div>
+            <div class="chat-history-section"><h3 class="text-sm font-semibold text-gray-300 mb-4">Session History</h3><div id="chatHistory" class="space-y-2"></div></div>
+            <div class="user-info-section"><div class="flex items-center justify-between"><div class="flex items-center space-x-3"><div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center"><i class="fas fa-user text-white text-sm"></i></div><div><p class="text-sm font-medium text-white" id="usernameDisplay">Username</p><div class="flex items-center space-x-1"><div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-xs text-green-400">Online</span></div></div></div><button id="logoutBtn" class="text-gray-400 hover:text-red-400 transition-colors"><i class="fas fa-sign-out-alt"></i></button></div></div>
+        </div>
+    </div>
+    
+    <div id="mainContent" class="main-content min-h-screen"><div class="h-screen flex flex-col"><div class="glass-effect border-b border-white/10 p-4"><div class="max-w-3xl mx-auto flex justify-between items-center"><div class="ml-12"><h1 class="text-2xl font-bold gradient-text">PF Creative AI Film Director</h1><p class="text-gray-400 text-xs mt-1">Professional Video Script Generation & Creative Direction</p></div><div class="flex items-center space-x-4"><div class="flex items-center space-x-2"><div class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div><span class="text-xs text-green-400">AI Director Online</span></div></div></div></div><div class="flex-1 flex flex-col overflow-hidden"><div id="messagesContainer" class="flex-1 overflow-y-auto p-6"><div class="max-w-3xl mx-auto">
+        <div id="welcomeScreen" class="welcome-container">
+            <div class="logo-container mb-4"><i class="fas fa-video text-4xl gradient-text" style="animation: pulse-glow 2s ease-in-out infinite;"></i></div>
+            <h2 class="text-3xl font-bold gradient-text mb-3">Welcome to PF Creative AI</h2>
+            <p class="text-gray-300 max-w-xl mx-auto">Your personal AI Film Director, ready to create professional video scripts and provide creative direction. Powered by advanced AI technology.</p>
+            <div class="feature-grid mt-6">
+                <div class="feature-card"><i class="fas fa-film text-xl text-purple-400 mb-2"></i><h3 class="font-semibold text-white">Script Generation</h3><p class="text-gray-300 text-sm">Complete VEO Prompt Blueprints for every scene</p></div>
+                <div class="feature-card"><i class="fas fa-camera text-xl text-pink-400 mb-2"></i><h3 class="font-semibold text-white">Camera Controls</h3><p class="text-gray-300 text-sm">Advanced camera movements and shot compositions</p></div>
+                <div class="feature-card"><i class="fas fa-palette text-xl text-yellow-400 mb-2"></i><h3 class="font-semibold text-white">Creative Direction</h3><p class="text-gray-300 text-sm">Comprehensive production strategies and guidance</p></div>
+                <div class="feature-card"><i class="fas fa-upload text-xl text-blue-400 mb-2"></i><h3 class="font-semibold text-white">File Upload</h3><p class="text-gray-300 text-sm">Upload reference materials for analysis</p></div>
+            </div>
+            <div class="quick-actions mt-6">
+                <button class="quick-action-btn" onclick="chatroom.sendQuickPrompt('Create a professional product demo video script')"><i class="fas fa-shopping-bag mr-1"></i>Product Demo</button>
+                <button class="quick-action-btn" onclick="chatroom.sendQuickPrompt('Generate a corporate presentation script')"><i class="fas fa-building mr-1"></i>Corporate Video</button>
+            </div>
+        </div>
+        <div id="chatMessages" class="space-y-6" style="display: none;"></div>
+    </div></div><div id="typingIndicator" class="typing-indicator mx-6 mb-2"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div><div class="glass-effect border-t border-white/10 p-4"><div class="max-w-3xl mx-auto">
+        <div id="filePreviewContainer"></div>
+        <div class="flex space-x-3 items-end">
+            <button id="uploadBtn" class="upload-button" title="Upload files"><i class="fas fa-paperclip text-sm"></i></button>
+            <input type="file" id="fileInput" accept="image/png, image/jpeg, image/webp" style="display: none;">
+            <div class="flex-1"><textarea id="messageInput" placeholder="Describe your video project..." class="premium-input w-full px-5 py-3 rounded-xl text-white placeholder-gray-400 focus:outline-none resize-none" rows="2"></textarea></div>
+            <button id="sendBtn" class="send-button px-6 py-3 rounded-xl text-white font-semibold flex items-center space-x-2 min-w-[100px] justify-center"><span>Send</span><i class="fas fa-paper-plane ml-1 text-sm"></i></button>
+        </div>
+    <div class="mt-2 text-xs text-gray-500"><span>Press Ctrl+Enter to send • Powered by PyroFractal Tech</span></div></div></div></div></div></div>
+
+    <script>
+        // --- 核心修正：在所有代码运行前，先进行登录状态检查 ---
+        const token = localStorage.getItem('jwtToken');
+        const username = localStorage.getItem('username');
+
+        if (!token || !username) {
+            // 如果浏览器中没有存储登录凭证，立刻跳转到登录页
+            alert("Please log in to access the AI Film Director.");
+            window.location.href = 'login.html';
+        }
+        // --- 安全检查结束 ---
+
+
+        class DirectorChatroom {
+            constructor() {
+                // 【核心修改】请将下面的占位符替换成您正确的 Cloud Run 服务 URL
+                this.apiUrl = 'https://pfsystem-api-902383636494.asia-southeast1.run.app';
+                
+                // --- 核心修正：统一使用 jwtToken 和 username ---
+                this.token = localStorage.getItem('jwtToken');
+                this.username = localStorage.getItem('username');
+                // --- 修正结束 ---
+
+                this.savedChats = [];
+                this.currentChat = { id: null, history: [] };
+                this.attachedFile = null;
+                this.sidebarOpen = false;
+                // We only call init if the token check above passed
+                if (this.token && this.username) {
+                    this.init();
+                }
+            }
+
+            init() {
+                // The check is already done outside, but this is a good fallback.
+                if (!this.token || !this.username) { 
+                    window.location.href = 'login.html'; 
+                    return; 
+                }
+                document.getElementById('usernameDisplay').textContent = this.username;
+                this.setupEventListeners();
+                this.loadAndRenderHistory();
+                this.startNewChat(); 
+            }
+            
+            // ... (您的所有其他函数 setupEventListeners, loadAndRenderHistory, sendMessage 等都保持不变)
+            // (The user's original functions are preserved here)
+            setupEventListeners() {
+                document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
+                const messageInput = document.getElementById('messageInput');
+                messageInput.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); this.sendMessage(); } });
+                messageInput.addEventListener('input', () => { messageInput.style.height = 'auto'; messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px'; });
+                document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+                document.getElementById('sidebarToggle').addEventListener('click', () => this.toggleSidebar());
+                document.getElementById('mobileOverlay').addEventListener('click', () => this.closeSidebar());
+                document.getElementById('newChatBtn').addEventListener('click', () => this.startNewChat());
+                document.getElementById('uploadBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+                document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileSelect(e));
+            }
+            
+            loadAndRenderHistory() {
+                this.savedChats = JSON.parse(localStorage.getItem(`pf_chat_sessions_${this.username}`)) || [];
+                const historyContainer = document.getElementById('chatHistory');
+                historyContainer.innerHTML = '';
+                if (this.savedChats.length === 0) {
+                    historyContainer.innerHTML = '<p class="text-xs text-gray-500 p-2">No past sessions.</p>';
+                    return;
+                }
+                this.savedChats.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                this.savedChats.forEach(chat => {
+                    const item = document.createElement('div');
+                    item.className = 'chat-history-item';
+                    item.dataset.id = chat.id;
+                    item.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-white truncate">${this.escapeHtml(chat.title)}</p>
+                                <p class="text-xs text-gray-400">${new Date(chat.timestamp).toLocaleString()}</p>
+                            </div>
+                            <button class="text-gray-500 hover:text-red-400 ml-2 delete-chat-btn">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                    historyContainer.appendChild(item);
+                });
+                historyContainer.querySelectorAll('.chat-history-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        if (!e.target.closest('.delete-chat-btn')) { this.loadChat(item.dataset.id); }
+                    });
+                });
+                historyContainer.querySelectorAll('.delete-chat-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const chatId = button.closest('.chat-history-item').dataset.id;
+                        this.deleteChat(chatId);
+                    });
+                });
+            }
+
+            saveCurrentChat() {
+                const existingChatIndex = this.savedChats.findIndex(c => c.id === this.currentChat.id);
+                if (this.currentChat.history.length === 0) return;
+                if (existingChatIndex > -1) {
+                    this.savedChats[existingChatIndex].history = this.currentChat.history;
+                    this.savedChats[existingChatIndex].timestamp = new Date().toISOString();
+                } else {
+                    const firstUserMessage = this.currentChat.history.find(m => m.role === 'user');
+                    const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 30) + '...' : 'New Chat';
+                    this.currentChat.id = Date.now();
+                    this.savedChats.push({ id: this.currentChat.id, title: title, history: this.currentChat.history, timestamp: new Date().toISOString() });
+                }
+                localStorage.setItem(`pf_chat_sessions_${this.username}`, JSON.stringify(this.savedChats));
+                this.loadAndRenderHistory();
+                this.highlightActiveChat();
+            }
+
+            loadChat(chatId) {
+                const chatToLoad = this.savedChats.find(c => c.id == chatId);
+                if (chatToLoad) {
+                    this.currentChat = { id: chatToLoad.id, history: [...chatToLoad.history] };
+                    const chatMessages = document.getElementById('chatMessages');
+                    const welcomeScreen = document.getElementById('welcomeScreen');
+                    chatMessages.innerHTML = '';
+                    welcomeScreen.style.display = 'none';
+                    chatMessages.style.display = 'block';
+                    this.currentChat.history.forEach(msg => {
+                        const filePart = msg.parts.find(p => p.file);
+                        const fileObject = filePart ? filePart.file : null;
+                        this.addMessage(msg.parts[0].text, msg.role, fileObject);
+                    });
+                    this.highlightActiveChat();
+                    if(this.sidebarOpen && window.innerWidth <= 768) this.closeSidebar();
+                }
+            }
+            
+            deleteChat(chatId) {
+                this.savedChats = this.savedChats.filter(c => c.id != chatId);
+                localStorage.setItem(`pf_chat_sessions_${this.username}`, JSON.stringify(this.savedChats));
+                if (this.currentChat.id == chatId) { this.startNewChat(); }
+                this.loadAndRenderHistory();
+            }
+            
+            highlightActiveChat() {
+                document.querySelectorAll('.chat-history-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.id == this.currentChat.id);
+                });
+            }
+            
+            startNewChat() {
+                this.currentChat = { id: null, history: [] };
+                this.removeFile();
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                welcomeScreen.style.display = 'flex';
+                chatMessages.style.display = 'none';
+                this.highlightActiveChat();
+                if(this.sidebarOpen) this.closeSidebar();
+            }
+            
+            async sendMessage() {
+                const messageInput = document.getElementById('messageInput');
+                const message = messageInput.value.trim();
+                if (!message && !this.attachedFile) return;
+
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                if (welcomeScreen.style.display !== 'none') {
+                    welcomeScreen.style.display = 'none';
+                    document.getElementById('chatMessages').style.display = 'block';
+                }
+
+                const userMessageContent = message;
+                const userFile = this.attachedFile;
+
+                this.addMessage(userMessageContent, 'user', userFile);
+                
+                const userMessageForHistory = { role: 'user', parts: [{ text: userMessageContent }]};
+                if(userFile) userMessageForHistory.parts.push({ file: { name: userFile.name, type: userFile.type } });
+                this.currentChat.history.push(userMessageForHistory);
+
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                this.toggleSendButton(false);
+                this.removeFile();
+
+                let endpoint;
+                let body;
+                const headers = { 'Authorization': `Bearer ${this.token}` };
+
+                if (userFile) {
+                    endpoint = `${this.apiUrl}/chat-with-image`;
+                    const formData = new FormData();
+                    formData.append('prompt', userMessageContent);
+                    formData.append('file', userFile);
+                    body = formData;
+                } else {
+                    endpoint = `${this.apiUrl}/generate-script`;
+                    headers['Content-Type'] = 'application/json';
+                    const textHistory = this.currentChat.history.filter(m => !m.parts.some(p => p.file));
+                    body = JSON.stringify({ project_info: userMessageContent, history: textHistory });
+                }
+
+                this.showTypingIndicator();
+
+                try {
+                    const response = await fetch(endpoint, { method: 'POST', headers, body });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        const aiResponse = result.response || result.script;
+                        this.addMessage(aiResponse, 'model'); // Changed 'ai' to 'model' to match history
+                        this.currentChat.history.push({ role: 'model', parts: [{ text: aiResponse }] });
+                    } else {
+                        const errorMessage = result.error || result.message || 'An unexpected error occurred.';
+                        this.addMessage(errorMessage, 'model', null, true); // Changed 'ai' to 'model'
+                    }
+                } catch (error) {
+                    this.addMessage('Network error. Please check your connection.', 'model', null, true); // Changed 'ai' to 'model'
+                } finally {
+                    this.hideTypingIndicator();
+                    this.toggleSendButton(true);
+                    messageInput.focus();
+                    this.saveCurrentChat();
+                }
+            }
+
+            addMessage(content, sender, file = null, isError = false) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const avatar = sender === 'user' ? 'fa-user' : 'fa-robot';
+                const senderName = sender === 'user' ? this.username : 'AI Film Director';
+                const senderClass = sender === 'user' ? 'user-message' : 'ai-message';
+                const formattedContent = this.escapeHtml(content).replace(/\n/g, '<br>');
+
+                let filePreviewHtml = '';
+                if (file && sender === 'user') {
+                    if(file.type && file.type.startsWith('image/')) {
+                         const tempUrl = URL.createObjectURL(file);
+                         filePreviewHtml = `<img src="${tempUrl}" class="mt-2 rounded-lg max-w-xs" alt="Uploaded image">`;
+                    } else {
+                         filePreviewHtml = `<div class="mt-2 p-2 bg-black/20 rounded-md text-xs flex items-center gap-2"><i class="fas fa-file-alt"></i> ${this.escapeHtml(file.name)}</div>`;
+                    }
+                }
+                const senderRole = sender === 'user' ? this.username : 'AI Film Director';
+                messageDiv.innerHTML = `<div class="flex items-start space-x-4 mb-6"><div class="w-10 h-10 rounded-full flex items-center justify-center ${sender === 'user' ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-gradient-to-r from-purple-500 to-pink-500'}"><i class="fas ${avatar} text-white text-sm"></i></div><div class="flex-1"><div class="flex items-center space-x-2 mb-2"><span class="font-semibold text-white">${senderRole}</span><span class="text-xs text-gray-400">${timestamp}</span></div><div class="message-bubble ${senderClass} px-6 py-4 rounded-2xl text-white ${isError ? 'border border-red-500' : ''}">${formattedContent}${filePreviewHtml}</div></div></div>`;
+                chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            sendQuickPrompt(prompt) { document.getElementById('messageInput').value = prompt; this.sendMessage(); }
+            toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; document.getElementById('sidebar').classList.toggle('open', this.sidebarOpen); if (window.innerWidth > 768) { document.getElementById('mainContent').classList.toggle('shifted', this.sidebarOpen); } else { document.getElementById('mobileOverlay').classList.toggle('active', this.sidebarOpen); } }
+            closeSidebar() { this.sidebarOpen = false; document.getElementById('sidebar').classList.remove('open'); document.getElementById('mainContent').classList.remove('shifted'); document.getElementById('mobileOverlay').classList.remove('active'); }
+            handleFileSelect(event) { const file = event.target.files[0]; if (!file) return; this.attachedFile = file; const previewContainer = document.getElementById('filePreviewContainer'); const reader = new FileReader(); reader.onload = (e) => { previewContainer.innerHTML = `<div class="file-preview-container"><img src="${e.target.result}" alt="Preview"><span class="file-name">${this.escapeHtml(file.name)}</span><button id="removeFileBtn" class="remove-file-btn">✖</button></div>`; document.getElementById('removeFileBtn').addEventListener('click', () => this.removeFile()); }; reader.readAsDataURL(file); }
+            removeFile() { this.attachedFile = null; document.getElementById('fileInput').value = ''; document.getElementById('filePreviewContainer').innerHTML = ''; }
+            showTypingIndicator() { const indicator = document.getElementById('typingIndicator'); indicator.style.display = 'flex'; this.scrollToBottom(); }
+            hideTypingIndicator() { const indicator = document.getElementById('typingIndicator'); indicator.style.display = 'none'; }
+            toggleSendButton(enabled) { document.getElementById('sendBtn').disabled = !enabled; }
+            scrollToBottom() { const container = document.getElementById('messagesContainer'); setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); }
+            
+            logout() {
+                // --- 核心修正：确保登出时清除正确的键名 ---
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('username');
+                window.location.href = 'index.html';
+                // --- 修正结束 ---
+            }
+
+            escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+        }
+        
+        // 只有在确认登录后才初始化聊天室
+        if (token && username) {
+            const chatroom = new DirectorChatroom();
+        }
+    </script>
+</body>
+</html>
+
+
