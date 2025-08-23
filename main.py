@@ -28,11 +28,9 @@ from pydantic import ValidationError # 用于捕获 Pydantic 错误
 # Gemini SDK (optional)
 _GEM_ENABLED = False
 try:
-    # 【最终修正】修正 google.generativeai 的拼写错误
     import google.generativeai as genai
     _GEM_ENABLED = True
 except Exception as e:
-    # 【诊断代码】如果导入失败，将详细的错误信息打印到日志中
     logging.error(f"--- FATAL: FAILED TO IMPORT GOOGLE.GENERATIVEAI --- The real error is: {e}", exc_info=True)
     _GEM_ENABLED = False
 
@@ -51,7 +49,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "CHANGE_ME_ADMIN")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
-INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")  # <project>:<region>:<instance>
+INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")
 DB_SOCKET_DIR = "/cloudsql"
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
@@ -65,7 +63,13 @@ BILLPLZ_X_SIGNATURE = os.getenv("BILLPLZ_X_SIGNATURE", "")
 # Flask app & helpers
 # ----------------------------------------------------------------------------
 app = Flask(__name__)
-CORS(app)
+
+# === START: CORS CONFIGURATION FIX ===
+# Be more explicit with CORS configuration for our new v1 API endpoints.
+# This tells the app to allow all origins for any route starting with /v1/.
+CORS(app, resources={r"/v1/*": {"origins": "*"}})
+# === END: CORS CONFIGURATION FIX ===
+
 
 def json_response(payload, status=200):
     return app.response_class(
@@ -191,8 +195,6 @@ def call_gemini(prompt, system_instruction=None):
     if not gemini_available():
         raise RuntimeError("Gemini not configured")
     genai.configure(api_key=GEMINI_API_KEY)
-
-    # Prefer pro, fallback flash (stability)
     model_names = ["models/gemini-1.5-pro", "models/gemini-1.5-flash"]
     last_err = None
     for name in model_names:
@@ -205,7 +207,6 @@ def call_gemini(prompt, system_instruction=None):
             )
             if hasattr(resp, "text") and resp.text:
                 return resp.text
-            # candidates path
             try:
                 parts = resp.candidates[0].content.parts
                 out = []
@@ -215,12 +216,9 @@ def call_gemini(prompt, system_instruction=None):
                         out.append(t)
                 if out:
                     return "\n".join(out)
-            except Exception:
-                pass
-            try:
-                return json.dumps(resp.to_dict())
-            except Exception:
-                return str(resp)
+            except Exception: pass
+            try: return json.dumps(resp.to_dict())
+            except Exception: return str(resp)
         except Exception as e:
             last_err = e
             log.warning("Gemini %s failed: %s", name, e)
@@ -283,24 +281,18 @@ def register():
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         data = request.get_json(silent=True) or {}
         username = (data.get("username") or "").strip()
         password = (data.get("password") or "").strip()
         if not username or not password:
             return json_response({"error": "Username and password required"}, 400)
-        
         if len(password) < 6:
             return json_response({"error": "Password must be at least 6 characters long"}, 400)
-
         cur.execute("SELECT 1 FROM users WHERE username=%s", (username,))
         if cur.fetchone():
             return json_response({"error": "User already exists"}, 409)
-
         now = datetime.datetime.now(datetime.timezone.utc)
-        
         hashed_password = generate_password_hash(password)
-
         cur.execute(
             "INSERT INTO users (username, password, created_at) VALUES (%s, %s, %s)",
             (username, hashed_password, now),
@@ -325,17 +317,13 @@ def login():
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         data = request.get_json(silent=True) or {}
         username = (data.get("username") or "").strip()
         password = (data.get("password") or "").strip()
-
         cur.execute("SELECT password FROM users WHERE username=%s", (username,))
         row = cur.fetchone()
-        
         if not row or not check_password_hash(row[0], password):
             return json_response({"error": "Invalid credentials"}, 401)
-
         token = _jwt_create(username)
         cur.execute("UPDATE users SET active_token=%s WHERE username=%s", (token, username))
         _log_activity(cur, username, "login_success", {}, request)
@@ -357,7 +345,6 @@ def get_user_status():
     if not payload:
         return json_response({"error": "Invalid token"}, 401)
     username = payload.get("username")
-
     conn = cur = None
     try:
         log.info(f"--- DASHBOARD LOG --- Checking status for user: {username}")
@@ -369,10 +356,8 @@ def get_user_status():
         log.info(f"--- DASHBOARD LOG --- DB result for {username}: {r}")
         if not r:
             return json_response({"error": "User not found"}, 404)
-        
         now = datetime.datetime.now(datetime.timezone.utc)
         is_subscribed = r[1] is not None and r[1] > now
-
         return json_response({
             "username": r[0],
             "subscription_expires_at": r[1].isoformat() if r[1] else None,
@@ -388,24 +373,15 @@ def get_user_status():
             pass
         put_conn(conn)
 
-# ----------------------------------------------------------------------------
-# Admin APIs (require X-Admin-Password)
-# ----------------------------------------------------------------------------
-def _admin_guard():
-    if request.headers.get("X-Admin-Password") != ADMIN_PASSWORD:
-        return json_response({"error": "Unauthorized"}, 401)
-
 @app.route("/admin/users", methods=["GET"])
 def admin_users():
     g = _admin_guard()
     if g: return g
-
     conn = cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         sort = (request.args.get("sort") or "").lower()
         order_sql = "ASC" if sort == "asc" else "DESC"
         cur.execute(f"SELECT username, password, created_at, subscription_expires_at FROM users ORDER BY created_at {order_sql} NULLS LAST")
@@ -432,27 +408,21 @@ def admin_users():
 def admin_add_user():
     g = _admin_guard()
     if g: return g
-
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = (data.get("password") or "").strip()
     if not username or not password:
         return json_response({"error": "Username and password required"}, 400)
-
     conn = cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         cur.execute("SELECT 1 FROM users WHERE username=%s", (username,))
         if cur.fetchone():
             return json_response({"error": "User already exists"}, 409)
-
         now = datetime.datetime.now(datetime.timezone.utc)
-        
         hashed_password = generate_password_hash(password)
-
         cur.execute(
             "INSERT INTO users (username, password, created_at) VALUES (%s, %s, %s)",
             (username, hashed_password, now),
@@ -474,18 +444,15 @@ def admin_add_user():
 def admin_delete_user():
     g = _admin_guard()
     if g: return g
-
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     if not username:
         return json_response({"error": "Username required"}, 400)
-
     conn = cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         cur.execute("DELETE FROM users WHERE username=%s", (username,))
         if cur.rowcount == 0:
             return json_response({"success": False, "message": "User not found"}, 404)
@@ -506,21 +473,17 @@ def admin_delete_user():
 def admin_update_user():
     g = _admin_guard()
     if g: return g
-
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = (data.get("password") or "").strip()
     if not username or not password:
         return json_response({"error": "Username and new password required"}, 400)
-
     conn = cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         hashed_password = generate_password_hash(password)
-
         cur.execute("UPDATE users SET password=%s WHERE username=%s", (hashed_password, username))
         if cur.rowcount == 0:
             return json_response({"success": False, "message": "User not found"}, 404)
@@ -541,24 +504,20 @@ def admin_update_user():
 def admin_add_sub_time():
     g = _admin_guard()
     if g: return g
-
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     days_to_add = data.get("days_to_add")
-
     if not username or days_to_add is None:
         return json_response({"error": "Username and days_to_add required"}, 400)
     try:
         days_to_add = int(days_to_add)
     except Exception:
         return json_response({"error": "days_to_add must be integer"}, 400)
-
     conn = cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         cur.execute("SELECT subscription_expires_at FROM users WHERE username=%s", (username,))
         r = cur.fetchone()
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -567,7 +526,6 @@ def admin_add_sub_time():
         cur.execute("UPDATE users SET subscription_expires_at=%s WHERE username=%s", (new_expiry, username))
         if cur.rowcount == 0:
             return json_response({"success": False, "message": "User not found"}, 404)
-
         _log_activity(cur, "admin", "adjust_subscription", {"username": username, "days": days_to_add}, request)
         conn.commit()
         return json_response({"success": True, "message": "Subscription adjusted"})
@@ -585,13 +543,11 @@ def admin_add_sub_time():
 def admin_activity():
     g = _admin_guard()
     if g: return g
-
     conn = cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         qp = request.args or {}
         actor = qp.get("actor")
         action = qp.get("action")
@@ -603,7 +559,6 @@ def admin_activity():
             offset = int(qp.get("offset") or 0)
         except Exception:
             limit, offset = 50, 0
-
         where = []
         params = []
         if actor:
@@ -616,7 +571,6 @@ def admin_activity():
             where.append("ts <= %s"); params.append(until)
         where_sql = ("WHERE " + " AND ".join(where)) if where else ""
         order_sql = "ASC" if sort == "asc" else "DESC"
-
         cur.execute(
             f"SELECT id, ts, actor, action, details, ip, user_agent FROM activity_logs {where_sql} "
             f"ORDER BY ts {order_sql} LIMIT %s OFFSET %s",
@@ -628,7 +582,6 @@ def admin_activity():
         else:
             cur.execute("SELECT COUNT(1) FROM activity_logs")
         total = cur.fetchone()[0]
-
         items = []
         for r in rows:
             items.append({
@@ -661,7 +614,6 @@ def activity_log():
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         data = request.get_json(silent=True) or {}
         actor = (data.get("actor") or "system").strip()
         action = (data.get("action") or "event").strip()
@@ -693,12 +645,10 @@ def create_bill():
     if not payload:
         return json_response({"error": "Invalid token"}, 401)
     username = payload.get("username")
-
     data = request.get_json(silent=True) or {}
     plan_name = data.get("planName", "Pro Plan")
-    amount = str(data.get("amount", "1000"))  # cents
+    amount = str(data.get("amount", "1000"))
     plan_id = data.get("planId", "pro_1m")
-
     if BASE_URL:
         callback_url = f"{BASE_URL}/api/webhook-billplz"
         redirect_url = f"{BASE_URL}/payment-success.html"
@@ -707,32 +657,21 @@ def create_bill():
         host = request.headers.get("X-Forwarded-Host", request.host)
         callback_url = f"{scheme}://{host}/webhook-billplz"
         redirect_url = f"{scheme}://{host}/payment-success.html"
-
     billplz_payload = {
-        "collection_id": BILLPLZ_COLLECTION_ID,
-        "email": f"{username}@example.com",
-        "name": username,
-        "amount": amount,
-        "callback_url": callback_url,
-        "redirect_url": redirect_url,
-        "description": plan_name,
-        "reference_1_label": "username",
-        "reference_1": username,
-        "reference_2_label": "plan",
-        "reference_2": plan_id,
-        "deliver": True,
+        "collection_id": BILLPLZ_COLLECTION_ID, "email": f"{username}@example.com",
+        "name": username, "amount": amount, "callback_url": callback_url,
+        "redirect_url": redirect_url, "description": plan_name,
+        "reference_1_label": "username", "reference_1": username,
+        "reference_2_label": "plan", "reference_2": plan_id, "deliver": True,
     }
     headers = {
         "Content-Type": "application/json",
         "Authorization": _billplz_basic_auth_header(),
     }
-
     try:
         req = urllib.request.Request(
-            "https://www.billplz.com/api/v3/bills",
-            method="POST",
-            data=json.dumps(billplz_payload).encode("utf-8"),
-            headers=headers,
+            "https://www.billplz.com/api/v3/bills", method="POST",
+            data=json.dumps(billplz_payload).encode("utf-8"), headers=headers,
         )
         with urllib.request.urlopen(req, timeout=20) as resp:
             body = json.loads(resp.read().decode("utf-8"))
@@ -757,42 +696,34 @@ def webhook_billplz():
         if not BILLPLZ_X_SIGNATURE:
             log.error("BILLPLZ_X_SIGNATURE is not configured. Webhook is insecure.")
             return json_response({"error": "Webhook security not configured"}, 500)
-            
         sig = request.headers.get("X-Signature", "")
         if not sig or sig != BILLPLZ_X_SIGNATURE:
             return json_response({"error": "Invalid signature"}, 401)
-
         data = request.form
         paid = str(data.get("paid")).lower() in ("true",)
         username = (data.get("reference_1") or "").strip()
         plan_id = (data.get("reference_2") or "").strip()
-
         if not (paid and username):
             _log_activity(None, "system", "webhook_invalid", {"reason": "not_paid_or_no_user", "data": dict(data)}, request)
             return json_response({"error": "invalid webhook"}, 400)
-
         days = 30
         if plan_id == "pro_3m":
             days = 365
         elif plan_id == "competent_2m":
             days = 180
-
         conn = get_conn()
         cur = conn.cursor()
         ensure_schema(cur)
-
         cur.execute("SELECT subscription_expires_at FROM users WHERE username=%s", (username,))
         r = cur.fetchone()
         now = datetime.datetime.now(datetime.timezone.utc)
         current = r[0] if (r and r[0] and r[0] > now) else now
         new_expiry = current + datetime.timedelta(days=days)
         cur.execute("UPDATE users SET subscription_expires_at=%s WHERE username=%s", (new_expiry, username))
-        
         if cur.rowcount == 0:
             _log_activity(cur, "system", "webhook_user_not_found", {"username": username, "plan": plan_id}, request)
         else:
             _log_activity(cur, "system", "webhook_paid", {"username": username, "days": days, "plan": plan_id}, request)
-        
         conn.commit()
         return json_response({"success": True})
     except Exception as e:
@@ -867,8 +798,6 @@ def create_project():
     conn = None
     try:
         conn = get_conn()
-        # 调用 services.py 中的业务逻辑
-        # 注意：services函数目前是伪代码，调用会通过但不会做任何事
         project_id, creative_options = services.create_project_and_generate_creatives(
             db_conn=conn, 
             user_id=username, 
@@ -877,7 +806,7 @@ def create_project():
         return json_response({"project_id": project_id, "creative_options": creative_options}, 201)
     except (ValidationError, json.JSONDecodeError) as e:
         log.warning(f"Validation Error from Gemini: {e}")
-        return json_response({"error": "AI response validation failed", "detail": str(e)}, 502) # Bad Gateway
+        return json_response({"error": "AI response validation failed", "detail": str(e)}, 502)
     except Exception as e:
         log.exception("create_project error")
         return json_response({"error": "Internal error", "detail": str(e)}, 500)
@@ -899,8 +828,6 @@ def select_creative(project_id):
     conn = None
     try:
         conn = get_conn()
-        # 调用 services.py 中的业务逻辑
-        # 注意：services函数目前是伪代码，调用会通过但不会做任何事
         storyboard, qa_critique = services.select_creative_and_generate_storyboard(
             db_conn=conn,
             project_id=str(project_id),
@@ -920,6 +847,4 @@ def select_creative(project_id):
 # Main execution
 # ----------------------------------------------------------------------------
 if __name__ == '__main__':
-    # This is used for local development.
-    # For production, use a Gunicorn-like server.
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=True)
