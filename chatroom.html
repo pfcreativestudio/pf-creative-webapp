@@ -61,6 +61,11 @@
         .file-preview-container img { max-height: 50px; border-radius: 4px; }
         .file-preview-container .file-name { font-size: 12px; color: #ccc; }
         .file-preview-container .remove-file-btn { background: none; border: none; color: #ff4747; cursor: pointer; margin-left: auto; }
+        /* --- NEW STYLES FOR OPTION CARDS --- */
+        .option-card { padding: 1rem; border-radius: 0.75rem; cursor: pointer; border: 1px solid rgba(139, 92, 246, 0.3); background-color: rgba(139, 92, 246, 0.1); transition: all 0.2s ease-in-out; }
+        .option-card:hover { background-color: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.5); transform: translateY(-2px); }
+        .option-card.selected { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.2); pointer-events: none; }
+        /* --- END NEW STYLES --- */
         @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; } 40% { transform: scale(1.2); opacity: 1; } }
@@ -119,17 +124,13 @@
     <div class="mt-2 text-xs text-gray-500"><span>Press Ctrl+Enter to send • Powered by PyroFractal Tech</span></div></div></div></div></div></div>
 
     <script>
-        // --- 核心修正：在所有代码运行前，先进行登录状态检查 ---
         const token = localStorage.getItem('jwtToken');
         const username = localStorage.getItem('username');
 
         if (!token || !username) {
-            // 如果浏览器中没有存储登录凭证，立刻跳转到登录页
             alert("Please log in to access the AI Film Director.");
             window.location.href = 'login.html';
         }
-        // --- 安全检查结束 ---
-
 
         class DirectorChatroom {
             constructor() {
@@ -167,8 +168,16 @@
                 document.getElementById('newChatBtn').addEventListener('click', () => this.startNewChat());
                 document.getElementById('uploadBtn').addEventListener('click', () => document.getElementById('fileInput').click());
                 document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileSelect(e));
+                // Add event listener to the main chat container for delegated option card clicks
+                document.getElementById('chatMessages').addEventListener('click', (event) => {
+                    const card = event.target.closest('.option-card');
+                    if (card) {
+                        this.handleOptionClick(card);
+                    }
+                });
             }
             
+            // ... (loadAndRenderHistory, saveCurrentChat, etc. are unchanged) ...
             loadAndRenderHistory() {
                 this.savedChats = JSON.parse(localStorage.getItem(`pf_chat_sessions_${this.username}`)) || [];
                 const historyContainer = document.getElementById('chatHistory');
@@ -218,8 +227,9 @@
                 } else {
                     const firstUserMessage = this.currentChat.history.find(m => m.role === 'user');
                     const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 30) + '...' : 'New Chat';
-                    this.currentChat.id = Date.now();
-                    this.savedChats.push({ id: this.currentChat.id, title: title, history: this.currentChat.history, timestamp: new Date().toISOString() });
+                    const newId = Date.now().toString();
+                    this.currentChat.id = newId;
+                    this.savedChats.push({ id: newId, title: title, history: this.currentChat.history, timestamp: new Date().toISOString() });
                 }
                 localStorage.setItem(`pf_chat_sessions_${this.username}`, JSON.stringify(this.savedChats));
                 this.loadAndRenderHistory();
@@ -235,11 +245,20 @@
                     chatMessages.innerHTML = '';
                     welcomeScreen.style.display = 'none';
                     chatMessages.style.display = 'block';
+                    // Re-render chat history from saved data
                     this.currentChat.history.forEach(msg => {
-                        const filePart = msg.parts.find(p => p.file);
-                        const fileObject = filePart ? filePart.file : null;
-                        this.addMessage(msg.parts[0].text, msg.role, fileObject);
+                        if (msg.role === 'user') {
+                            this.addMessage(msg.parts[0].text, msg.role, msg.parts.find(p => p.file)?.file);
+                        } else {
+                            // This is an AI message. We need to check if it's an options list
+                            if (msg.parts[0].text.includes("Great! I've come up with three creative directions")) {
+                                this.displayCreativeOptions(msg.projectId, msg.creative_options);
+                            } else {
+                                this.addMessage(msg.parts[0].text, msg.role);
+                            }
+                        }
                     });
+
                     this.highlightActiveChat();
                     if(this.sidebarOpen && window.innerWidth <= 768) this.closeSidebar();
                 }
@@ -271,6 +290,7 @@
             }
             
             async sendMessage() {
+                // ... (This function remains mostly the same, but now it calls displayCreativeOptions on success)
                 const messageInput = document.getElementById('messageInput');
                 const message = messageInput.value.trim();
                 if (!message && !this.attachedFile) return;
@@ -286,9 +306,7 @@
 
                 this.addMessage(userMessageContent, 'user', userFile);
                 
-                const userMessageForHistory = { role: 'user', parts: [{ text: userMessageContent }]};
-                if(userFile) userMessageForHistory.parts.push({ file: { name: userFile.name, type: userFile.type } });
-                this.currentChat.history.push(userMessageForHistory);
+                this.currentChat.history.push({ role: 'user', parts: [{ text: userMessageContent }] });
 
                 messageInput.value = '';
                 messageInput.style.height = 'auto';
@@ -306,22 +324,14 @@
                     formData.append('file', userFile);
                     body = formData;
                 } else {
-                    // ==========================================================
-                    // === START: MODIFICATIONS FOR NEW MULTI-AGENT WORKFLOW ===
-                    // ==========================================================
                     endpoint = `${this.apiUrl}/v1/projects`;
                     headers['Content-Type'] = 'application/json';
-                    
-                    // Create the structured payload for the new endpoint
                     const payload = {
-                        "project_title": `Project based on: ${userMessageContent.substring(0, 50)}...`,
-                        "video_length_sec": 30, // Default length, can be made dynamic later
+                        "project_title": `Project: ${userMessageContent.substring(0, 50)}`,
+                        "video_length_sec": 30,
                         "user_input": userMessageContent
                     };
                     body = JSON.stringify(payload);
-                    // ========================================================
-                    // === END: MODIFICATIONS FOR NEW MULTI-AGENT WORKFLOW ===
-                    // ========================================================
                 }
 
                 this.showTypingIndicator();
@@ -331,32 +341,21 @@
                     const result = await response.json();
 
                     if (response.ok) {
-                        let aiResponse;
-                        // ==========================================================
-                        // === START: MODIFICATIONS FOR NEW RESPONSE FORMAT ===
-                        // ==========================================================
                         if (userFile) {
-                            // This is the old response format for chat-with-image, which is fine
-                            aiResponse = result.response;
+                            const aiResponse = result.response;
+                            this.addMessage(aiResponse, 'model');
+                            this.currentChat.history.push({ role: 'model', parts: [{ text: aiResponse }] });
                         } else {
-                            // This is the new response format for /v1/projects
-                            // We need to format the creative options into a readable string
-                            const options = result.creative_options;
-                            let formattedOptions = "Great! I've come up with three creative directions for your project. Please choose which one you'd like to develop further:\n\n";
-                            options.forEach((opt, index) => {
-                                formattedOptions += `OPTION ${index + 1}: **${this.escapeHtml(opt.title)}**\n`;
-                                formattedOptions += `*Logline:* ${this.escapeHtml(opt.logline)}\n`;
-                                formattedOptions += `*Why it works:* ${this.escapeHtml(opt.why_it_works)}\n\n`;
+                            // Call the new function to display options
+                            this.displayCreativeOptions(result.project_id, result.creative_options);
+                            // Save the structured response to history for proper reloading
+                            this.currentChat.history.push({ 
+                                role: 'model', 
+                                projectId: result.project_id,
+                                creative_options: result.creative_options,
+                                parts: [{ text: "Great! I've come up with three creative directions..." }] // Placeholder text for history
                             });
-                            aiResponse = formattedOptions;
                         }
-                        // ========================================================
-                        // === END: MODIFICATIONS FOR NEW RESPONSE FORMAT ===
-                        // ========================================================
-
-                        this.addMessage(aiResponse, 'model');
-                        this.currentChat.history.push({ role: 'model', parts: [{ text: aiResponse }] });
-
                     } else {
                         const errorMessage = result.error || result.detail || 'An unexpected error occurred.';
                         this.addMessage(errorMessage, 'model', null, true);
@@ -370,18 +369,83 @@
                     this.saveCurrentChat();
                 }
             }
+            
+            // --- NEW FUNCTION TO DISPLAY CLICKABLE OPTIONS ---
+            displayCreativeOptions(projectId, options) {
+                const introText = "Great! I've come up with three creative directions for your project. Please choose which one you'd like to develop further:";
+                this.addMessage(introText, 'model'); // Add the intro text as a normal message
+
+                const chatMessages = document.getElementById('chatMessages');
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'space-y-3 ml-14'; // Indent it like a normal message content
+
+                let optionsHtml = '';
+                options.forEach((option, index) => {
+                    optionsHtml += `
+                        <div class="option-card" 
+                             data-project-id="${this.escapeHtml(projectId)}" 
+                             data-option-id="${this.escapeHtml(option.id)}">
+                            <p class="font-bold text-white">OPTION ${index + 1}: ${this.escapeHtml(option.title)}</p>
+                            <p class="text-sm text-gray-300 mt-1">${this.escapeHtml(option.logline)}</p>
+                        </div>
+                    `;
+                });
+                optionsContainer.innerHTML = optionsHtml;
+                chatMessages.appendChild(optionsContainer);
+                this.scrollToBottom();
+            }
+            
+            // --- NEW FUNCTION TO HANDLE OPTION CLICKS ---
+            async handleOptionClick(cardElement) {
+                const projectId = cardElement.dataset.projectId;
+                const selectedOptionId = cardElement.dataset.optionId;
+
+                console.log(`User selected option ${selectedOptionId} for project ${projectId}`);
+                
+                document.querySelectorAll('.option-card').forEach(c => c.classList.add('pointer-events-none', 'opacity-50'));
+                cardElement.classList.remove('opacity-50');
+                cardElement.classList.add('selected');
+
+                this.addMessage("Great choice! I'll start working on the storyboard for you now...", 'model');
+                this.showTypingIndicator();
+
+                try {
+                    const response = await fetch(`${this.apiUrl}/v1/projects/${projectId}/select-creative`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.token}`
+                        },
+                        body: JSON.stringify({ "creative_id": selectedOptionId })
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || result.detail || "Failed to generate storyboard.");
+                    }
+                    
+                    // --- PROCESS STORYBOARD RESPONSE ---
+                    // For now, we just show a success message as the storyboard logic in services.py is a placeholder
+                    const storyboardResponse = `Storyboard generation process started successfully! (Full logic coming soon).\n\nQA Status: ${result.qa_critique.is_approved ? 'Approved' : 'Needs Revision'}\nFeedback: ${result.qa_critique.feedback}`;
+                    this.addMessage(storyboardResponse, 'model');
+                    this.currentChat.history.push({ role: 'model', parts: [{ text: storyboardResponse }] });
+
+                } catch (error) {
+                    this.addMessage(`An error occurred: ${error.message}`, 'model', null, true);
+                } finally {
+                    this.hideTypingIndicator();
+                    this.saveCurrentChat();
+                }
+            }
 
             addMessage(content, sender, file = null, isError = false) {
                 const chatMessages = document.getElementById('chatMessages');
                 const messageDiv = document.createElement('div');
                 const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const avatar = sender === 'user' ? 'fa-user' : 'fa-robot';
+                const senderClass = sender === 'user' ? 'user-message' : 'ai-message';
                 
-                // Use a simple markdown-to-html converter
-                let formattedContent = this.escapeHtml(content)
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')     // Italics
-                    .replace(/\n/g, '<br>');
+                const formattedContent = this.escapeHtml(content).replace(/\n/g, '<br>');
 
                 let filePreviewHtml = '';
                 if (file && sender === 'user') {
