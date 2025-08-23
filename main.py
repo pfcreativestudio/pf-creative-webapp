@@ -64,11 +64,11 @@ BILLPLZ_X_SIGNATURE = os.getenv("BILLPLZ_X_SIGNATURE", "")
 # ----------------------------------------------------------------------------
 app = Flask(__name__)
 
-# === START: CORS CONFIGURATION FIX ===
-# Be more explicit with CORS configuration for our new v1 API endpoints.
-# This tells the app to allow all origins for any route starting with /v1/.
-CORS(app, resources={r"/v1/*": {"origins": "*"}})
-# === END: CORS CONFIGURATION FIX ===
+# === START: FINAL CORS CONFIGURATION FIX ===
+# The simplest, most robust way is to enable CORS for the entire application.
+# The previous specific configuration was causing issues with preflight requests.
+CORS(app)
+# === END: FINAL CORS CONFIGURATION FIX ===
 
 
 def json_response(payload, status=200):
