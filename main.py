@@ -782,9 +782,14 @@ def chat_with_image():
 # V1 - Multi-Agent Script Generation Workflow (NEW)
 # ----------------------------------------------------------------------------
 @app.route("/v1/projects", methods=["POST", "OPTIONS"])
-@cross_origin()
+@cross_origin(origins="*", methods=["POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
 def create_project():
     """Endpoint to create a new project and get initial creative concepts."""
+    # Handle CORS preflight explicitly (no auth on OPTIONS)
+    if request.method == "OPTIONS":
+        return Response(status=200)
+
+    # Only authenticate for the actual POST
     payload = _jwt_decode(request)
     if not payload:
         return json_response({"error": "Invalid token"}, 401)
@@ -798,8 +803,8 @@ def create_project():
     try:
         conn = get_conn()
         project_id, creative_options = services.create_project_and_generate_creatives(
-            db_conn=conn, 
-            user_id=username, 
+            db_conn=conn,
+            user_id=username,
             user_input=user_input
         )
         return json_response({"project_id": project_id, "creative_options": creative_options}, 201)
@@ -813,18 +818,23 @@ def create_project():
         put_conn(conn)
 
 @app.route("/v1/projects/<uuid:project_id>/select-creative", methods=["POST", "OPTIONS"])
-@cross_origin()
+@cross_origin(origins="*", methods=["POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
 def select_creative(project_id):
     """Endpoint for the user to select their preferred creative concept."""
+    # Handle CORS preflight explicitly (no auth on OPTIONS)
+    if request.method == "OPTIONS":
+        return Response(status=200)
+
+    # Only authenticate for the actual POST
     payload = _jwt_decode(request)
     if not payload:
         return json_response({"error": "Invalid token"}, 401)
-    
+
     data = request.get_json(silent=True) or {}
     creative_id = data.get("creative_id")
     if not creative_id:
         return json_response({"error": "creative_id is required"}, 400)
-        
+
     conn = None
     try:
         conn = get_conn()
