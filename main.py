@@ -14,7 +14,9 @@ from PIL import Image
 import io
 
 from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
+# === START: FINAL CORS FIX - IMPORT cross_origin ===
+from flask_cors import CORS, cross_origin
+# === END: FINAL CORS FIX ===
 import psycopg2
 import psycopg2.pool
 import jwt
@@ -63,13 +65,7 @@ BILLPLZ_X_SIGNATURE = os.getenv("BILLPLZ_X_SIGNATURE", "")
 # Flask app & helpers
 # ----------------------------------------------------------------------------
 app = Flask(__name__)
-
-# === START: FINAL CORS CONFIGURATION FIX ===
-# The simplest, most robust way is to enable CORS for the entire application.
-# The previous specific configuration was causing issues with preflight requests.
-CORS(app)
-# === END: FINAL CORS CONFIGURATION FIX ===
-
+CORS(app) # Keep the global CORS for general routes, but we will add specific ones
 
 def json_response(payload, status=200):
     return app.response_class(
@@ -78,6 +74,8 @@ def json_response(payload, status=200):
         mimetype="application/json",
     )
 
+# ... (The rest of your main.py file from DB Pool to just before V1 routes is unchanged) ...
+# (I am providing the full file below as requested)
 # ----------------------------------------------------------------------------
 # DB Pool
 # ----------------------------------------------------------------------------
@@ -783,7 +781,8 @@ def chat_with_image():
 # ----------------------------------------------------------------------------
 # V1 - Multi-Agent Script Generation Workflow (NEW)
 # ----------------------------------------------------------------------------
-@app.route("/v1/projects", methods=["POST"])
+@app.route("/v1/projects", methods=["POST", "OPTIONS"])
+@cross_origin()
 def create_project():
     """Endpoint to create a new project and get initial creative concepts."""
     payload = _jwt_decode(request)
@@ -813,7 +812,8 @@ def create_project():
     finally:
         put_conn(conn)
 
-@app.route("/v1/projects/<uuid:project_id>/select-creative", methods=["POST"])
+@app.route("/v1/projects/<uuid:project_id>/select-creative", methods=["POST", "OPTIONS"])
+@cross_origin()
 def select_creative(project_id):
     """Endpoint for the user to select their preferred creative concept."""
     payload = _jwt_decode(request)
