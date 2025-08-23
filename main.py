@@ -74,8 +74,6 @@ def json_response(payload, status=200):
         mimetype="application/json",
     )
 
-# ... (The rest of your main.py file from DB Pool to just before V1 routes is unchanged) ...
-# (I am providing the full file below as requested)
 # ----------------------------------------------------------------------------
 # DB Pool
 # ----------------------------------------------------------------------------
@@ -803,8 +801,8 @@ def create_project():
     try:
         conn = get_conn()
         project_id, creative_options = services.create_project_and_generate_creatives(
-            db_conn=conn,
-            user_id=username,
+            db_conn=conn, 
+            user_id=username, 
             user_input=user_input
         )
         return json_response({"project_id": project_id, "creative_options": creative_options}, 201)
@@ -829,12 +827,12 @@ def select_creative(project_id):
     payload = _jwt_decode(request)
     if not payload:
         return json_response({"error": "Invalid token"}, 401)
-
+    
     data = request.get_json(silent=True) or {}
     creative_id = data.get("creative_id")
     if not creative_id:
         return json_response({"error": "creative_id is required"}, 400)
-
+        
     conn = None
     try:
         conn = get_conn()
