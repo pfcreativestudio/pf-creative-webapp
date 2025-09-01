@@ -14,4 +14,7 @@
   window.__PF_RUNTIME__ = Object.freeze({
     API_BASE
   });
+  
+  // Log the resolved API base for debugging
+  console.info("[PF] API base:", API_BASE);
 })();

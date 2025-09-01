@@ -552,7 +552,22 @@ if (response.ok && aiResponse) {
             append('ai', out);
             showStatus('HTTP '+res.status);
           }else{
-            append('sys','HTTP '+res.status); showStatus('HTTP '+res.status);
+            // Improved error handling with specific messages
+            if(res.status === 401 || res.status === 403) {
+              append('sys','Please login to continue.');
+              setTimeout(() => { window.location.href='login.html'; }, 1000);
+            } else if(res.status === 400) {
+              try {
+                var errorData = await res.json();
+                var errorMsg = errorData.error || errorData.message || 'Bad request';
+                append('sys', errorMsg);
+              } catch(_) {
+                append('sys','Bad request (400)');
+              }
+            } else {
+              append('sys','Server error ('+res.status+'). Please try again.');
+            }
+            showStatus('HTTP '+res.status);
           }
         }catch(e){ append('sys','Request failed'); showStatus('Error'); }
         finally{

@@ -54,4 +54,13 @@ fi
 
 echo
 echo "✅ All smoke tests passed!"
+echo
+echo "=== SMOKE SUMMARY ==="
+echo "SERVICE_URL: $API_BASE"
+echo "OPTIONS /login: $PREFLIGHT_STATUS"
+echo "GET /healthz: $HEALTH_STATUS"
+echo "POST /login: $LOGIN_STATUS"
+echo "GET /v1/director/veo-3-prompt: $DIRECTOR_STATUS"
+echo "====================="
+echo
 echo "== Check Cloud Run logs for POST /login request details =="

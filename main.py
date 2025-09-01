@@ -601,6 +601,7 @@ def call_gemini(prompt, system_instruction=None):
 @app.route("/healthz", methods=["GET"])
 def healthz():
     # 带 revision，方便你在监控/日志确认活跃修订
+    app.logger.info("--- HEALTHZ --- /healthz hit")
     return json_response({
         "status": "ok",
         "ts": datetime.datetime.utcnow().isoformat(),
