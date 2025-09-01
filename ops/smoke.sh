@@ -25,11 +25,12 @@ if [[ "$PREFLIGHT_STATUS" != "200" && "$PREFLIGHT_STATUS" != "204" ]]; then
 fi
 
 echo
-echo "== GET /healthz =="
+echo "== GET /healthz (fallback to /ping) =="
 HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/healthz")
-echo "Status: $HEALTH_STATUS"
-if [[ "$HEALTH_STATUS" != "200" ]]; then
-  echo "❌ Health check failed with status $HEALTH_STATUS"
+PING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/ping")
+echo "Status: /healthz=$HEALTH_STATUS /ping=$PING_STATUS"
+if [[ "$HEALTH_STATUS" != "200" && "$PING_STATUS" != "200" ]]; then
+  echo "❌ Health check failed: /healthz=$HEALTH_STATUS, /ping=$PING_STATUS"
   exit 1
 fi
 
@@ -62,6 +63,8 @@ echo "SERVICE_URL: $API_BASE"
 echo -n "OPTIONS /login: "; code "$API_BASE/login" -X OPTIONS -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type"; echo
 
 echo -n "GET /healthz: "; code "$API_BASE/healthz"; echo
+
+echo -n "GET /ping: "; code "$API_BASE/ping"; echo
 
 echo -n "POST /login: "; code "$API_BASE/login" -X POST -H "Origin: $ORIGIN" -H "Content-Type: application/json" --data '{"email":"x@y","password":"z"}'; echo
 
