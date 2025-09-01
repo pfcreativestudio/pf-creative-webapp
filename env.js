@@ -18,20 +18,14 @@
     return base;
   }
 
-  // Get API base from runtime-config.js if available
-  var BASE = "";
+  // Honor existing runtime base; only provide a minimal fallback for dev if nothing is set
   try {
-    if (window.__PF_RUNTIME__?.API_BASE) {
-      BASE = window.__PF_RUNTIME__.API_BASE.replace(/\/+$/, "");
-    } else if (window.PF_API_BASE) {
-      BASE = normalizeBase(window.PF_API_BASE);
+    window.__PF_RUNTIME__ = window.__PF_RUNTIME__ || {};
+    if (!window.PF_API_BASE && !window.__PF_RUNTIME__.API_BASE) {
+      window.PF_API_BASE = "/api";
+      window.__PF_RUNTIME__.API_BASE = "/api";
     }
-  } catch (e) {
-    console.warn("[PF][env] Could not resolve API base:", e.message);
-  }
-
-  // public
-  window.PF_API_BASE = BASE;
+  } catch(_) {}
 
   // ---- core url rewriter ----
   function rewriteUrl(u) {

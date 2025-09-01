@@ -14,7 +14,7 @@
 
   async function apiFetch(path, options = {}) {
     const url = (API_BASE || '') + (String(path).startsWith('/') ? path : '/' + path);
-    const init = { credentials: 'include', ...options };
+    const init = { credentials: "include", ...options };
     init.headers = {
       'Content-Type': 'application/json',
       ...(options.headers || {})
