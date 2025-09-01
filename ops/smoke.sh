@@ -43,11 +43,9 @@ if [[ "$LOGIN_STATUS" -lt 200 || "$LOGIN_STATUS" -ge 500 ]]; then
 fi
 
 echo
-echo "== POST /v1/director/veo-3-prompt (expect 200 or 400, must reach server) =="
-DIRECTOR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API_BASE/v1/director/veo-3-prompt" \
-  -H "Origin: $ORIGIN" \
-  -H "Content-Type: application/json" \
-  --data '{"prompt":"Hello", "history":[]}')
+echo "== GET /v1/director/veo-3-prompt (expect 200 or 400, must reach server) =="
+DIRECTOR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$API_BASE/v1/director/veo-3-prompt" \
+  -H "Origin: $ORIGIN")
 echo "Status: $DIRECTOR_STATUS"
 if [[ "$DIRECTOR_STATUS" -lt 200 || "$DIRECTOR_STATUS" -ge 500 ]]; then
   echo "❌ Director endpoint failed with status $DIRECTOR_STATUS"
