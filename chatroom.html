@@ -177,8 +177,7 @@
                 this.startNewChat(); 
             }
             
-            // ... (您的所有其他函数 setupEventListeners, loadAndRenderHistory, sendMessage 等都保持不变)
-            // (The user's original functions are preserved here)
+            // Core event handlers and message functions
             setupEventListeners() {
                 document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
                 const messageInput = document.getElementById('messageInput');
@@ -318,37 +317,69 @@
                 this.toggleSendButton(false);
                 this.removeFile();
 
-                let endpoint;
-                let body;
-                const headers = { 'Authorization': `Bearer ${this.token}` };
-
-                if (userFile) {
-    endpoint = `${this.apiUrl}/v1/vision/chat`;
-    const formData = new FormData();
-    formData.append('prompt', userMessageContent);
-    formData.append('file', userFile);
-    body = formData;
-} else {
-    endpoint = `${this.apiUrl}/v1/director/veo-3-prompt`;
-    headers['Content-Type'] = 'application/json';
-    body = JSON.stringify({ prompt: userMessageContent });
-}
-
                 this.showTypingIndicator();
 
                 try {
-                    const response = await fetch(endpoint, { method: 'POST', headers, body });
+                    // Ensure we have a project ID for all requests
+                    const projectId = await window.ensureProjectId();
+                    
+                    let response;
+                    if (userFile) {
+                        // For file uploads, use FormData (not through apiFetch for now)
+                        const formData = new FormData();
+                        formData.append('prompt', userMessageContent);
+                        formData.append('file', userFile);
+                        formData.append('project_id', projectId);
+                        
+                        response = await fetch(`${window.getApiBase()}/v1/vision/chat`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: { 'Authorization': `Bearer ${this.token}` },
+                            body: formData
+                        });
+                    } else {
+                        // For text-only, use apiFetch with project_id
+                        response = await window.apiFetch('/v1/director/veo-3-prompt', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${this.token}`
+                            },
+                            body: JSON.stringify({ 
+                                project_id: projectId,
+                                text: userMessageContent,
+                                source: 'chatroom'
+                            })
+                        });
+                    }
+
                     const result = await response.json().catch(()=>({}));
-let aiResponse = result.response || result.script || result.reply || result.message;
-if (response.ok && aiResponse) {
-                        this.addMessage(aiResponse, 'model'); // Changed 'ai' to 'model' to match history
+                    
+                    if (response.status === 401) {
+                        this.addMessage('Session expired, please login again', 'model', null, true);
+                        setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+                        return;
+                    }
+                    
+                    if (response.status === 400 && (result.error || '').includes('Missing project_id')) {
+                        this.addMessage('Creating project, please retry', 'model', null, true);
+                        window.clearProjectId();
+                        await window.ensureProjectId();
+                        // Auto-retry once
+                        setTimeout(() => this.sendMessage(), 1000);
+                        return;
+                    }
+
+                    let aiResponse = result.response || result.script || result.reply || result.message;
+                    if (response.ok && aiResponse) {
+                        this.addMessage(aiResponse, 'model');
                         this.currentChat.history.push({ role: 'model', parts: [{ text: aiResponse }] });
                     } else {
-  const errorMessage = result.error || result.message || 'An unexpected error occurred.';
-                        this.addMessage(errorMessage, 'model', null, true); // Changed 'ai' to 'model'
+                        const errorMessage = result.error || result.message || 'An unexpected error occurred.';
+                        this.addMessage(errorMessage, 'model', null, true);
                     }
                 } catch (error) {
-                    this.addMessage('Network error. Please check your connection.', 'model', null, true); // Changed 'ai' to 'model'
+                    this.addMessage('Network error. Please check your connection.', 'model', null, true);
                 } finally {
                     this.hideTypingIndicator();
                     this.toggleSendButton(true);
