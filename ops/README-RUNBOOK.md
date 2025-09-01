@@ -34,6 +34,43 @@ VITE_API_BASE=https://pfsystem-api-XXXX.a.run.app
 <meta name="pf:apiBase" content="https://pfsystem-api-XXXX.a.run.app">
 ```
 
+## Deployment
+
+### Prerequisites
+- Docker Desktop running
+- Google Cloud SDK installed & logged in
+
+### One-time Setup
+
+```bash
+bash ops/gcloud_prep.sh
+```
+
+This will:
+- Authenticate with Google Cloud (browser will open)
+- Set project and region
+- Enable required APIs
+- Create Artifact Registry repository
+- Configure Docker authentication
+
+### Build → Push → Deploy
+
+```bash
+# Full pipeline
+bash ops/build.sh && bash ops/push.sh && bash ops/deploy.sh
+
+# Or step by step
+bash ops/build.sh
+bash ops/push.sh  
+bash ops/deploy.sh
+```
+
+### Get Service URL
+
+```bash
+gcloud run services describe pfsystem-api --region=asia-southeast1 --format='value(status.url)'
+```
+
 ## Smoke Testing
 
 ### Prerequisites
@@ -95,3 +132,9 @@ This should pass with no hardcoded API domains found.
 - Verify OPTIONS preflight returns 200/204
 - Check Cloud Run logs for request details
 - Ensure `credentials: "include"` is set in fetch calls
+
+### Deployment Issues
+- Check Docker build logs for errors
+- Verify gcloud authentication and project access
+- Ensure Artifact Registry repository exists
+- Check Cloud Run service quotas and limits

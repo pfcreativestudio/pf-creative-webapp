@@ -11,7 +11,7 @@
     <!-- Centralized env; must be loaded AFTER runtime-config.js -->
     <script src="env.js"></script>
     
-    <meta name="pf:apiBase" content="__INJECT_AT_DEPLOY__">
+        <meta name="pf:apiBase" content="https://pfsystem-api-rjali3wdrq-as.a.run.app">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <style>
     :root{
@@ -294,30 +294,32 @@
       draw();
     })();
 
-    // ========= Backend base from runtime-config.js =========
-    function getApiBase() {
-      if (!window.__PF_RUNTIME__?.API_BASE) {
-        throw new Error("PF runtime not initialized: API_BASE missing");
+    // ========= Main application logic (wrapped in IIFE) =========
+      (function() {
+      // ========= Backend base from runtime-config.js =========
+      function getApiBase() {
+        if (!window.__PF_RUNTIME__?.API_BASE) {
+          throw new Error("PF runtime not initialized: API_BASE missing");
+        }
+        return window.__PF_RUNTIME__.API_BASE.replace(/\/+$/, "");
       }
-      return window.__PF_RUNTIME__.API_BASE.replace(/\/+$/, "");
-    }
-    
-    let API_BASE;
-    try {
-      API_BASE = getApiBase();
-    } catch (e) {
-      console.error("[PF][dashboard] Missing API base:", e.message);
-      alert('Missing API base. Please contact admin to configure API settings.');
-      return;
-    }
+      
+      let API_BASE;
+      try {
+        API_BASE = getApiBase();
+      } catch (e) {
+        console.error("[PF][dashboard] Missing API base:", e.message);
+        alert('Missing API base. Please contact admin to configure API settings.');
+        return;
+      }
 
-    // ========= Token helpers =========
-    function getToken(){ return localStorage.getItem('jwtToken') || localStorage.getItem('token') || null; }
-    function clearAllTokens(){ localStorage.removeItem('jwtToken'); localStorage.removeItem('token'); localStorage.removeItem('username'); localStorage.removeItem('auth_ok'); }
-    function setHeaderUser(text){ document.getElementById('headerUser').textContent = text || '—'; }
+      // ========= Token helpers =========
+      function getToken(){ return localStorage.getItem('jwtToken') || localStorage.getItem('token') || null; }
+      function clearAllTokens(){ localStorage.removeItem('jwtToken'); localStorage.removeItem('token'); localStorage.removeItem('username'); localStorage.removeItem('auth_ok'); }
+      function setHeaderUser(text){ document.getElementById('headerUser').textContent = text || '—'; }
 
-    // ========= Formatting & subscription extraction =========
-    function formatExpiry(val){
+      // ========= Formatting & subscription extraction =========
+      function formatExpiry(val){
       if(!val) return '—';
       try{
         if(/^[0-9]+$/.test(String(val))){
@@ -328,9 +330,9 @@
         if(isNaN(d.getTime())) return String(val);
         return d.toLocaleString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
       }catch(e){ return String(val); }
-    }
+      }
 
-    function extractSubscriptionInfo(data){
+      function extractSubscriptionInfo(data){
       const info = { active:false, since:null, expiry:null, raw:data };
       if(!data) return info;
       if(typeof data.is_subscribed === 'boolean') info.active = info.active || data.is_subscribed;
@@ -353,22 +355,22 @@
       if(!info.expiry && data.user && data.user.subscription && data.user.subscription.expires_at) info.expiry = data.user.subscription.expires_at;
       if(!info.since && data.since) info.since = data.since;
       return info;
-    }
+      }
 
-    function applySubscriptionInfo(info){
+      function applySubscriptionInfo(info){
       document.getElementById('subStatus').textContent = info.active ? 'Active' : 'Inactive';
       document.getElementById('subSince').textContent = info.since ? ('Since: ' + formatExpiry(info.since)) : '';
       document.getElementById('expiry').textContent = info.expiry ? formatExpiry(info.expiry) : '—';
-    }
+      }
 
-    // ========= Plans & Projects =========
-    const PLAN_WHITELIST = {
+      // ========= Plans & Projects =========
+      const PLAN_WHITELIST = {
       p1m: { id:'p1m', name:'1 Month',  price:99,  description:'Monthly access to Pro features', rank:1 },
       p6m: { id:'p6m', name:'6 Months', price:198, description:'Save more with 6 months',        rank:2 },
       p12m:{ id:'p12m',name:'12 Months',price:297, description:'Best value — 12 months',        rank:3, recommended:true }
-    };
+      };
 
-    function normalizePlan(p){
+      function normalizePlan(p){
       if(!p) return null;
       const id = String(p.id||'').toLowerCase();
       const name = String(p.name||'').toLowerCase();
@@ -386,9 +388,9 @@
       if(!key) return null;
       const base = PLAN_WHITELIST[key];
       return { ...base, description: p.description || base.description || '' };
-    }
+      }
 
-    function renderPlans(plans){
+      function renderPlans(plans){
       const container = document.getElementById('planContainer');
       container.innerHTML = '';
 
@@ -421,9 +423,9 @@
         `;
         container.appendChild(el);
       });
-    }
+      }
 
-    function renderProjects(items){
+      function renderProjects(items){
       const list = document.querySelector('#projects .p-list');
       list.innerHTML = '';
       if(!Array.isArray(items) || items.length === 0){
@@ -439,30 +441,30 @@
         e.innerHTML = `<div class="title">${i.title || 'Untitled'}</div><div class="small-muted">${i.updated_at || ''}</div>`;
         list.appendChild(e);
       });
-    }
+      }
 
-    // ========= Modal & purchase =========
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-    const modalConfirm = document.getElementById('modalConfirm');
-    const modalCancel = document.getElementById('modalCancel');
-    let pendingPlan = null;
+      // ========= Modal & purchase =========
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+      const modalConfirm = document.getElementById('modalConfirm');
+      const modalCancel = document.getElementById('modalCancel');
+      let pendingPlan = null;
 
-    function openModal(plan){
+      function openModal(plan){
       pendingPlan = plan;
       modalTitle.textContent = `Purchase ${plan.name}`;
       modalBody.textContent = `Proceed to pay RM${plan.price} for \"${plan.name}\"? You will be redirected to secure checkout.`;
       modalBackdrop.style.display = 'flex';
       modalBackdrop.setAttribute('aria-hidden','false');
       modalConfirm.focus();
-    }
-    function closeModal(){ pendingPlan = null; modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true'); }
-    modalCancel.addEventListener('click', closeModal);
-    modalBackdrop.addEventListener('click', (e)=> { if(e.target === modalBackdrop) closeModal(); });
-    document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') closeModal(); });
+      }
+      function closeModal(){ pendingPlan = null; modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true'); }
+      modalCancel.addEventListener('click', closeModal);
+      modalBackdrop.addEventListener('click', (e)=> { if(e.target === modalBackdrop) closeModal(); });
+      document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') closeModal(); });
 
-    modalConfirm.addEventListener('click', async () => {
+      modalConfirm.addEventListener('click', async () => {
       if(!pendingPlan) return closeModal();
       const token = getToken();
       if(!token){ clearAllTokens(); window.location.href='login.html'; return; }
@@ -481,19 +483,19 @@
         alert('Network error when creating bill. Please try again.');
         closeModal(); modalConfirm.disabled=false; modalConfirm.textContent='Proceed to Payment';
       }
-    });
+      });
 
-    function bindBuyButtons(){
+      function bindBuyButtons(){
       document.getElementById('planContainer').addEventListener('click', (e) => {
         const btn = e.target.closest('.buyBtn');
         if(!btn) return;
         const plan = { id: btn.dataset.plan, name: btn.dataset.name, price: btn.dataset.price };
         openModal(plan);
       });
-    }
+      }
 
-    // ========= Auth & initial load =========
-    async function ensureLoginAndStatus(){
+      // ========= Auth & initial load =========
+      async function ensureLoginAndStatus(){
       const token = getToken();
       const username = localStorage.getItem('username');
       if(!token || !username){ clearAllTokens(); window.location.href = 'login.html?expired=1'; return false; }
@@ -518,9 +520,9 @@
         console.warn('auth check failed', e);
         return true;
       }
-    }
+      }
 
-    (async function init(){
+      (async function init(){
       const ok = await ensureLoginAndStatus();
       if(!ok) return;
       bindBuyButtons();
@@ -551,10 +553,11 @@
         }catch(e){ console.warn('auto-refresh failed', e); }
       }, 30000);
 
-    })();
+      })();
 
-    document.getElementById('logoutBtn').addEventListener('click', () => { clearAllTokens(); window.location.href='login.html'; });
-    document.getElementById('toStudio').addEventListener('click', () => { if(getToken()) window.location.href='chatroom.html'; else { clearAllTokens(); window.location.href='login.html'; } });
+      document.getElementById('logoutBtn').addEventListener('click', () => { clearAllTokens(); window.location.href='login.html'; });
+      document.getElementById('toStudio').addEventListener('click', () => { if(getToken()) window.location.href='chatroom.html'; else { clearAllTokens(); window.location.href='login.html'; } });
+      })(); // Close IIFE
   </script>
 </body>
 </html>
