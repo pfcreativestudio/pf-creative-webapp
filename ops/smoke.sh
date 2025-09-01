@@ -10,6 +10,9 @@ if [[ -z "$API_BASE" ]]; then
   exit 1
 fi
 
+# Helper to print just status codes
+code() { local URL="$1"; shift; curl -s -o /dev/null -w "%{http_code}" "$@" "$URL"; }
+
 echo "== Preflight OPTIONS /login from Origin: $ORIGIN =="
 PREFLIGHT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X OPTIONS "$API_BASE/login" \
   -H "Origin: $ORIGIN" \
@@ -53,14 +56,17 @@ if [[ "$DIRECTOR_STATUS" -lt 200 || "$DIRECTOR_STATUS" -ge 500 ]]; then
 fi
 
 echo
-echo "✅ All smoke tests passed!"
-echo
+# Compact summary with numeric codes
 echo "=== SMOKE SUMMARY ==="
 echo "SERVICE_URL: $API_BASE"
-echo "OPTIONS /login: $PREFLIGHT_STATUS"
-echo "GET /healthz: $HEALTH_STATUS"
-echo "POST /login: $LOGIN_STATUS"
-echo "GET /v1/director/veo-3-prompt: $DIRECTOR_STATUS"
+echo -n "OPTIONS /login: "; code "$API_BASE/login" -X OPTIONS -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type"; echo
+
+echo -n "GET /healthz: "; code "$API_BASE/healthz"; echo
+
+echo -n "POST /login: "; code "$API_BASE/login" -X POST -H "Origin: $ORIGIN" -H "Content-Type: application/json" --data '{"email":"x@y","password":"z"}'; echo
+
+echo -n "GET /v1/director/veo-3-prompt: "; code "$API_BASE/v1/director/veo-3-prompt" -X GET -H "Origin: $ORIGIN"; echo
+
 echo "====================="
 echo
 echo "== Check Cloud Run logs for POST /login request details =="
