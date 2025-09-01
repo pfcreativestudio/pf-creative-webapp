@@ -130,6 +130,9 @@
     <div class="mt-2 text-xs text-gray-500"><span>Press Ctrl+Enter to send • Powered by PyroFractal Tech</span></div></div></div></div></div></div>
 
     <script>
+        // Debug log for API base resolution
+        console.info('[PF][chatroom] Using API:', window.PF_API_BASE);
+        
         // --- 核心修正：在所有代码运行前，先进行登录状态检查 ---
         const token = localStorage.getItem('jwtToken');
         const username = localStorage.getItem('username');
@@ -331,9 +334,8 @@
                         formData.append('file', userFile);
                         formData.append('project_id', projectId);
                         
-                        response = await fetch(`${window.getApiBase()}/v1/vision/chat`, {
+                        response = await window.apiFetch('/v1/vision/chat', {
                             method: 'POST',
-                            credentials: 'include',
                             headers: { 'Authorization': `Bearer ${this.token}` },
                             body: formData
                         });
@@ -526,24 +528,43 @@
 
     function showStatus(s){ var n=el('sendStatus'); if(n) n.textContent = s; }
 
-    async function window.window.window.window.apiFetch(path, init){
-      init = init || {};
-      var headers = Object.assign({}, init.headers||{}, authHeaders());
-      if(!init.body && (init.method||'').toUpperCase()!=='GET'){ headers['Content-Type']='application/json'; }
-      var res = await fetch(buildUrl(path), Object.assign({}, init, { headers: headers }));
-      return res;
-    }
+    // Using global window.apiFetch from api.js
 
     async function sendText(message){
-      var chain = [
-        ['/generate-script', {method:'POST', body: JSON.stringify({ project_info: message, history: [] }) }],
-        ['/v1/director/veo-3-prompt', {method:'POST', body: JSON.stringify({ prompt: message }) }],
-        ['/v1/chat', {method:'POST', body: JSON.stringify({ message: message }) }]
-      ];
-      for (var i=0;i<chain.length;i++){
-        try { var r = await window.window.window.window.apiFetch(chain[i][0], chain[i][1]); if (r.status !== 404) return r; } catch(_){}
+      try {
+        const projectId = await window.ensureProjectId();
+        const response = await window.apiFetch('/v1/director/veo-3-prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project_id: projectId, text: message, source: 'chatroom' })
+        });
+        
+        if (response.status === 401) {
+          append('sys', 'Session expired, please login again');
+          setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+          return response;
+        }
+        
+        if (response.status === 400) {
+          const result = await response.json().catch(() => ({}));
+          if ((result.error || '').includes('Missing project_id')) {
+            append('sys', 'Creating project, please retry');
+            window.clearProjectId();
+            await window.ensureProjectId();
+            // Retry once
+            return await window.apiFetch('/v1/director/veo-3-prompt', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ project_id: await window.ensureProjectId(), text: message, source: 'chatroom' })
+            });
+          }
+        }
+        
+        return response;
+      } catch (error) {
+        append('sys', 'Network error: ' + error.message);
+        throw error;
       }
-      return await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
     }
 
     async function sendVision(message, file){
@@ -555,9 +576,9 @@
         list.push(['/v1/vision/chat', {method:'POST', body: fd2}]);
       }
       for (var i=0;i<list.length;i++){
-        try{ var r=await window.window.window.window.apiFetch(list[i][0], list[i][1]); if(r.status!==404) return r; }catch(_){}
+        try{ var r=await window.apiFetch(list[i][0], list[i][1]); if(r.status!==404) return r; }catch(_){}
       }
-      return await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
+      return await window.apiFetch('/v1/projects',{method:'GET'});
     }
 
     if(btnSend){
@@ -653,8 +674,8 @@
       btnH.addEventListener('click', async function(){
         var d=el('diagOut'); if(d) d.textContent='';
         try{
-          var r=await window.window.window.window.apiFetch('/v1/health',{method:'GET'});
-          if(r.status===404) r=await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
+          var r=await window.apiFetch('/v1/health',{method:'GET'});
+          if(r.status===404) r=await window.apiFetch('/v1/projects',{method:'GET'});
           if(d) d.textContent = 'HTTP '+r.status;
         }catch(e){ if(d) d.textContent='Request failed'; }
       });
@@ -663,7 +684,7 @@
       btnL.addEventListener('click', async function(){
         var d=el('diagOut'); if(d) d.textContent='';
         try{
-          var r=await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
+          var r=await window.apiFetch('/v1/projects',{method:'GET'});
           if(d) d.textContent = 'HTTP '+r.status;
         }catch(e){ if(d) d.textContent='Request failed'; }
       });

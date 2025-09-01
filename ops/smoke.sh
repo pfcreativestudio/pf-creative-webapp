@@ -42,16 +42,23 @@ echo "$ADMIN_OPT_HEADERS" | sed -n '1,20p'
 if [[ "$ADMIN_OPT_CODE" != "200" && "$ADMIN_OPT_CODE" != "204" ]]; then
   echo "❌ Preflight /admin/verify-password bad code: $ADMIN_OPT_CODE"; exit 1; fi
 
+# Check /v1/projects endpoints
+echo "\n== OPTIONS /v1/projects =="
+PROJECTS_OPT_CODE=$(code "$API_BASE/v1/projects?recent=1" -X OPTIONS -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: content-type")
+
 # Functional checks
 PING_CODE=$(code "$API_BASE/ping")
 HEALTH_CODE=$(code "$API_BASE/health")
 LOGIN_POST=$(code "$API_BASE/login" -X POST -H "Origin: $ORIGIN" -H "Content-Type: application/json" --data '{"email":"x@y","password":"z"}')
+PROJECTS_GET=$(code "$API_BASE/v1/projects?recent=1")
 
 # Summary
 echo "\n=== SMOKE SUMMARY ==="
 echo "OPTIONS /login: $LOGIN_OPT_CODE"
 echo "OPTIONS /admin/verify-password: $ADMIN_OPT_CODE"
+echo "OPTIONS /v1/projects: $PROJECTS_OPT_CODE"
 echo "POST /login: $LOGIN_POST"
 echo "GET /ping: $PING_CODE"
 echo "GET /health: $HEALTH_CODE"
+echo "GET /v1/projects: $PROJECTS_GET"
 echo "====================="
