@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="runtime-config.js"></script>
-    <script src="api.js"></script>
-
-  <meta charset="UTF-8">
+    <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register - PF Creative AI Studio</title>
   
-  <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
+      <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
+    <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
   <!-- Centralized env; must be loaded AFTER runtime-config.js -->
   <script src="env.js"></script>
   
-                      <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
-  <script src="https://cdn.tailwindcss.com"></script>
+                          <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <style>
     :root { color-scheme: dark; }
@@ -141,7 +141,7 @@
     async function pfLog(action, details) {
       if (!API_BASE) return;
       try {
-        await window.apiFetch('/activity/log', {
+        await window.window.window.window.apiFetch('/activity/log', {
           method: 'POST',
           body: JSON.stringify({ actor: 'web', action, details })
         });
@@ -178,7 +178,7 @@
       await pfLog('register_attempt', { username });
 
       try {
-        const resp = await window.apiFetch('/register', {
+        const resp = await window.window.window.window.apiFetch('/register', {
           method: 'POST',
           body: JSON.stringify({ username, password })
         });

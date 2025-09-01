@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="runtime-config.js"></script>
-    <script src="api.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing - PF Creative AI Studio</title>
     
+        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
     <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
     <!-- Centralized env; must be loaded AFTER runtime-config.js -->
     <script src="env.js"></script>
     
-                        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+                            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ---------------- THEME ---------------- */
 :root{
@@ -338,7 +338,7 @@ async function handlePurchase(btn){
   const allButtons = document.querySelectorAll('.cta .btn');
   allButtons.forEach(b => { b.disabled = true; if(b && b.dataset) b.dataset.orig = b.textContent; b.textContent = 'Processing…'; b.style.opacity='0.7'; b.style.cursor='wait'; });
   try {
-    const res = await window.window.apiFetch('/create-bill', {
+    const res = await window.window.window.window.window.apiFetch('/create-bill', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ plan: planKey })

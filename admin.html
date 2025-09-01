@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="runtime-config.js"></script>
-    <script src="api.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - PF Creative AI Studio</title>
     
+        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
     <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
     <!-- Centralized env; must be loaded AFTER runtime-config.js -->
     <script src="env.js"></script>
     
-                        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
-    <script src="https://cdn.tailwindcss.com"></script>
+                            <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
@@ -211,7 +211,7 @@
                     return;
                 }
                 try {
-                    const response = await window.apiFetch('/admin/verify-password', {
+                    const response = await window.window.window.window.apiFetch('/admin/verify-password', {
                         method: 'POST',
                         headers: {
                             'X-Admin-Password': inputPassword
@@ -264,7 +264,7 @@
                 if (body) {
                     options.body = JSON.stringify(body);
                 }
-                return window.apiFetch(endpoint, options);
+                return window.window.window.window.apiFetch(endpoint, options);
             }
 
             async addUser() {

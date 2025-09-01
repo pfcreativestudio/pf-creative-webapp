@@ -25,6 +25,7 @@
 
   try { window.API_BASE = API_BASE; } catch (e) {}
   try { window.apiFetch = apiFetch; } catch (e) {}
+  try { window.PF_apiFetch = apiFetch; } catch (e) {}
   try { window.getApiBase = getApiBase; } catch (e) {}
   try {
     // Legacy global alias (best-effort)

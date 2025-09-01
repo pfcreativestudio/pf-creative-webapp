@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="runtime-config.js"></script>
-    <script src="api.js"></script>
-
-  <meta charset="UTF-8">
+    <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PF Creative AI Film Director</title>
   
-  <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
+      <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
+    <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
   <!-- Centralized env; must be loaded AFTER runtime-config.js -->
   <script src="env.js"></script>
   
-                      <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+                          <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -496,7 +495,7 @@ if (response.ok && aiResponse) {
 
     function showStatus(s){ var n=el('sendStatus'); if(n) n.textContent = s; }
 
-    async function window.apiFetch(path, init){
+    async function window.window.window.window.apiFetch(path, init){
       init = init || {};
       var headers = Object.assign({}, init.headers||{}, authHeaders());
       if(!init.body && (init.method||'').toUpperCase()!=='GET'){ headers['Content-Type']='application/json'; }
@@ -511,9 +510,9 @@ if (response.ok && aiResponse) {
         ['/v1/chat', {method:'POST', body: JSON.stringify({ message: message }) }]
       ];
       for (var i=0;i<chain.length;i++){
-        try { var r = await window.apiFetch(chain[i][0], chain[i][1]); if (r.status !== 404) return r; } catch(_){}
+        try { var r = await window.window.window.window.apiFetch(chain[i][0], chain[i][1]); if (r.status !== 404) return r; } catch(_){}
       }
-      return await window.apiFetch('/v1/projects',{method:'GET'});
+      return await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
     }
 
     async function sendVision(message, file){
@@ -525,9 +524,9 @@ if (response.ok && aiResponse) {
         list.push(['/v1/vision/chat', {method:'POST', body: fd2}]);
       }
       for (var i=0;i<list.length;i++){
-        try{ var r=await window.apiFetch(list[i][0], list[i][1]); if(r.status!==404) return r; }catch(_){}
+        try{ var r=await window.window.window.window.apiFetch(list[i][0], list[i][1]); if(r.status!==404) return r; }catch(_){}
       }
-      return await window.apiFetch('/v1/projects',{method:'GET'});
+      return await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
     }
 
     if(btnSend){
@@ -623,8 +622,8 @@ if (response.ok && aiResponse) {
       btnH.addEventListener('click', async function(){
         var d=el('diagOut'); if(d) d.textContent='';
         try{
-          var r=await window.apiFetch('/v1/health',{method:'GET'});
-          if(r.status===404) r=await window.apiFetch('/v1/projects',{method:'GET'});
+          var r=await window.window.window.window.apiFetch('/v1/health',{method:'GET'});
+          if(r.status===404) r=await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
           if(d) d.textContent = 'HTTP '+r.status;
         }catch(e){ if(d) d.textContent='Request failed'; }
       });
@@ -633,7 +632,7 @@ if (response.ok && aiResponse) {
       btnL.addEventListener('click', async function(){
         var d=el('diagOut'); if(d) d.textContent='';
         try{
-          var r=await window.apiFetch('/v1/projects',{method:'GET'});
+          var r=await window.window.window.window.apiFetch('/v1/projects',{method:'GET'});
           if(d) d.textContent = 'HTTP '+r.status;
         }catch(e){ if(d) d.textContent='Request failed'; }
       });

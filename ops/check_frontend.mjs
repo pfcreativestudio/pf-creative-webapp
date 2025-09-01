@@ -35,7 +35,7 @@ const HTML_FILES = [
 ];
 
 // Check 1: runtime-config.js inclusion and ordering
-console.log('1. Checking runtime-config.js inclusion and ordering...');
+console.log('1. Checking head ordering (pf:apiBase, runtime-config.js, api.js)...');
 
 for (const file of HTML_FILES) {
     if (!existsSync(file)) {
@@ -60,10 +60,27 @@ for (const file of HTML_FILES) {
     
     const headContent = headMatch[1];
     
-    // Check if runtime-config.js is in head
-    if (!headContent.includes('runtime-config.js')) {
-        fail(`${file}: runtime-config.js not in <head> section`);
-        continue;
+    // Exactly one pf:apiBase
+    const metaMatches = headContent.match(/<meta[^>]+name=["']pf:apiBase["'][^>]*>/gi) || [];
+    if (metaMatches.length !== 1) {
+        fail(`${file}: expected exactly 1 <meta name="pf:apiBase">, found ${metaMatches.length}`);
+    }
+
+    // No <script> before pf:apiBase
+    const firstScriptIdx = headContent.search(/<script/gi);
+    const metaIdx = headContent.search(/<meta[^>]+name=["']pf:apiBase["'][^>]*>/i);
+    if (firstScriptIdx !== -1 && metaIdx !== -1 && firstScriptIdx < metaIdx) {
+        fail(`${file}: <script> appears before pf:apiBase meta`);
+    }
+
+    // Require runtime-config.js then api.js before others
+    const order = [...headContent.matchAll(/<script[^>]+src=["']([^"']+)["'][^>]*>/gi)].map(m=>m[1]);
+    const rcIdx = order.findIndex(src=>/runtime-config\.js$/i.test(src));
+    const apiIdx = order.findIndex(src=>/api\.js$/i.test(src));
+    if (rcIdx === -1) fail(`${file}: runtime-config.js not in <head>`);
+    if (apiIdx === -1) fail(`${file}: api.js not in <head>`);
+    if (rcIdx !== -1 && apiIdx !== -1 && apiIdx < rcIdx) {
+        fail(`${file}: api.js appears before runtime-config.js`);
     }
     
     // Check ordering - runtime-config.js should come early

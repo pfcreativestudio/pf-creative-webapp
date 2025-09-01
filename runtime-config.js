@@ -1,20 +1,40 @@
 // public/runtime-config.js
 (() => {
-  // Priority: 1) window.PF_API_BASE (injected by hosting), 2) <meta name="pf:apiBase">, 
-  // 3) env-exposed var (NEXT_PUBLIC_API_BASE or VITE_API_BASE if injected at build), 
-  // 4) localStorage override, 5) same-origin '/api' (for future proxy usage)
-  const metaBase = document.querySelector('meta[name="pf:apiBase"]')?.content?.trim();
-  const envBase = (window.NEXT_PUBLIC_API_BASE || window.VITE_API_BASE || "").trim();
-  const lsBase  = (window.localStorage.getItem("PF_API_BASE") || "").trim();
+  function readMetaBase() {
+    try {
+      const el = document.querySelector('meta[name="pf:apiBase"]');
+      const v = (el && el.content ? el.content : '').trim();
+      return v && /^https?:\/\//i.test(v) ? v.replace(/\/+$/, '') : '';
+    } catch { return ''; }
+  }
 
-  const pick = (...xs) => xs.find(v => v && /^https?:\/\//i.test(v));
-  const API_BASE = pick(window.PF_API_BASE, metaBase, envBase, lsBase) 
-                   || (location.origin + "/api"); // proxy-friendly default
+  function readEnvBase() {
+    try {
+      const v = (window.NEXT_PUBLIC_API_BASE || window.VITE_API_BASE || '').trim();
+      return v && /^https?:\/\//i.test(v) ? v.replace(/\/+$/, '') : '';
+    } catch { return ''; }
+  }
 
-  window.__PF_RUNTIME__ = Object.freeze({
-    API_BASE
-  });
-  
-  // Log the resolved API base for debugging
-  console.info("[PF] API base:", API_BASE);
+  const metaBase = readMetaBase();
+  const envBase = readEnvBase();
+  let API_BASE = metaBase || envBase;
+
+  if (!API_BASE) {
+    const host = (location.hostname || '').toLowerCase();
+    const isProdHost = /vercel\.app$/.test(host) || /\./.test(host);
+    if (isProdHost) {
+      console.error('[PF][env] No pf:apiBase meta found; refusing to use same-origin /api on production.');
+      try { window.__PF_API_RESOLUTION_ERROR = true; } catch {}
+    } else {
+      try { window.__PF_API_RESOLUTION_ERROR = true; } catch {}
+    }
+  }
+
+  if (API_BASE) {
+    try { console.info('[PF] API base:', API_BASE); } catch {}
+  }
+
+  try {
+    window.__PF_RUNTIME__ = Object.freeze({ API_BASE });
+  } catch {}
 })();

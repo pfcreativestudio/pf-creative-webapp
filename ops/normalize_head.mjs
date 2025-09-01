@@ -14,6 +14,8 @@ function normalizeHead(file) {
   // Remove duplicate includes first (runtime-config.js and api.js)
   html = html.replace(/<script[^>]+src=["']\/?runtime-config\.js["'][^>]*>\s*<\/script>\s*/gmi, '');
   html = html.replace(/<script[^>]+src=["']\/?api\.js["'][^>]*>\s*<\/script>\s*/gmi, '');
+  // Remove duplicate pf:apiBase
+  html = html.replace(/<meta[^>]+name=["']pf:apiBase["'][^>]*>\s*/gmi, '');
 
   const headOpenMatch = html.match(/<head[^>]*>/i);
   const headCloseIdx = html.search(/<\/head>/i);
@@ -27,8 +29,19 @@ function normalizeHead(file) {
   const headInner = html.slice(headOpenIdx + headOpenTag.length, headCloseIdx);
   const after = html.slice(headCloseIdx);
 
-  // Prepend required tags to head: runtime-config.js then api.js
-  const injectedHead = `${headOpenTag}\n    <script src="runtime-config.js"></script>\n    <script src="api.js"></script>\n${headInner}`;
+  // Extract standard tags (charset, viewport, title) and remove them from inner
+  const charsetMatch = headInner.match(/<meta[^>]*charset=["'][^"']+["'][^>]*>\s*/i) || [''];
+  const viewportMatch = headInner.match(/<meta[^>]*name=["']viewport["'][^>]*>\s*/i) || [''];
+  const titleMatch = headInner.match(/<title[\s\S]*?<\/title>\s*/i) || [''];
+  let remaining = headInner
+    .replace(charsetMatch[0], '')
+    .replace(viewportMatch[0], '')
+    .replace(titleMatch[0], '');
+
+  // Build required prelude in order: charset/viewport/title, pf:apiBase, runtime-config.js, api.js
+  const meta = '<meta name="pf:apiBase" content="'+(process.env.CANONICAL_URL||'')+'">';
+  const prelude = `${charsetMatch[0]}${viewportMatch[0]}${titleMatch[0]}    ${meta}\n    <script src="runtime-config.js"></script>\n    <script src="api.js"></script>\n`;
+  const injectedHead = `${headOpenTag}\n    ${prelude}${remaining}`;
   const out = before + injectedHead + after;
   const changed = out !== html;
   if (changed) fs.writeFileSync(file, out);

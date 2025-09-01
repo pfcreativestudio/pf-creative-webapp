@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="runtime-config.js"></script>
-    <script src="api.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Success - PF Creative AI Studio</title>
     
+        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
     <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
     <!-- Centralized env; must be loaded AFTER runtime-config.js -->
     <script src="env.js"></script>
     
-                        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
-  <script src="https://cdn.tailwindcss.com"></script>
+                            <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <style>
     body { background: radial-gradient(ellipse at top, #1a1a1a 0%, #0b0b15 45%, #05050a 100%); color: #e5e7eb; }
@@ -176,7 +176,7 @@
         return;
       }
       try {
-        var resp = await window.apiFetch('/get-user-status', { headers: { 'Authorization': 'Bearer ' + token }});
+        var resp = await window.window.window.window.apiFetch('/get-user-status', { headers: { 'Authorization': 'Bearer ' + token }});
         var data = await resp.json().catch(function(){ return {}; });
         if (resp.status === 401) {
           setFail('Session expired. Please log in again.');

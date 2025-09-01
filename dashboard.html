@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="runtime-config.js"></script>
-    <script src="api.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - PF Creative AI Studio</title>
     
+        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
     <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
     <!-- Centralized env; must be loaded AFTER runtime-config.js -->
     <script src="env.js"></script>
     
-                        <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+                            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <style>
     :root{
       --bg-dark: #03020a;
@@ -471,7 +471,7 @@
       if(!token){ clearAllTokens(); window.location.href='login.html'; return; }
       try{
         modalConfirm.disabled = true; modalConfirm.textContent = 'Redirecting…';
-        const resp = await window.apiFetch('/create-bill', {
+        const resp = await window.window.window.window.apiFetch('/create-bill', {
           method:'POST',
           headers:{ 'Authorization':'Bearer ' + token },
           body: JSON.stringify({ plan: pendingPlan.id })
@@ -509,7 +509,7 @@
       }
 
       try{
-        const resp = await window.apiFetch('/get-user-status', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
+        const resp = await window.window.window.window.apiFetch('/get-user-status', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
         if(resp.status === 401){ clearAllTokens(); window.location.href='login.html?expired=1'; return false; }
         if(!resp.ok){ console.warn('auth check non-ok', resp.status); return true; }
         const data = await resp.json().catch(()=>null);
@@ -531,12 +531,12 @@
       const token = getToken();
 
       try{
-        const r = await window.apiFetch('/v1/plans', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
+        const r = await window.window.window.window.apiFetch('/v1/plans', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
         if(r.ok){ const plans = await r.json().catch(()=>null); renderPlans(plans); } else renderPlans(null);
       }catch(e){ console.warn('plans fetch failed', e); renderPlans(null); }
 
       try{
-        const r = await window.apiFetch('/v1/projects?recent=6', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
+        const r = await window.window.window.window.apiFetch('/v1/projects?recent=6', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
         if(r.ok){ const projects = await r.json().catch(()=>[]); renderProjects(projects); } else renderProjects([]);
       }catch(e){ console.warn('projects fetch failed', e); renderProjects([]); }
 
@@ -544,7 +544,7 @@
         try{
           const t = getToken();
           if(!t) return;
-          const r = await window.apiFetch('/get-user-status', { method:'GET', headers:{ 'Authorization':'Bearer ' + t }});
+          const r = await window.window.window.window.apiFetch('/get-user-status', { method:'GET', headers:{ 'Authorization':'Bearer ' + t }});
           if(r.status === 401){ clearAllTokens(); window.location.href='login.html?expired=1'; return; }
           if(!r.ok) return;
           const data = await r.json().catch(()=>null);

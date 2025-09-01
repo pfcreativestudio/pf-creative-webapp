@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - PF Creative AI Studio</title>
+      <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
     <script src="runtime-config.js"></script>
     <script src="api.js"></script>
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - PF Creative AI Studio</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body{background:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 50%,#0a0a0a 100%);color:#e0e0e0;font-family:sans-serif}
     .glass-effect{background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
@@ -23,8 +24,7 @@
   <!-- Centralized env; must be loaded AFTER runtime-config.js -->
   <script src="env.js"></script>
   
-                      <meta name="pf:apiBase" content="https://pfsystem-api-app-rjali3wdrq-as.a.run.app">
-</head>
+                          </head>
 <body class="flex items-center justify-center min-h-screen">
   <div class="glass-effect rounded-2xl p-8 w-full max-w-md mx-4">
     <div class="text-center mb-8">
@@ -113,7 +113,7 @@
       const t = getToken();
       if (!t || !API_BASE) return false;
       try {
-        const resp = await window.apiFetch("/get-user-status", {
+        const resp = await window.window.window.window.apiFetch("/get-user-status", {
           method: "GET",
           headers: { "Authorization": "Bearer " + t }
         });
@@ -172,7 +172,7 @@
       loginBtn.disabled = true;
 
       try {
-        const resp = await window.apiFetch("/login", {
+        const resp = await window.window.window.window.apiFetch("/login", {
           method: "POST",
           body: JSON.stringify({ username, password })
         });
