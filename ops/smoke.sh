@@ -47,12 +47,15 @@ if [[ "$LOGIN_STATUS" -lt 200 || "$LOGIN_STATUS" -ge 500 ]]; then
 fi
 
 echo
-echo "== GET /v1/director/veo-3-prompt (expect 200 or 400, must reach server) =="
-DIRECTOR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$API_BASE/v1/director/veo-3-prompt" \
-  -H "Origin: $ORIGIN")
-echo "Status: $DIRECTOR_STATUS"
-if [[ "$DIRECTOR_STATUS" -lt 200 || "$DIRECTOR_STATUS" -ge 500 ]]; then
-  echo "❌ Director endpoint failed with status $DIRECTOR_STATUS"
+echo "== Director veo-3-prompt (OPTIONS then POST) =="
+DIR_OPT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X OPTIONS "$API_BASE/v1/director/veo-3-prompt" \
+  -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type,authorization")
+echo "OPTIONS status: $DIR_OPT_STATUS"
+DIR_POST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API_BASE/v1/director/veo-3-prompt" \
+  -H "Origin: $ORIGIN" -H "Content-Type: application/json" --data '{"prompt":"hi","history":[]}')
+echo "POST status: $DIR_POST_STATUS"
+if [[ "$DIR_POST_STATUS" -ge 500 ]]; then
+  echo "❌ Director POST failed with status $DIR_POST_STATUS"
   exit 1
 fi
 
@@ -62,13 +65,17 @@ echo "=== SMOKE SUMMARY ==="
 echo "SERVICE_URL: $API_BASE"
 echo -n "OPTIONS /login: "; code "$API_BASE/login" -X OPTIONS -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type"; echo
 
-echo -n "GET /healthz: "; code "$API_BASE/healthz"; echo
-
 echo -n "GET /ping: "; code "$API_BASE/ping"; echo
 
-echo -n "POST /login: "; code "$API_BASE/login" -X POST -H "Origin: $ORIGIN" -H "Content-Type: application/json" --data '{"email":"x@y","password":"z"}'; echo
+echo -n "GET /health: "; code "$API_BASE/health"; echo
 
-echo -n "GET /v1/director/veo-3-prompt: "; code "$API_BASE/v1/director/veo-3-prompt" -X GET -H "Origin: $ORIGIN"; echo
+echo -n "GET /healthz: "; code "$API_BASE/healthz"; echo
+
+echo -n "OPTIONS /v1/director/veo-3-prompt: "; code "$API_BASE/v1/director/veo-3-prompt" -X OPTIONS -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type,authorization"; echo
+
+echo -n "POST /v1/director/veo-3-prompt: "; code "$API_BASE/v1/director/veo-3-prompt" -X POST -H "Origin: $ORIGIN" -H "Content-Type: application/json" --data '{"prompt":"hi","history":[]}'; echo
+
+echo -n "POST /login: "; code "$API_BASE/login" -X POST -H "Origin: $ORIGIN" -H "Content-Type: application/json" --data '{"email":"x@y","password":"z"}'; echo
 
 echo "====================="
 echo
