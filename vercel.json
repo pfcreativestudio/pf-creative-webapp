@@ -1,0 +1,13 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; script-src 'self' 'unsafe-inline' https:; connect-src 'self' https://*.run.app https://*.vercel.app https://pfcreativeaistudio.vercel.app wss:;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - PF Creative AI Studio</title>
+  
+  <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
+  <script src="runtime-config.js"></script>
+  
+  <!-- Centralized env; must be loaded AFTER runtime-config.js -->
+  <script src="env.js"></script>
+  
+  <meta name="pf:apiBase" content="__INJECT_AT_DEPLOY__">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    :root { color-scheme: dark; }
+    body { background: radial-gradient(ellipse at top, #1a1a1a 0%, #0b0b15 45%, #05050a 100%); color: #e5e7eb; min-height: 100vh; }
+    .glass { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(18px); }
+    .btn-primary { background: linear-gradient(90deg,#7c3aed,#a21caf); transition: transform .12s ease, box-shadow .12s ease; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(167,139,250,0.25); }
+    .btn-secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); }
+    .input { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12); }
+    .link { color:#93c5fd; }
+    .link:hover { text-decoration: underline; }
+    .help { font-size: 11px; color:#9ca3af; }
+  </style>
+</head>
+<body class="flex items-center justify-center p-4">
+  <main class="w-full max-w-md glass rounded-2xl p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+        <i class="fas fa-user-plus text-white text-sm" aria-hidden="true"></i>
+      </div>
+      <div>
+        <div class="text-white font-semibold leading-tight">Create New Account</div>
+        <div class="text-xs text-gray-400 -mt-0.5">PF Creative Studio</div>
+      </div>
+    </div>
+
+    <div id="alert" class="hidden text-sm px-3 py-2 rounded mb-4" role="alert" aria-live="polite"></div>
+
+    <form id="regForm" class="space-y-3" autocomplete="on" novalidate>
+      <div>
+        <label for="username" class="block text-sm text-gray-300 mb-1">Username</label>
+        <input id="username" name="username" class="w-full input px-3 py-2 rounded-md" placeholder="e.g., alice" required autocomplete="username" />
+        <div class="help mt-1">Letters and numbers only are recommended.</div>
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm text-gray-300 mb-1">Password</label>
+        <div class="relative">
+          <input id="password" name="password" type="password" class="w-full input px-3 py-2 rounded-md pr-10" placeholder="Minimum 6 characters" minlength="6" required autocomplete="new-password" />
+          <button type="button" id="togglePwd" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-200" aria-label="Show / Hide Password">
+            <i class="far fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label for="password2" class="block text-sm text-gray-300 mb-1">Confirm Password</label>
+        <div class="relative">
+          <input id="password2" name="password2" type="password" class="w-full input px-3 py-2 rounded-md pr-10" placeholder="Re-enter your password" minlength="6" required autocomplete="new-password" />
+          <button type="button" id="togglePwd2" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-200" aria-label="Show / Hide Password">
+            <i class="far fa-eye"></i>
+          </button>
+        </div>
+        <div class="help mt-1">Both passwords must match; minimum length is 6.</div>
+      </div>
+
+      <button id="regBtn" type="submit" class="w-full btn-primary text-white px-4 py-2 rounded-md text-sm">
+        <i class="fas fa-user-plus mr-1"></i> Register
+      </button>
+    </form>
+
+    <div class="text-xs text-gray-400 mt-4">
+      Already have an account?
+      <a href="login.html" class="link">Login</a>
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    // --- Resolve API base from runtime-config.js ---
+    function getApiBase() {
+      if (!window.__PF_RUNTIME__?.API_BASE) {
+        throw new Error("PF runtime not initialized: API_BASE missing");
+      }
+      return window.__PF_RUNTIME__.API_BASE.replace(/\/+$/, "");
+    }
+    
+    let API_BASE;
+    try {
+      API_BASE = getApiBase();
+    } catch (e) {
+      console.error("[PF][register] Missing API base:", e.message);
+      const alertEl = document.getElementById("alert");
+      alertEl.textContent = "Missing API base. Please contact admin to configure API settings.";
+      alertEl.className = "block text-red-400 bg-red-900/20 border border-red-500/40";
+      alertEl.classList.remove("hidden");
+    }
+
+    const form = document.getElementById('regForm');
+    const regBtn = document.getElementById('regBtn');
+    const alertEl = document.getElementById('alert');
+    const usernameInput = document.getElementById('username');
+    const pwdInput = document.getElementById('password');
+    const pwd2Input = document.getElementById('password2');
+    const togglePwd = document.getElementById('togglePwd');
+    const togglePwd2 = document.getElementById('togglePwd2');
+
+    // If already logged in, go to dashboard.
+    (function autoRedirectIfLoggedIn(){
+      const token = localStorage.getItem('jwtToken') || localStorage.getItem('token');
+      const username = localStorage.getItem('username');
+      if (token && username) {
+        window.location.href = 'dashboard.html';
+      }
+    })();
+
+    function showAlert(msg, ok=false) {
+      alertEl.className = 'text-sm px-3 py-2 rounded mb-4 ' + (ok ? 'bg-emerald-900/40 text-emerald-200 border border-emerald-600/40' : 'bg-rose-900/40 text-rose-200 border border-rose-600/40');
+      alertEl.textContent = msg;
+      alertEl.classList.remove('hidden');
+    }
+    function hideAlert(){ alertEl.classList.add('hidden'); }
+
+    function toggleInputVisibility(inputEl, btnEl) {
+      const isPwd = inputEl.type === 'password';
+      inputEl.type = isPwd ? 'text' : 'password';
+      btnEl.innerHTML = isPwd ? '<i class="far fa-eye-slash"></i>' : '<i class="far fa-eye"></i>';
+    }
+
+    togglePwd.addEventListener('click', () => toggleInputVisibility(pwdInput, togglePwd));
+    togglePwd2.addEventListener('click', () => toggleInputVisibility(pwd2Input, togglePwd2));
+
+    // Optional activity log (no auth required)
+    async function pfLog(action, details) {
+      if (!API_BASE) return;
+      try {
+        await apiFetch('/activity/log', {
+          method: 'POST',
+          body: JSON.stringify({ actor: 'web', action, details })
+        });
+      } catch (_) { /* ignore logging errors */ }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const username = (usernameInput.value || '').trim();
+      const password = (pwdInput.value || '').trim();
+      const password2 = (pwd2Input.value || '').trim();
+
+      if (!API_BASE) {
+        showAlert('API base is not set. Please contact admin.', false);
+        return;
+      }
+      if (!username || !password || !password2) {
+        showAlert('Please complete all fields.', false);
+        return;
+      }
+      if (password.length < 6) {
+        showAlert('Password must be at least 6 characters.', false);
+        return;
+      }
+      if (password !== password2) {
+        showAlert('Passwords do not match.', false);
+        return;
+      }
+
+      regBtn.disabled = true;
+      regBtn.innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> Registering…';
+      await pfLog('register_attempt', { username });
+
+      try {
+        const resp = await apiFetch('/register', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+
+        // Prefer JSON response, but fall back to text
+        let data = null;
+        try { data = await resp.json(); } catch { data = null; }
+
+        if (resp.status === 409) {
+          showAlert('Username already exists. Please choose another.', false);
+          await pfLog('register_fail', { username, reason: 'conflict' });
+          return;
+        }
+        if (!resp.ok) {
+          const msg = (data && (data.error || data.message || data.detail)) || 'Registration failed. Please try again.';
+          showAlert(msg, false);
+          await pfLog('register_fail', { username, reason: msg });
+          return;
+        }
+
+        showAlert('Registered successfully. Redirecting to Login…', true);
+        await pfLog('register_success', { username });
+        setTimeout(() => { window.location.href = 'login.html'; }, 600);
+      } catch (err) {
+        showAlert('Network error: ' + (err && err.message ? err.message : 'please try again later'), false);
+        await pfLog('register_fail', { username, reason: 'network', detail: String(err) });
+      } finally {
+        regBtn.disabled = false;
+        regBtn.innerHTML = '<i class="fas fa-user-plus mr-1"></i> Register';
+      }
+    });
+
+    // Submit on Enter key for all fields.
+    ['keydown'].forEach(evt => {
+      usernameInput.addEventListener(evt, (e) => { if (e.key === 'Enter') { e.preventDefault(); form.requestSubmit(); } });
+      pwdInput.addEventListener(evt, (e) => { if (e.key === 'Enter') { e.preventDefault(); form.requestSubmit(); } });
+      pwd2Input.addEventListener(evt, (e) => { if (e.key === 'Enter') { e.preventDefault(); form.requestSubmit(); } });
+    });
+  </script>
+</body>
+</html>

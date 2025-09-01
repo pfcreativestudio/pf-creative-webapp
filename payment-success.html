@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - PF Creative AI Studio</title>
+    
+    <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
+    <script src="runtime-config.js"></script>
+    
+    <!-- Centralized env; must be loaded AFTER runtime-config.js -->
+    <script src="env.js"></script>
+    
+    <meta name="pf:apiBase" content="__INJECT_AT_DEPLOY__">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body { background: radial-gradient(ellipse at top, #1a1a1a 0%, #0b0b15 45%, #05050a 100%); color: #e5e7eb; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(16px); }
+    .btn-primary { background: linear-gradient(90deg,#7c3aed,#a21caf); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(167,139,250,0.25); }
+    .btn-secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); }
+    .pill { background: rgba(139, 92, 246, 0.15); color: #e9d5ff; border: 1px solid rgba(139, 92, 246, 0.35); padding: 2px 8px; border-radius: 999px; font-size: 11px; }
+    .kv { display:grid; grid-template-columns: 120px 1fr; gap: 8px 12px; }
+    .status-dot { width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; }
+    .dot-pending { background:#fbbf24; }
+    .dot-ok { background:#34d399; }
+    .dot-fail { background:#f87171; }
+    .link { color:#93c5fd; }
+    .link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-lg glass rounded-2xl p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+        <i class="fas fa-credit-card text-white text-sm"></i>
+      </div>
+      <div>
+        <div class="text-white font-semibold leading-tight">Payment Status</div>
+        <div class="text-xs text-gray-400 -mt-0.5">Thank you for your support! Confirming your subscription status.</div>
+      </div>
+    </div>
+
+    <div id="alert" class="text-sm px-3 py-2 rounded bg-white/5 border border-white/10 mb-4 hidden"></div>
+
+    <div class="rounded-xl border border-white/10 p-4 mb-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span id="statusDot" class="status-dot dot-pending"></span>
+        <span id="statusText" class="text-white font-medium">Waiting for payment confirmation callback…</span>
+      </div>
+      <div id="subText" class="text-xs text-gray-400">Usually completes in 3–10 seconds. If it’s slow, click “Manual Refresh” below.</div>
+    </div>
+
+    <div class="kv text-sm mb-4">
+      <div class="text-gray-400">Current account:</div><div id="username">—</div>
+      <div class="text-gray-400">Subscription active:</div><div id="isSub">—</div>
+      <div class="text-gray-400">Expiry time:</div><div id="expiry">—</div>
+    </div>
+
+    <div id="billInfo" class="text-xs text-gray-400 mb-4">
+      <span class="pill">Return Params</span>
+      <span id="billParams" class="ml-2"></span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="refreshBtn" class="btn-secondary px-4 py-2 rounded-md text-sm">
+        <i class="fas fa-rotate-right mr-1"></i> Manual Refresh
+      </button>
+      <a id="toDashboard" href="dashboard.html" class="btn-primary px-4 py-2 rounded-md text-sm text-white">
+        <i class="fas fa-gauge-high mr-1"></i> Go to Dashboard
+      </a>
+    </div>
+
+    <div class="text-xs text-gray-500 mt-4">
+      Tip: If you are already logged in, the system will automatically verify the subscription extension. You can also click
+      <a class="link" href="dashboard.html">Dashboard</a>, then press “Manual Refresh” to see the latest expiry.
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    // Get API base from runtime-config.js
+    function getApiBase() {
+      if (!window.__PF_RUNTIME__?.API_BASE) {
+        throw new Error("PF runtime not initialized: API_BASE missing");
+      }
+      return window.__PF_RUNTIME__.API_BASE.replace(/\/+$/, "");
+    }
+    
+    let API_BASE;
+    try {
+      API_BASE = getApiBase();
+    } catch (e) {
+      console.error("[PF][payment-success] Missing API base:", e.message);
+      showAlert('Missing API base. Please contact admin to configure API settings.', false);
+    }
+
+    const alertEl = document.getElementById('alert');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const subText = document.getElementById('subText');
+    const usernameEl = document.getElementById('username');
+    const isSubEl = document.getElementById('isSub');
+    const expiryEl = document.getElementById('expiry');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const billParamsEl = document.getElementById('billParams');
+
+    function showAlert(msg, ok){
+      if (ok === void 0) ok = false;
+      if(!alertEl) return;
+      alertEl.className = 'text-sm px-3 py-2 rounded mb-4 ' + (ok ? 'bg-emerald-900/40 text-emerald-200 border border-emerald-600/40' : 'bg-rose-900/40 text-rose-200 border border-rose-600/40');
+      alertEl.textContent = msg;
+      alertEl.classList.remove('hidden');
+    }
+    function hideAlert(){ if(alertEl) alertEl.classList.add('hidden'); }
+
+    function setPending() {
+      if(statusDot) statusDot.className = 'status-dot dot-pending';
+      if(statusText) statusText.textContent = 'Waiting for payment confirmation callback…';
+      if(subText) subText.textContent = 'Usually completes in 3–10 seconds. If it’s slow, click “Manual Refresh” below.';
+    }
+    function setOk() {
+      if(statusDot) statusDot.className = 'status-dot dot-ok';
+      if(statusText) statusText.textContent = 'Subscription activated ✅';
+      if(subText) subText.textContent = 'You can return to the Dashboard to start using all features.';
+    }
+    function setFail(reason) {
+      if(statusDot) statusDot.className = 'status-dot dot-fail';
+      if(statusText) statusText.textContent = 'Unable to confirm subscription';
+      if(subText) subText.textContent = reason || 'Please try again later or contact support.';
+    }
+
+    function formatExpiry(val){
+      if(!val) return '—';
+      try{
+        if(/^[0-9]+$/.test(String(val))){
+          if(String(val).length === 10) val = Number(val) * 1000;
+          else val = Number(val);
+        }
+        var d = new Date(val);
+        if(isNaN(d.getTime())) return String(val);
+        return d.toLocaleString();
+      }catch(e){ return String(val); }
+    }
+
+    function extractSubscriptionInfo(data){
+      var info = { active:false, expiry:null, username:null };
+      if(!data) return info;
+      info.username = data.username || null;
+      if(typeof data.is_subscribed === 'boolean') info.active = info.active || data.is_subscribed;
+      if(typeof data.is_subscribed === 'string') info.active = info.active || (data.is_subscribed.toLowerCase() === 'true');
+      if(data.subscription_expires_at) info.expiry = info.expiry || data.subscription_expires_at;
+      if(data.subscription && (data.subscription.expires_at || data.subscription.expiry)) info.expiry = info.expiry || data.subscription.expires_at || data.subscription.expiry;
+      if(!info.expiry) info.expiry = data.expiry || data.expires_at || data.expiry_date || data.expiresAt || null;
+      if(!info.expiry && data.user && data.user.subscription && data.user.subscription.expires_at) info.expiry = data.user.subscription.expires_at;
+      if(data.paid === true || data.paid === 'true') info.active = true;
+      return info;
+    }
+
+    function getToken(){ return localStorage.getItem('jwtToken') || localStorage.getItem('token') || null; }
+
+    async function fetchStatus() {
+      var token = getToken();
+      var usernameLS = localStorage.getItem('username');
+
+      if (!API_BASE){
+        setFail('API base is not set. Please contact admin.');
+        showAlert('API base is not set. Please contact admin.', false);
+        return;
+      }
+      if (!token) {
+        setFail('Login not detected. Please log in first, then come back.');
+        showAlert('Not logged in: please return to the login page, then come back to view payment status.', false);
+        return;
+      }
+      try {
+        var resp = await apiFetch('/get-user-status', { headers: { 'Authorization': 'Bearer ' + token }});
+        var data = await resp.json().catch(function(){ return {}; });
+        if (resp.status === 401) {
+          setFail('Session expired. Please log in again.');
+          showAlert('Session expired. Please log in again before checking.', false);
+          return;
+        }
+        if (!resp.ok) {
+          var msg = (data && (data.error || data.detail || data.message)) || 'Failed to fetch status';
+          setFail(msg);
+          showAlert(msg, false);
+          return;
+        }
+
+        var info = extractSubscriptionInfo(data);
+        if(usernameEl) usernameEl.textContent = info.username || usernameLS || '—';
+        if(isSubEl) isSubEl.textContent = info.active ? 'Yes ✅' : 'No ❌';
+        if(expiryEl) expiryEl.textContent = formatExpiry(info.expiry);
+
+        if (info.active) setOk(); else setPending();
+      } catch (e) {
+        var msg2 = 'Network error: ' + (e && e.message ? e.message : 'Please try again later');
+        setFail(msg2);
+        showAlert(msg2, false);
+      }
+    }
+
+    (function showQueryParams(){
+      var qs = new URLSearchParams(window.location.search);
+      var entries = [];
+      for (var pair of qs.entries()) { entries.push(pair[0] + '=' + pair[1]); }
+      if (billParamsEl) billParamsEl.textContent = entries.length ? entries.join(' • ') : 'None';
+    })();
+
+    (function init(){
+      setPending();
+      hideAlert();
+      fetchStatus();
+      var count = 0;
+      var timer = setInterval(async function () {
+        count++;
+        await fetchStatus();
+        var txt = isSubEl ? isSubEl.textContent : '';
+        var okNow = txt.indexOf('Yes') !== -1;
+        if (okNow || count >= 20) clearInterval(timer);
+      }, 3000);
+    })();
+
+    if (refreshBtn) refreshBtn.addEventListener('click', fetchStatus);
+  </script>
+</body>
+</html>

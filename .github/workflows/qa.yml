@@ -1,0 +1,45 @@
+name: QA
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Install Node deps
+        run: npm ci || npm install
+
+      - name: Frontend checks
+        run: npm run qa:frontend
+
+      - name: Static QA
+        shell: bash
+        run: bash ops/qa_static.sh
+
+      - name: Backend tests
+        run: pytest -q
+
+      - name: Hardcoded domain scan
+        shell: bash
+        run: bash ops/scan-hardcoded.sh

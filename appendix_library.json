@@ -1,0 +1,130 @@
+{
+  "goals": [
+    {
+      "id": "awareness",
+      "label": "Brand awareness"
+    },
+    {
+      "id": "conversions",
+      "label": "Drive conversions"
+    },
+    {
+      "id": "app_installs",
+      "label": "App installs"
+    },
+    {
+      "id": "event_promo",
+      "label": "Event promo"
+    },
+    {
+      "id": "lead_gen",
+      "label": "Lead generation"
+    }
+  ],
+  "tones": [
+    "playful",
+    "energetic",
+    "heartwarming",
+    "dramatic",
+    "epic",
+    "serious",
+    "inspirational",
+    "whimsical"
+  ],
+  "styles": [
+    "cinematic",
+    "ugc",
+    "asmr",
+    "documentary",
+    "vlog",
+    "retro",
+    "surreal",
+    "minimal",
+    "luxury"
+  ],
+  "comedy_substyles": [
+    "slapstick",
+    "deadpan",
+    "absurdist",
+    "parody",
+    "situational",
+    "satire",
+    "self-deprecating"
+  ],
+  "platforms": [
+    {
+      "id": "tiktok",
+      "label": "TikTok",
+      "durations_sec": [
+        15,
+        20,
+        30,
+        40,
+        60
+      ],
+      "aspect_ratio": "9:16"
+    },
+    {
+      "id": "instagram_reels",
+      "label": "Instagram Reels",
+      "durations_sec": [
+        15,
+        30,
+        45,
+        60
+      ],
+      "aspect_ratio": "9:16"
+    },
+    {
+      "id": "youtube_shorts",
+      "label": "YouTube Shorts",
+      "durations_sec": [
+        15,
+        30,
+        45,
+        60
+      ],
+      "aspect_ratio": "9:16"
+    }
+  ],
+  "camera_moves": [
+    "push-in",
+    "pull-out",
+    "orbit",
+    "dolly",
+    "handheld",
+    "static-tripod",
+    "crane",
+    "gimbal-follow"
+  ],
+  "narrative_templates": [
+    {
+      "id": "hook-build-payoff",
+      "label": "Hook \u2192 Build \u2192 Payoff",
+      "beats": [
+        {
+          "name": "Hook",
+          "guideline": "Grab attention in first 2 seconds. No on-screen text."
+        },
+        {
+          "name": "Build",
+          "guideline": "Escalate premise; add 1\u20132 visual gags or key product claims."
+        },
+        {
+          "name": "Payoff",
+          "guideline": "Punchline or reveal + CTA. Keep text-free; use VO or visual cues."
+        }
+      ]
+    }
+  ],
+  "veo_blueprint_rules": {
+    "text_free": true,
+    "language": "English",
+    "negative_prompt": [
+      "no subtitles or on-screen text",
+      "no watermarks or UI elements",
+      "no camera shake unless explicitly requested",
+      "no brand-infringing logos"
+    ]
+  }
+}

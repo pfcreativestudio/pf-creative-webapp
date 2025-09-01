@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - PF Creative AI Studio</title>
+    
+    <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
+    <script src="runtime-config.js"></script>
+    
+    <!-- Centralized env; must be loaded AFTER runtime-config.js -->
+    <script src="env.js"></script>
+    
+    <meta name="pf:apiBase" content="__INJECT_AT_DEPLOY__">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #e0e0e0;
+            font-family: sans-serif;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+        .user-card {
+            transition: all 0.3s ease;
+        }
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.2);
+        }
+        #passwordPromptOverlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #passwordPromptBox {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        /* Modal styles for Adjust Time */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1a1a1a;
+            padding: 24px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Password Prompt -->
+    <div id="passwordPromptOverlay">
+        <div id="passwordPromptBox">
+            <h2 class="text-xl font-semibold text-white mb-4">Enter Admin Password</h2>
+            <input type="password" id="adminPasswordInput" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none mb-4" placeholder="Admin Password">
+            <button id="submitAdminPassword" class="btn-primary w-full px-6 py-2 rounded-lg text-white font-semibold">Submit</button>
+        </div>
+    </div>
+
+    <!-- Main Admin Content -->
+    <div class="min-h-screen p-6 hidden" id="adminContent">
+        <div class="max-w-6xl mx-auto">
+            <div class="glass-effect rounded-lg p-6 mb-8">
+                <h1 class="text-3xl font-bold gradient-text mb-2">Admin Panel</h1>
+                <p class="text-gray-400">Manage user credentials for PF Creative AI Studio</p>
+                <div class="mt-4 flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-green-400">System Online</span>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        Total Users: <span id="totalUsers" class="text-white font-semibold">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold text-white mb-4">Add New User</h2>
+                <form id="addUserForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                        <input type="text" id="newUsername" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Enter username" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                        <input type="text" id="newPassword" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Enter password" required>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="btn-primary w-full px-6 py-2 rounded-lg text-white font-semibold">
+                            Add User
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <!-- MODIFIED: Add a search bar -->
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                    <h2 class="text-xl font-semibold text-white">Current Users</h2>
+                    <div class="flex items-center space-x-4">
+                        <input type="text" id="userSearchInput" class="w-full md:w-64 px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Search by username">
+                        <button id="refreshBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm transition duration-300">
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="usersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </div>
+                
+                <div id="loadingMessage" class="text-center py-8 text-gray-400">
+                    Loading users...
+                </div>
+                
+                <div id="emptyMessage" class="text-center py-8 text-gray-400 hidden">
+                    No users found. Add your first user above.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Adjust Time Modal -->
+    <div id="adjustTimeModal" class="modal">
+        <div class="modal-content glass-effect">
+            <h3 class="text-xl font-semibold mb-4 text-white">Adjust Subscription Time</h3>
+            <p id="adjustUserText" class="text-gray-400 mb-4"></p>
+            <form id="adjustTimeForm" class="space-y-4">
+                <input type="number" id="daysToAdjust" class="w-full px-4 py-2 bg-black/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none" placeholder="Enter days to add or remove (e.g., 30 or -10)" required>
+                <div class="flex space-x-2">
+                    <button type="button" id="cancelAdjustBtn" class="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
+                    <button type="submit" id="submitAdjustBtn" class="w-full btn-primary px-4 py-2 rounded-lg text-white font-semibold">Adjust</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="messageContainer" class="fixed top-4 right-4 z-50"></div>
+
+    <script>
+        class AdminPanel {
+            constructor() {
+                // Get API base from runtime-config.js
+                if (!window.__PF_RUNTIME__?.API_BASE) {
+                    throw new Error("PF runtime not initialized: API_BASE missing");
+                }
+                this.apiUrl = window.__PF_RUNTIME__.API_BASE.replace(/\/+$/, ""); 
+                this.adminPassword = null; 
+                this.allUsers = []; // Store a copy of all users for searching
+                this.init();
+            }
+
+            init() {
+                document.getElementById("submitAdminPassword").addEventListener("click", () => this.verifyAdminPassword());
+                document.getElementById("adminPasswordInput").addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") {
+                        this.verifyAdminPassword();
+                    }
+                });
+            }
+
+            async verifyAdminPassword() {
+                const inputPassword = document.getElementById("adminPasswordInput").value;
+                if (!inputPassword) {
+                    this.showMessage("Please enter the Admin Password", "error");
+                    return;
+                }
+                try {
+                    const response = await apiFetch('/admin/verify-password', {
+                        method: 'POST',
+                        headers: {
+                            'X-Admin-Password': inputPassword
+                        },
+                        body: JSON.stringify({ adminPassword: inputPassword })
+                    });
+                    if (response.ok) {
+                        this.adminPassword = inputPassword;
+                        document.getElementById("passwordPromptOverlay").style.display = "none";
+                        document.getElementById("adminContent").classList.remove("hidden");
+                        this.setupEventListeners();
+                        this.loadUsers();
+                    } else {
+                        const errorData = await response.json();
+                        this.showMessage(errorData.error || "Incorrect Admin Password", "error");
+                    }
+                } catch (error) {
+                    this.showMessage("Network error during password verification. Please try again.", "error");
+                    console.error("Error verifying admin password:", error);
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById("addUserForm").addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    this.addUser();
+                });
+                document.getElementById("refreshBtn").addEventListener("click", () => {
+                    this.loadUsers();
+                });
+                // ADDED: Search bar event listener
+                document.getElementById("userSearchInput").addEventListener("input", (e) => {
+                    this.filterUsers(e.target.value);
+                });
+                // MODIFIED: Adjust time modal event listeners
+                document.getElementById('adjustTimeForm').addEventListener('submit', (e) => this.submitAdjustTime(e));
+                document.getElementById('cancelAdjustBtn').addEventListener('click', () => this.closeAdjustModal());
+            }
+
+            async makeAdminRequest(endpoint, method, body = null) {
+                if (!this.adminPassword) {
+                    this.showMessage("Admin password not set. Please refresh and enter the password.", "error");
+                    return Promise.reject(new Error("Admin password not set."));
+                }
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': this.adminPassword
+                };
+                const options = { method: method, headers: headers };
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                return apiFetch(endpoint, options);
+            }
+
+            async addUser() {
+                const username = document.getElementById("newUsername").value.trim();
+                const password = document.getElementById("newPassword").value.trim();
+                if (!username || !password) {
+                    this.showMessage("Please fill in all fields", "error");
+                    return;
+                }
+                try {
+                    const response = await this.makeAdminRequest("/admin/add-user", "POST", { username, password });
+                    const result = await response.json();
+                    if (response.ok) {
+                        this.showMessage("User added successfully!", "success");
+                        document.getElementById("addUserForm").reset();
+                        this.loadUsers();
+                    } else {
+                        this.showMessage(result.error || "Failed to add user", "error");
+                    }
+                } catch (error) {
+                    this.showMessage("Network error. Please try again.", "error");
+                    console.error("Error adding user:", error);
+                }
+            }
+
+            async loadUsers() {
+                const loadingMessage = document.getElementById("loadingMessage");
+                const emptyMessage = document.getElementById("emptyMessage");
+                const usersList = document.getElementById("usersList");
+                loadingMessage.classList.remove("hidden");
+                emptyMessage.classList.add("hidden");
+                usersList.innerHTML = "";
+                document.getElementById("totalUsers").textContent = "0";
+                try {
+                    const response = await this.makeAdminRequest("/admin/users", "GET");
+                    const result = await response.json();
+                    loadingMessage.classList.add("hidden");
+                    if (response.ok && result.users) {
+                        this.allUsers = result.users; // Store all users
+                        if (result.users.length === 0) {
+                            emptyMessage.classList.remove("hidden");
+                        } else {
+                            this.renderUsers(this.allUsers); // Render all users initially
+                        }
+                        document.getElementById("totalUsers").textContent = result.users.length;
+                    } else {
+                        this.showMessage(result.error || "Failed to load users", "error");
+                        emptyMessage.classList.remove("hidden");
+                    }
+                } catch (error) {
+                    loadingMessage.classList.add("hidden");
+                    this.showMessage("Network error. Please try again.", "error");
+                    console.error("Error loading users:", error);
+                }
+            }
+            
+            // ADDED: New function to filter users based on search input
+            filterUsers(query) {
+                const filteredUsers = this.allUsers.filter(user => 
+                    user.username.toLowerCase().includes(query.toLowerCase())
+                );
+                this.renderUsers(filteredUsers);
+                document.getElementById("totalUsers").textContent = filteredUsers.length;
+            }
+
+            formatSubscriptionDate(dateString) {
+                if (!dateString) {
+                    return '<span class="font-semibold text-gray-500">Not Subscribed</span>';
+                }
+                try {
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) {
+                        return '<span class="font-semibold text-yellow-500">Invalid Date</span>';
+                    }
+                    const isExpired = date < new Date();
+                    const colorClass = isExpired ? 'text-red-500' : 'text-green-400';
+                    const formattedDate = date.toISOString().split('T')[0];
+                    return `<span class="font-semibold ${colorClass}">${formattedDate}</span>`;
+                } catch (e) {
+                    return '<span class="font-semibold text-yellow-500">Error</span>';
+                }
+            }
+
+            renderUsers(users) {
+                const usersList = document.getElementById("usersList");
+                usersList.innerHTML = users.map(user => `
+                    <div class="user-card glass-effect rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-white">${this.escapeHtml(user.username)}</h3>
+                                <p class="text-sm text-gray-400">Password: ${this.escapeHtml(user.password)}</p>
+                                <p class="text-sm text-gray-400">Subscribed Until: ${this.formatSubscriptionDate(user.subscription_expires_at)}</p>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-xs text-green-400">Active</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2 mt-2">
+                            <!-- MODIFIED: Change button to 'Adjust' and link to new modal function -->
+                            <button onclick="adminPanel.openAdjustModal('${this.escapeHtml(user.username)}')" class="flex-1 px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-white text-sm transition duration-300">
+                                Adjust
+                            </button>
+                            <button onclick="adminPanel.editUser('${this.escapeHtml(user.username)}')" class="flex-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm transition duration-300">
+                                Edit
+                            </button>
+                            <button onclick="adminPanel.deleteUser('${this.escapeHtml(user.username)}')" class="flex-1 btn-danger px-3 py-1 rounded text-white text-sm">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join("");
+            }
+
+            // MODIFIED: Adjust time function using a modal
+            openAdjustModal(username) {
+                this.targetUsername = username;
+                document.getElementById('adjustUserText').textContent = `Adjusting subscription for: ${username}`;
+                document.getElementById('daysToAdjust').value = '';
+                document.getElementById('adjustTimeModal').style.display = 'flex';
+            }
+
+            closeAdjustModal() {
+                document.getElementById('adjustTimeModal').style.display = 'none';
+            }
+
+            async submitAdjustTime(e) {
+                e.preventDefault();
+                const username = this.targetUsername;
+                const daysToAdjust = document.getElementById('daysToAdjust').value;
+                const days = parseInt(daysToAdjust, 10);
+
+                if (isNaN(days) || days === 0) {
+                    this.showMessage("Please enter a valid non-zero number of days.", "error");
+                    return;
+                }
+                
+                this.closeAdjustModal();
+                this.updateSubscription(username, days);
+            }
+
+            async updateSubscription(username, days) {
+                try {
+                    const response = await this.makeAdminRequest("/admin/add-subscription-time", "PUT", { 
+                        username: username, 
+                        days_to_add: days 
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        const message = days > 0 ? 
+                            `Successfully added ${days} days for ${username}!` : 
+                            `Successfully removed ${Math.abs(days)} days for ${username}!`;
+                        this.showMessage(message, "success");
+                        this.loadUsers();
+                    } else {
+                        this.showMessage(result.error || "Failed to update subscription", "error");
+                    }
+                } catch (error) {
+                    this.showMessage("Network error. Please try again.", "error");
+                    console.error("Error updating subscription:", error);
+                }
+            }
+
+            async deleteUser(username) {
+                if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+                    return;
+                }
+                try {
+                    const response = await this.makeAdminRequest("/admin/delete-user", "DELETE", { username });
+                    const result = await response.json();
+                    if (response.ok) {
+                        this.showMessage("User deleted successfully!", "success");
+                        this.loadUsers();
+                    } else {
+                        this.showMessage(result.error || "Failed to delete user", "error");
+                    }
+                } catch (error) {
+                    this.showMessage("Network error. Please try again.", "error");
+                    console.error("Error deleting user:", error);
+                }
+            }
+
+            editUser(username) {
+                const newPassword = prompt(`Enter new password for "${username}":`);
+                if (newPassword !== null && newPassword.trim()) {
+                    this.updateUser(username, newPassword.trim());
+                } else if (newPassword === null) {
+                    this.showMessage("Password update cancelled.", "info");
+                } else {
+                    this.showMessage("Password cannot be empty.", "error");
+                }
+            }
+
+            async updateUser(username, newPassword) {
+                try {
+                    const response = await this.makeAdminRequest("/admin/update-user", "PUT", { username, password: newPassword });
+                    const result = await response.json();
+                    if (response.ok) {
+                        this.showMessage("User updated successfully!", "success");
+                        this.loadUsers();
+                    } else {
+                        this.showMessage(result.error || "Failed to update user", "error");
+                    }
+                } catch (error) {
+                    this.showMessage("Network error. Please try again.", "error");
+                    console.error("Error updating user:", error);
+                }
+            }
+
+            showMessage(message, type) {
+                const container = document.getElementById("messageContainer");
+                const messageDiv = document.createElement("div");
+                const bgColor = type === "success" ? "bg-green-600" : (type === "error" ? "bg-red-600" : "bg-blue-600");
+                messageDiv.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg mb-2 transform transition-all duration-300`;
+                messageDiv.textContent = message;
+                container.appendChild(messageDiv);
+                setTimeout(() => {
+                    messageDiv.style.opacity = "0";
+                    messageDiv.style.transform = "translateX(100%)";
+                    setTimeout(() => {
+                        container.removeChild(messageDiv);
+                    }, 300);
+                }, 3000);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+        const adminPanel = new AdminPanel();
+    </script>
+<!-- Secure bridge: normalize legacy Cloud Functions → Cloud Run; prefix absolute paths -->
+<script>
+(function(){
+  'use strict';
+  function pickBase(){
+    try{
+      if (typeof window!=='undefined' && typeof window.PF_API_BASE==='string' && window.PF_API_BASE) {
+        var b = window.PF_API_BASE.trim();
+        if (b.endsWith('/')) b = b.slice(0,-1);
+        return b;
+      }
+    }catch(_){}
+    return "";
+  }
+  var CR_BASE = pickBase();
+  var CF_RE = /^https:\/\/[^/]*cloudfunctions\.net\/pfsystem-api(\/|$)/i;
+
+  function rewrite(u){
+    try{
+      if (typeof u==='string'){
+        if (CF_RE.test(u)) return u.replace(CF_RE, CR_BASE + '/');
+        if (u.startsWith('/')) return CR_BASE + u;
+        return u;
+      }
+      if (u && typeof u.url==='string' && CF_RE.test(u.url)){
+        var nu = u.url.replace(CF_RE, CR_BASE + '/');
+        return new Request(nu, u);
+      }
+    }catch(_){}
+    return u;
+  }
+
+  try{
+    var _fetch = window.fetch.bind(window);
+    window.fetch = function(input, init){
+      return _fetch(rewrite(input), init);
+    };
+  }catch(_){}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="head.title">PF Creative AI Studio - The Director-Grade AI</title>
+    
+    <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
+    <script src="runtime-config.js"></script>
+    
+    <!-- Centralized env; must be loaded AFTER runtime-config.js -->
+    <script src="env.js"></script>
+    
+    <meta name="pf:apiBase" content="__INJECT_AT_DEPLOY__">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-purple': '#8b5cf6',
+                        'neon-pink': '#ec4899',
+                        'neon-blue': '#3b82f6',
+                        'neon-gold': '#f59e0b',
+                        'dark-bg': '#0a0a0a',
+                        'dark-card': '#1a1a1a',
+                        'dark-border': '#2a2a2a'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out',
+                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+            100% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+        }
+        @keyframes slideUp {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 60px rgba(245, 158, 11, 0.6); }
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            overflow-x: hidden;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .director-gradient {
+            background: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 1rem;
+        }
+        
+        .problem-card {
+            transition: all 0.3s ease;
+        }
+        .problem-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+        }
+        
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 25px 50px rgba(245, 158, 11, 0.4);
+        }
+        
+        /* Language Menu Styles */
+        #langMenu {
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        #langMenu.show {
+            display: block !important;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .lang-option.active {
+            background-color: rgba(139, 92, 246, 0.3);
+            color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <nav class="glass-effect fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold gradient-text" data-i18n="nav.title">PF Creative AI Studio</h1>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-gray-300 hover:text-neon-gold transition duration-300" data-i18n="nav.home">Home</a>
+                    <a href="#solution" class="text-gray-300 hover:text-neon-gold transition duration-300" data-i18n="nav.solution">Solution</a>
+                    <a href="#features" class="text-gray-300 hover:text-neon-gold transition duration-300" data-i18n="nav.features">Features</a>
+                    <a href="#video" class="text-gray-300 hover:text-neon-gold transition duration-300" data-i18n="nav.video">Our Work</a>
+                    <a href="#contact" class="text-gray-300 hover:text-neon-gold transition duration-300" data-i18n="nav.contact">Contact</a>
+                    
+                    <a href="pricing.html" class="text-gray-300 hover:text-neon-gold transition duration-300 font-semibold" data-i18n="nav.pricing">Pricing</a>
+                    <div class="relative">
+                        <button id="langBtn" class="bg-white/10 text-white px-3 py-1 rounded-lg hover:bg-white/20 transition duration-300 flex items-center space-x-1">
+                            <span id="currentLang">EN</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="langMenu" class="absolute right-0 mt-2 w-24 bg-black/90 backdrop-blur-lg rounded-lg shadow-lg border border-white/10 hidden">
+                            <a href="#" class="lang-option block px-4 py-2 text-sm text-white hover:bg-white/10 rounded-t-lg" data-lang="en">EN</a>
+                            <a href="#" class="lang-option block px-4 py-2 text-sm text-white hover:bg-white/10" data-lang="bm">BM</a>
+                            <a href="#" class="lang-option block px-4 py-2 text-sm text-white hover:bg-white/10 rounded-b-lg" data-lang="zh">中文</a>
+                        </div>
+                    </div>
+                    <a href="login.html" class="bg-gradient-to-r from-neon-gold to-neon-pink text-white px-6 py-2 rounded-lg hover:from-yellow-500 hover:to-pink-500 transition duration-300 animate-pulse-glow" data-i18n="nav.cta">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="pt-32 pb-20 relative">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-neon-purple/20 rounded-full blur-3xl animate-float"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-neon-gold/20 rounded-full blur-3xl animate-float" style="animation-delay: -2s;"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-neon-pink/20 rounded-full blur-3xl animate-float" style="animation-delay: -4s;"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 text-center relative z-10">
+            <div class="animate-slide-up">
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-6">
+                    <span class="director-gradient" data-i18n="hero.title1">The Director-Grade AI.</span>
+                </h1>
+                <h2 class="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-8" data-i18n="hero.title2">
+                    Go Beyond Prompts, Get Production-Ready Scripts.
+                </h2>
+                <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-5xl mx-auto leading-relaxed" data-i18n="hero.subtitle">
+                    Stop wrestling with inconsistent AI outputs. Our advanced system delivers complete, multi-scene script packages with professional cinematography controls and error-prevention technology.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <a href="#solution" class="bg-gradient-to-r from-neon-gold to-neon-pink text-white font-semibold py-4 px-8 rounded-lg hover:from-yellow-500 hover:to-pink-500 transition duration-300 transform hover:scale-105 text-lg animate-glow" data-i18n="hero.cta1">
+                        See How It Works
+                    </a>
+                    <a href="login.html" class="glass-effect text-white font-semibold py-4 px-8 rounded-lg hover:bg-white/10 transition duration-300 transform hover:scale-105 border border-neon-gold/30 text-lg" data-i18n="hero.cta2">
+                        Try Director-Grade AI
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="solution" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-6xl font-bold mb-6">
+                    <span class="gradient-text" data-i18n="solution.title1">Stop Fixing AI Errors.</span>
+                    <br>
+                    <span class="text-white" data-i18n="solution.title2">Start Directing.</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-4xl mx-auto" data-i18n="solution.subtitle">
+                    Traditional AI video tools leave you frustrated with inconsistent results. Our Director-Grade AI eliminates common problems before they happen.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 mb-16">
+                <div class="problem-card glass-effect rounded-2xl p-8">
+                    <div class="flex items-start space-x-6">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+                                <svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-red-400 mb-3" data-i18n="problem1.title">Problem: Inconsistent Characters</h3>
+                            <p class="text-gray-300 mb-4" data-i18n="problem1.description">Characters change appearance between scenes, breaking narrative continuity and making videos look unprofessional.</p>
+                            <div class="border-l-4 border-neon-gold pl-4">
+                                <h4 class="text-lg font-semibold text-neon-gold mb-2" data-i18n="problem1.solution.title">Our Solution: Advanced Production Strategies</h4>
+                                <p class="text-gray-200" data-i18n="problem1.solution.description">The "Faceless Expert" and "Single Scene Presenter" techniques ensure visual consistency across all scenes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="problem-card glass-effect rounded-2xl p-8">
+                    <div class="flex items-start space-x-6">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+                                <svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-red-400 mb-3" data-i18n="problem2.title">Problem: Glitches & Visual Artifacts</h3>
+                            <p class="text-gray-300 mb-4" data-i18n="problem2.description">Mangled hands, extra fingers, unwanted text overlays, and other AI artifacts ruin professional presentations.</p>
+                            <div class="border-l-4 border-neon-gold pl-4">
+                                <h4 class="text-lg font-semibold text-neon-gold mb-2" data-i18n="problem2.solution.title">Our Solution: Comprehensive Negative Prompt Library</h4>
+                                <p class="text-gray-200" data-i18n="problem2.solution.description">Automatically prevents common AI errors with our extensive database of negative prompts and quality controls.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-6xl font-bold mb-6">
+                    <span class="gradient-text" data-i18n="features.title">Director-Grade Features</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-4xl mx-auto" data-i18n="features.subtitle">
+                    Professional tools that give you complete creative control over your AI video production
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div class="feature-card glass-effect rounded-2xl p-10">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 bg-gradient-to-r from-neon-gold to-neon-pink rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 0a2 2 0 012-2v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2V5z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-3xl font-bold text-white mb-4" data-i18n="feature1.title">Production-Ready Blueprints</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <p class="text-lg text-gray-300 text-center mb-8" data-i18n="feature1.description">
+                            Don't just get a prompt. Receive a complete, multi-scene script package that's ready for professional production.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-gold rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature1.item1">Complete VEO Prompt Blueprint for every scene</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-pink rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature1.item2">Detailed shot descriptions and camera angles</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-purple rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature1.item3">Scene-by-scene narrative structure</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-blue rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature1.item4">Professional formatting for immediate use</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-black/30 rounded-lg p-6 mt-8">
+                            <h4 class="text-lg font-semibold text-neon-gold mb-3" data-i18n="feature1.example.title">Example Output:</h4>
+                            <p class="text-sm text-gray-300 font-mono" data-i18n="feature1.example.text">
+                                "Scene 1: Medium shot of confident presenter in modern office, natural lighting, camera slowly zooms in, professional attire, clean background..."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card glass-effect rounded-2xl p-10">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 bg-gradient-to-r from-neon-purple to-neon-blue rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-3xl font-bold text-white mb-4" data-i18n="feature2.title">Professional Creative Control</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <p class="text-lg text-gray-300 text-center mb-8" data-i18n="feature2.description">
+                            Choose from a library of cinematic styles and define specific cinematography like a real director.
+                        </p>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-black/30 rounded-lg p-4 text-center">
+                                <h5 class="text-neon-gold font-semibold mb-2" data-i18n="feature2.styles.title">Cinematic Styles</h5>
+                                <ul class="text-sm text-gray-300 space-y-1">
+                                    <li data-i18n="feature2.styles.item1">Film Noir</li>
+                                    <li data-i18n="feature2.styles.item2">Documentary</li>
+                                    <li data-i18n="feature2.styles.item3">Corporate</li>
+                                    <li data-i18n="feature2.styles.item4">Cinematic</li>
+                                </ul>
+                            </div>
+                            <div class="bg-black/30 rounded-lg p-4 text-center">
+                                <h5 class="text-neon-pink font-semibold mb-2" data-i18n="feature2.controls.title">Camera Controls</h5>
+                                <ul class="text-sm text-gray-300 space-y-1">
+                                    <li data-i18n="feature2.controls.item1">Lens Choices</li>
+                                    <li data-i18n="feature2.controls.item2">Camera Movements</li>
+                                    <li data-i18n="feature2.controls.item3">Lighting Setup</li>
+                                    <li data-i18n="feature2.controls.item4">Shot Composition</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-purple rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature2.item1">Professional cinematography library</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-blue rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature2.item2">Customizable camera movements and angles</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-gold rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature2.item3">Industry-standard lighting techniques</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-3 h-3 bg-neon-pink rounded-full"></div>
+                                <span class="text-gray-200" data-i18n="feature2.item4">Director-level creative control</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="video" class="py-20">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    <span class="gradient-text" data-i18n="video.title">See Director-Grade AI in Action</span>
+                </h2>
+                <p class="text-xl text-gray-300" data-i18n="video.subtitle">
+                    Experience the difference between amateur prompts and professional production
+                </p>
+            </div>
+            
+            <div class="glass-effect rounded-2xl p-8">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/rF6W66WKDdw" 
+                            title="PF Creative AI Studio - Director-Grade AI Demo" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="text-center mt-6">
+                    <p class="text-gray-200 text-lg" data-i18n="video.description">
+                        Watch how our Director-Grade AI transforms simple ideas into production-ready video scripts
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-20">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <div class="glass-effect rounded-2xl p-12 animate-pulse-glow">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    <span class="gradient-text" data-i18n="cta.title">Ready to Direct Like a Pro?</span>
+                </h2>
+                <p class="text-xl text-gray-300 mb-8" data-i18n="cta.subtitle">
+                    Stop settling for amateur AI outputs. Get production-ready scripts that deliver professional results every time.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <a href="login.html" class="bg-gradient-to-r from-neon-gold to-neon-pink text-white font-semibold py-4 px-8 rounded-lg hover:from-yellow-500 hover:to-pink-500 transition duration-300 transform hover:scale-105 text-lg animate-glow" data-i18n="cta.button1">
+                        Start Creating Director-Grade Scripts
+                    </a>
+                    <a href="mailto:pfcreativestudio@gmail.com?subject=Professional%20Consultation%20Request&body=Hello%20PF%20Creative%20AI%20Studio,%0A%0AI%20would%20like%20to%20book%20a%20professional%20consultation%20for%20Director-Grade%20AI%20services.%0A%0APlease%20let%20me%20know%20your%20availability.%0A%0AThank%20you!" class="glass-effect text-white font-semibold py-4 px-8 rounded-lg hover:bg-white/10 transition duration-300 transform hover:scale-105 border border-neon-gold/30 text-lg inline-block text-center" data-i18n="cta.button2">
+                        Book Professional Consultation
+                    </a>
+                </div>
+                
+                <div class="mt-8 text-sm text-gray-400">
+                    <p data-i18n="cta.join">Join hundreds of creators who\"ve upgraded to Director-Grade AI</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="glass-effect py-8 mt-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                <div class="text-gray-400 mb-4 md:mb-0">
+                    <p data-i18n="footer.copyright">&copy; 2025 Pyrofractal Tech. All Rights Reserved.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="terms.html" class="text-gray-400 hover:text-neon-gold transition duration-300" data-i18n="footer.terms">Terms of Service</a>
+                    <a href="privacy.html" class="text-gray-400 hover:text-neon-gold transition duration-300" data-i18n="footer.privacy">Privacy Policy</a>
+                    <a href="mailto:pfcreativestudio@gmail.com?subject=Contact%20Inquiry&body=Hello%20PF%20Creative%20AI%20Studio,%0A%0AI%20would%20like%20to%20get%20in%20touch%20regarding%20your%20services.%0A%0AThank%20you!" class="text-gray-400 hover:text-neon-gold transition duration-300" data-i18n="footer.contact">Contact Us</a>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-6">
+                <div class="text-center mb-4">
+                    <p class="text-gray-400 text-sm" data-i18n="footer.social">Follow us on social media</p>
+                </div>
+                <div class="flex justify-center space-x-6">
+                    <a href="https://www.facebook.com/pfcreativestudio" target="_blank" class="text-gray-400 hover:text-blue-500 transition duration-300 transform hover:scale-110">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@pf.creative.studio" target="_blank" class="text-gray-400 hover:text-pink-500 transition duration-300 transform hover:scale-110">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.instagram.com/pfcreativestudio/" target="_blank" class="text-gray-400 hover:text-purple-500 transition duration-300 transform hover:scale-110">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="https://wa.me/message/DVWOCDD35O6FA1" target="_blank" class="text-gray-400 hover:text-green-500 transition duration-300 transform hover:scale-110">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="multilingual.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        console.log('PF Creative Director-Grade AI loaded.');
+    </script>
+</body>
+</html>

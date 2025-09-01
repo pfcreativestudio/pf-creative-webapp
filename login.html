@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - PF Creative AI Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{background:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 50%,#0a0a0a 100%);color:#e0e0e0;font-family:sans-serif}
+    .glass-effect{background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
+    .gradient-text{background:linear-gradient(45deg,#f59e0b,#ec4899,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .btn-primary{background:linear-gradient(45deg,#f59e0b,#ec4899);transition:all .3s ease}
+    .btn-primary:hover:not(:disabled){transform:scale(1.05);box-shadow:0 10px 20px rgba(245,158,11,.3)}
+    .btn-primary:disabled{background:#444;cursor:not-allowed}
+    .hint{font-size:.8rem;color:#9ca3af}
+    .notice{font-size:.85rem}
+  </style>
+
+  <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
+  <script src="runtime-config.js"></script>
+  
+  <!-- Centralized env; must be loaded AFTER runtime-config.js -->
+  <script src="env.js"></script>
+  
+  <meta name="pf:apiBase" content="__INJECT_AT_DEPLOY__">
+</head>
+<body class="flex items-center justify-center min-h-screen">
+  <div class="glass-effect rounded-2xl p-8 w-full max-w-md mx-4">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold gradient-text mb-2">Welcome Back</h1>
+      <p class="text-gray-200">Access Your AI Film Director</p>
+    </div>
+
+    <div id="sessionNotice" class="hidden notice text-amber-300 bg-amber-900/20 border border-amber-500/40 rounded-lg px-3 py-2 mb-4">
+      Your previous session expired. Please log in again.
+    </div>
+
+    <form id="loginForm" class="space-y-6" autocomplete="on">
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-200 mb-2">Username</label>
+        <input id="username" name="username" type="text" required
+               class="w-full px-4 py-3 rounded-lg bg-black/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+               placeholder="Enter your username" autocomplete="username"/>
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-200 mb-2">Password</label>
+        <input id="password" name="password" type="password" required minlength="6"
+               class="w-full px-4 py-3 rounded-lg bg-black/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+               placeholder="Enter your password" autocomplete="current-password"/>
+        <div class="hint mt-1">At least 6 characters.</div>
+      </div>
+
+      <div id="errorMessage" class="hidden text-red-400 text-sm text-center"></div>
+
+      <button id="loginBtn" type="submit"
+              class="w-full btn-primary text-white font-semibold py-3 px-6 rounded-lg transition duration-300">
+        Login
+      </button>
+    </form>
+
+    <div class="mt-6 text-center text-sm text-gray-400">
+      Don't have an account?
+      <a href="register.html" class="font-medium text-purple-400 hover:text-purple-300">Register here</a>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    // --- Resolve API_BASE from runtime-config.js ---
+    function getApiBase() {
+      if (!window.__PF_RUNTIME__?.API_BASE) {
+        throw new Error("PF runtime not initialized: API_BASE missing");
+      }
+      return window.__PF_RUNTIME__.API_BASE.replace(/\/+$/, "");
+    }
+    
+    let API_BASE;
+    try {
+      API_BASE = getApiBase();
+    } catch (e) {
+      console.error("[PF][login] Missing API base:", e.message);
+      const err = document.getElementById("errorMessage");
+      err.textContent = "Missing API base. Please contact admin to configure API settings.";
+      err.classList.remove("hidden");
+    }
+
+    // --- Show notice if redirected with ?expired=1 ---
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("expired") === "1") {
+        const n = document.getElementById("sessionNotice");
+        n.classList.remove("hidden");
+      }
+    } catch { /* no-op */ }
+
+    // --- Token helpers (keep backward compatibility) ---
+    function getToken(){ return localStorage.getItem("token") || localStorage.getItem("jwtToken") || ""; }
+    function setToken(tok){
+      localStorage.setItem("token", tok);
+      localStorage.setItem("jwtToken", tok);
+    }
+    function clearAuth(){
+      localStorage.removeItem("token");
+      localStorage.removeItem("jwtToken");
+      localStorage.removeItem("username");
+      localStorage.removeItem("auth_ok");
+    }
+
+    async function validateToken(){
+      const t = getToken();
+      if (!t || !API_BASE) return false;
+      try {
+        const resp = await apiFetch("/get-user-status", {
+          method: "GET",
+          headers: { "Authorization": "Bearer " + t }
+        });
+        if (!resp.ok) throw new Error("status " + resp.status);
+        await resp.json().catch(()=>({}));
+        return true;
+      } catch(e) {
+        return false;
+      }
+    }
+
+    // --- Redirect guard ---
+    (async function precheck(){
+      const authOk = localStorage.getItem("auth_ok") === "1";
+      if (authOk && getToken()) {
+        window.location.href = "dashboard.html";
+        return;
+      }
+      if (getToken()) {
+        const ok = await validateToken();
+        if (ok) {
+          window.location.href = "dashboard.html";
+          return;
+        } else {
+          clearAuth();
+          const n = document.getElementById("sessionNotice");
+          n.classList.remove("hidden");
+        }
+      }
+    })();
+
+    // --- Form submission ---
+    const form = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+    const errorDiv = document.getElementById("errorMessage");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorDiv.classList.add("hidden");
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!username || !password) {
+        errorDiv.textContent = "Please enter username and password";
+        errorDiv.classList.remove("hidden");
+        return;
+      }
+      if (!API_BASE) {
+        errorDiv.textContent = "Missing API base. Please contact admin.";
+        errorDiv.classList.remove("hidden");
+        return;
+      }
+
+      loginBtn.textContent = "Logging in...";
+      loginBtn.disabled = true;
+
+      try {
+        const resp = await apiFetch("/login", {
+          method: "POST",
+          body: JSON.stringify({ username, password })
+        });
+
+        // Try to parse JSON; if not JSON, surface raw text
+        let data = null;
+        try { data = await resp.json(); } catch { data = null; }
+
+        if (!resp.ok || !data || !data.token) {
+          const fallbackText = data && (data.error || data.message) ? (data.error || data.message) : await resp.text().catch(()=> "Invalid username or password");
+          throw new Error(fallbackText || "Invalid username or password");
+        }
+
+        setToken(data.token);
+        localStorage.setItem("username", data.username || username);
+        localStorage.setItem("auth_ok", "1");
+
+        loginBtn.textContent = "Success!";
+        setTimeout(() => (window.location.href = "dashboard.html"), 600);
+      } catch (err) {
+        errorDiv.textContent = (err && err.message) ? err.message : "Network error. Please try again.";
+        errorDiv.classList.remove("hidden");
+        loginBtn.textContent = "Login";
+        loginBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "pf-qa",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "qa:static": "bash ops/qa_static.sh",
+    "qa:frontend": "node ops/check_frontend.mjs",
+    "qa:backend": "pytest -q",
+    "qa:all": "npm run qa:frontend && npm run qa:static && npm run qa:backend",
+    "ci:badge": "node ops/update_badge.mjs",
+    "ci:push": "bash ops/push_or_create.sh",
+    "ci:all": "npm run qa:all && npm run ci:badge && npm run ci:push"
+  },
+  "devDependencies": {}
+}
