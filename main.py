@@ -27,7 +27,6 @@ import uuid  # ★ for session_id canonicalization
 from PIL import Image  # noqa: F401
 
 from flask import Flask, request, jsonify, Response, redirect
-from flask_cors import CORS, cross_origin
 import psycopg2
 import psycopg2.pool
 import jwt
@@ -1268,7 +1267,7 @@ def webhook_billplz():
 # V1 - Multi-Agent Script Generation Workflow
 # ----------------------------------------------------------------------------
 @app.route("/v1/projects", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 def create_project():
     payload = _jwt_decode(request)
     if not payload:
@@ -1302,7 +1301,7 @@ def create_project():
 
 # ★ 新增：Dashboard 用的「最近项目列表」
 @app.route("/v1/projects", methods=["GET", "OPTIONS"])
-@cross_origin()
+
 def list_projects():
     payload = _jwt_decode(request)
     if not payload:
@@ -1342,7 +1341,7 @@ def list_projects():
         put_conn(conn)
 
 @app.route("/v1/projects/<uuid:project_id>/select-creative", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 def select_creative(project_id):
     payload = _jwt_decode(request)
     if not payload:
@@ -1375,7 +1374,7 @@ def select_creative(project_id):
         put_conn(conn)
 
 @app.route("/v1/sessions", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 def create_session_route():
     payload = _jwt_decode(request)
     if not payload:
@@ -1410,7 +1409,7 @@ def create_session_route():
         put_conn(conn)
 
 @app.route("/v1/sessions/<uuid:session_id>/next", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 def advance_session_route(session_id):
     payload = _jwt_decode(request)
     if not payload:
@@ -1435,7 +1434,7 @@ def advance_session_route(session_id):
         put_conn(conn)
 
 @app.route("/v1/projects/<uuid:project_id>/finalize", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 def finalize_project(project_id):
     payload = _jwt_decode(request)
     if not payload:
@@ -1460,7 +1459,7 @@ def finalize_project(project_id):
 
 # Render/Status(  )
 @app.route("/v1/projects/<uuid:project_id>/render", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 def render_project(project_id):
     payload = _jwt_decode(request)
     if not payload:
@@ -1468,7 +1467,7 @@ def render_project(project_id):
     return json_response({"success": True, "total": 0})
 
 @app.route("/v1/projects/<uuid:project_id>/render/status", methods=["GET", "OPTIONS"])
-@cross_origin()
+
 def render_status(project_id):
     payload = _jwt_decode(request)
     if not payload:
@@ -1477,7 +1476,7 @@ def render_status(project_id):
 
 #   
 @app.route("/v1/projects/<uuid:project_id>/export", methods=["GET", "OPTIONS"])
-@cross_origin()
+
 def export_project(project_id):
     payload = _jwt_decode(request)
     if not payload:
@@ -1505,7 +1504,7 @@ def export_project(project_id):
 # Main execution
 
 @app.route("/v1/plans", methods=["GET"])
-@cross_origin()
+
 def v1_plans():
     # Expose the public catalog (id, name, price in major units)
     out = []
@@ -1634,7 +1633,7 @@ def _next_prompt_v2(slots: Dict[str, Any]) -> Dict[str, Any]:
 
 
 @app.route("/v1/director/library", methods=["GET","OPTIONS"])
-@cross_origin()
+
 def director_library():
     if request.method == "OPTIONS":
         return ("", 204)
@@ -1648,7 +1647,7 @@ def director_library():
 
 
 @app.route("/v1/director/blueprint", methods=["POST","OPTIONS"])
-@cross_origin()
+
 def director_blueprint():
     if request.method == "OPTIONS":
         return ("", 204)
@@ -1738,7 +1737,7 @@ def director_session_get():
 
 
 @app.route("/v1/director/reset", methods=["POST","OPTIONS"])
-@cross_origin()
+
 def director_session_reset():
     if request.method == "OPTIONS":
         return ("", 204)
@@ -1772,7 +1771,7 @@ if __name__ == '__main__':
 # ----------------------------------------------------------------------------
 
 @app.route("/v1/director/chat", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 
 def director_chat():
     if request.method == "OPTIONS":
@@ -1922,7 +1921,7 @@ def director_commit_brief():
 
 
 @app.route("/v1/director/storyboard", methods=["POST", "OPTIONS"])
-@cross_origin()
+
 def director_storyboard():
     payload = _jwt_decode(request)
     if not payload:
@@ -1963,14 +1962,14 @@ def director_storyboard():
 
 
 @app.route("/v1/director/veo-3-prompt", methods=["GET", "OPTIONS"])
-@cross_origin()
+
 def director_veo3_prompt_compat():
     # 兼容路由（旧前端若调用 /v1/director/veo-3-prompt）
     return director_veo3_prompt()
 
 # POST compatibility: forward POST to the same underlying handler
 @app.route("/v1/director/veo-3-prompt", methods=["POST", "OPTIONS"], endpoint="director_veo3_prompt_post")
-@cross_origin()
+
 def director_veo3_prompt_post():
     if request.method == "OPTIONS":
         return ("", 204)
@@ -1978,7 +1977,7 @@ def director_veo3_prompt_post():
     return director_veo3_prompt()
 
 @app.route("/v1/director/veo3-prompt", methods=["GET", "OPTIONS"])
-@cross_origin()
+
 def director_veo3_prompt():
     payload = _jwt_decode(request)
     if not payload:
