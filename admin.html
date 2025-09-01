@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - PF Creative AI Studio</title>
     
     <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
-    <script src="runtime-config.js"></script>
-    
     <!-- Centralized env; must be loaded AFTER runtime-config.js -->
     <script src="env.js"></script>
     
@@ -210,7 +211,7 @@
                     return;
                 }
                 try {
-                    const response = await apiFetch('/admin/verify-password', {
+                    const response = await window.apiFetch('/admin/verify-password', {
                         method: 'POST',
                         headers: {
                             'X-Admin-Password': inputPassword
@@ -263,7 +264,7 @@
                 if (body) {
                     options.body = JSON.stringify(body);
                 }
-                return apiFetch(endpoint, options);
+                return window.apiFetch(endpoint, options);
             }
 
             async addUser() {

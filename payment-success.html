@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="runtime-config.js"></script>
+    <script src="api.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Success - PF Creative AI Studio</title>
     
     <!-- Runtime configuration for API base - must be loaded BEFORE any other scripts -->
-    <script src="runtime-config.js"></script>
-    
     <!-- Centralized env; must be loaded AFTER runtime-config.js -->
     <script src="env.js"></script>
     
@@ -175,7 +176,7 @@
         return;
       }
       try {
-        var resp = await apiFetch('/get-user-status', { headers: { 'Authorization': 'Bearer ' + token }});
+        var resp = await window.apiFetch('/get-user-status', { headers: { 'Authorization': 'Bearer ' + token }});
         var data = await resp.json().catch(function(){ return {}; });
         if (resp.status === 401) {
           setFail('Session expired. Please log in again.');

@@ -92,6 +92,11 @@ for (const file of HTML_FILES) {
         warn(`${file}: ${problematicScripts.length} potentially problematic script(s) before runtime-config.js`);
     }
     
+    // Ensure api.js present in <head>
+    if (!headContent.includes('api.js')) {
+        fail(`${file}: api.js not included in <head>`);
+    }
+
     pass(`${file}: runtime-config.js properly included in <head>`);
 }
 
