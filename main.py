@@ -101,6 +101,8 @@ if DEFAULT_SECRETS_IN_USE:
 # Flask app & helpers
 # ----------------------------------------------------------------------------
 app = Flask(__name__)
+from health import health_bp
+app.register_blueprint(health_bp)
 
 # ===== CORS（一次性修好预检 + 带凭据）===========================
 # ★ 允许带 cookie/Authorization 的跨域；必须是具体来源，不能用 '*'
