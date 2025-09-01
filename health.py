@@ -13,6 +13,17 @@ def healthz():
 
 @health_bp.route("/ping", methods=["GET"])
 def ping():
+    # trivial, no deps, always 200
     return "pong", 200
+
+@health_bp.route("/health", methods=["GET"])
+def health_alias():
+    # JSON alias for generic probes
+    return jsonify({"status": "ok"}), 200
+
+@health_bp.route("/_ah/health", methods=["GET"])
+def ah_health_alias():
+    # Legacy GAE probe path
+    return "ok", 200
 
 
