@@ -30,25 +30,21 @@
     
     try {
       // Try to get recent project
-      const res = await apiFetch('/v1/projects?recent=1');
-      if (res.ok) {
-        const projects = await res.json();
-        if (projects && projects.length > 0) {
-          projectId = projects[0].id;
-          localStorage.setItem('pf_project_id', projectId);
-          return projectId;
-        }
+      const projects = await apiJson('/v1/projects?recent=1');
+      if (projects && projects.length > 0) {
+        projectId = projects[0].id;
+        localStorage.setItem('pf_project_id', projectId);
+        return projectId;
       }
       
       // Create new project if none found
-      const createRes = await apiFetch('/v1/projects', {
+      const newProject = await apiJson('/v1/projects', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({title: 'Untitled', source: 'chatroom'})
       });
       
-      if (createRes.ok) {
-        const newProject = await createRes.json();
+      if (newProject && newProject.id) {
         projectId = newProject.id;
         localStorage.setItem('pf_project_id', projectId);
         return projectId;
@@ -67,12 +63,22 @@
     localStorage.removeItem('pf_project_id');
   }
 
+  // Safe JSON helper for CORS failures
+  async function apiJson(url, init) {
+    const res = await apiFetch(url, init);
+    const ct = (res.headers.get('content-type')||'').toLowerCase();
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    if (!ct.includes('application/json')) return null;
+    return await res.json();
+  }
+
   try { window.API_BASE = API_BASE; } catch (e) {}
   try { window.apiFetch = apiFetch; } catch (e) {}
   try { window.PF_apiFetch = apiFetch; } catch (e) {}
   try { window.getApiBase = getApiBase; } catch (e) {}
   try { window.ensureProjectId = ensureProjectId; } catch (e) {}
   try { window.clearProjectId = clearProjectId; } catch (e) {}
+  try { window.apiJson = apiJson; } catch (e) {}
   try {
     // Legacy global alias (best-effort)
     if (typeof apiFetch === 'undefined') {

@@ -107,40 +107,58 @@ app.register_blueprint(health_bp)
 # ===== CORS（一次性修好预检 + 带凭据）===========================
 # ★ 允许带 cookie/Authorization 的跨域；必须是具体来源，不能用 '*'
 #   这里把你的 vercel 线上域、以及 FRONTEND_BASE_URL（如果设置）加入白名单
-DEFAULT_ALLOWED = {
-    "https://pfcreativeaistudio.vercel.app",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-}
-# Support comma-separated extra origins from env (e.g., preview domains, custom domains)
-extra_origins = {o.strip() for o in os.getenv("FRONTEND_BASE_URLS", "").split(",") if o.strip()}
-ALLOWED_ORIGINS = list(DEFAULT_ALLOWED | extra_origins)
+# Robust CORS implementation with credentialed request support
+from urllib.parse import urlparse
 
-CORS(
-    app,
-    resources={r"/*": {"origins": ALLOWED_ORIGINS}},
-    supports_credentials=True,
-    methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-    allow_headers=[
-        "Authorization", "Content-Type",
-        "X-Admin-Password", "X-Requested-With"
-    ],
-    expose_headers=["Content-Type"],
-    max_age=86400
-)
+def _split_list(val):
+    if not val: return []
+    parts = [x.strip() for x in str(val).split(",")]
+    return [p.rstrip("/") for p in parts if p]
 
-# Remove custom CORS header injection to avoid duplicates; rely on flask-cors only
+_allow_list = _split_list(os.getenv("FRONTEND_BASE_URLS")) or _split_list(os.getenv("FRONTEND_BASE_URL"))
+if not _allow_list:
+    _allow_list = ["https://pfcreativeaistudio.vercel.app", "http://localhost:3000", "http://127.0.0.1:3000"]
+
+def _allowed_origin(origin: str):
+    if not origin: return None
+    o = origin.rstrip("/")
+    if o in _allow_list: return o
+    try:
+        host = urlparse(o).hostname or ""
+    except Exception:
+        return None
+    # allow *.vercel.app when any allow_list item endswith vercel.app
+    if host.endswith(".vercel.app") and any(u.endswith("vercel.app") for u in _allow_list):
+        return o
+    return None
+
+def _apply_cors(resp, origin):
+    if not origin: return resp
+    resp.headers["Access-Control-Allow-Origin"] = origin
+    resp.headers["Vary"] = "Origin"
+    resp.headers["Access-Control-Allow-Credentials"] = "true"
+    resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PATCH,PUT,DELETE,OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Authorization,Content-Type,X-Admin-Password,X-Requested-With"
+    resp.headers["Access-Control-Max-Age"] = "86400"
+    return resp
+
+@app.after_request
+def _after(resp):
+    origin = _allowed_origin(request.headers.get("Origin"))
+    return _apply_cors(resp, origin)
+
+@app.route("/<path:any_path>", methods=["OPTIONS"])
+def _preflight(any_path):
+    origin = _allowed_origin(request.headers.get("Origin"))
+    from flask import make_response
+    resp = make_response("", 204)
+    return _apply_cors(resp, origin)
 
 # Request logging for debugging CORS and API calls
 @app.before_request
 def _log_request():
     log.info(f"--- REQUEST --- {request.method} {request.path} | Origin: {request.headers.get('Origin', 'N/A')} | User-Agent: {request.headers.get('User-Agent', 'N/A')[:80]}")
 # ============================================================
-
-# Universal preflight handler (flask-cors will attach proper headers)
-@app.route("/<path:_any>", methods=["OPTIONS"])
-def _preflight(_any):
-    return ("", 204)
 
 def json_response(payload, status=200):
     return app.response_class(
