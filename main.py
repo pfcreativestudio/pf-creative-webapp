@@ -119,8 +119,8 @@ ALLOWED_ORIGINS = list(DEFAULT_ALLOWED | extra_origins)
 CORS(
     app,
     resources={r"/*": {"origins": ALLOWED_ORIGINS}},
-    supports_credentials=True,                 # ★ 关键：返回 Access-Control-Allow-Credentials: true
-    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    supports_credentials=True,
+    methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
     allow_headers=[
         "Authorization", "Content-Type",
         "X-Admin-Password", "X-Requested-With"
@@ -129,17 +129,18 @@ CORS(
     max_age=86400
 )
 
-# ★ 保底：所有响应都带上 Allow-Credentials，避免 401/错误时少头导致浏览器拦截
-@app.after_request
-def _ensure_cors_headers(resp):
-    resp.headers.setdefault("Access-Control-Allow-Credentials", "true")
-    return resp
+# Remove custom CORS header injection to avoid duplicates; rely on flask-cors only
 
 # Request logging for debugging CORS and API calls
 @app.before_request
 def _log_request():
     log.info(f"--- REQUEST --- {request.method} {request.path} | Origin: {request.headers.get('Origin', 'N/A')} | User-Agent: {request.headers.get('User-Agent', 'N/A')[:80]}")
 # ============================================================
+
+# Universal preflight handler (flask-cors will attach proper headers)
+@app.route("/<path:_any>", methods=["OPTIONS"])
+def _preflight(_any):
+    return ("", 204)
 
 def json_response(payload, status=200):
     return app.response_class(
