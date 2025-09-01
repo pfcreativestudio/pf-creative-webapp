@@ -1,6 +1,6 @@
 # PF Creative AI Studio
 
-[![QA](https://github.com/yourusername/pf-creative-ai-studio/actions/workflows/qa.yml/badge.svg)](https://github.com/yourusername/pf-creative-ai-studio/actions/workflows/qa.yml)
+[![QA](https://github.com/pfcreativestudio/pf-creative-webapp/actions/workflows/qa.yml/badge.svg)](https://github.com/pfcreativestudio/pf-creative-webapp/actions/workflows/qa.yml)
 
 Director-Grade AI for Film Production Scripts
 
