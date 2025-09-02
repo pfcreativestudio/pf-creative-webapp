@@ -1,10 +1,10 @@
 # ops/env.sh
 export PROJECT=${PROJECT:-pf-studio-prod}
 export REGION=${REGION:-asia-southeast1}
-export SERVICE=${SERVICE:-pfsystem-api}
+export SERVICE=${SERVICE:-pfsystem-api-app}
 export REPO=${REPO:-pfsystem}
 export SQL_INST=${SQL_INST:-pf-studio-prod:asia-southeast1:pf-database-new}
-export FRONTENDS=${FRONTENDS:-https://pfcreativeaistudio.vercel.app,https://pf-creative-webapp.vercel.app,http://localhost:3000}
+export FRONTENDS=${FRONTENDS:-https://pfcreativeaistudio.vercel.app,http://localhost:3000}
 
 # Image tags
 export IMAGE_TAG=${IMAGE_TAG:-$(git rev-parse --short HEAD)}

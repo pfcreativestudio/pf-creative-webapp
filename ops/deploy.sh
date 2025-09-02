@@ -10,7 +10,7 @@ gcloud run deploy "$SERVICE" \
   --allow-unauthenticated \
   --add-cloudsql-instances="$SQL_INST" \
   --set-env-vars="FRONTEND_BASE_URLS=${FRONTENDS},INSTANCE_CONNECTION_NAME=${SQL_INST},DB_USER=postgres,DB_NAME=postgres" \
-  --set-secrets="DB_PASSWORD=DB_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest,ADMIN_PASSWORD=ADMIN_PASSWORD:latest" \
+  --set-secrets="DB_PASSWORD=db_password:latest,JWT_SECRET=jwt_secret:latest,ADMIN_PASSWORD=admin_password:latest" \
   --memory=512Mi \
   --timeout=300
 
