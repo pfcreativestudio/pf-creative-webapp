@@ -1932,19 +1932,35 @@ def director_storyboard():
     conn = None
     try:
         conn = get_conn()
-        resp = services.select_creative_and_generate_storyboard(
+        
+        # First, get the creative_id from the selected_option_index
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id FROM creative_options 
+            WHERE project_id = %s 
+            ORDER BY created_at ASC 
+            LIMIT 1 OFFSET %s
+        """, (project_id, int(selected_option_index)))
+        row = cur.fetchone()
+        if not row:
+            return json_response({"error": "Creative option not found"}, 404)
+        creative_id = str(row[0])
+        cur.close()
+        
+        # Now call the correct function
+        storyboard, qa_critique = services.select_creative_and_generate_storyboard(
             db_conn=conn,
-            user_id=username,
             project_id=project_id,
-            selected_option_index=int(selected_option_index)
+            selected_creative_id=creative_id
         )
+        
         if session_id:
             try:
                 _director_update_session(conn, session_id, state="G11", step=12)
             except Exception:
                 pass
         flags = _ready_flags({}, project_id)
-        return json_response({"storyboard": resp.get("storyboard"), "next_state": "G11", "ready_flags": flags})
+        return json_response({"storyboard": storyboard, "qa_critique": qa_critique, "next_state": "G11", "ready_flags": flags})
     except Exception as e:
         log.exception("director_storyboard error")
         return json_response({"error": "Internal error", "detail": str(e)}, 500)
@@ -2028,6 +2044,19 @@ def _sql_table_has_columns(conn, table, cols):
 
 def _ensure_director_tables(conn):
     cur = conn.cursor()
+    
+    # Create director_sessions table if missing
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS director_sessions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id TEXT NOT NULL,
+            selections JSONB DEFAULT '{}',
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP,
+            archived BOOLEAN NOT NULL DEFAULT FALSE
+        )
+    """)
+    
     # Create table if missing (new schema: speaker/content)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS director_messages (
