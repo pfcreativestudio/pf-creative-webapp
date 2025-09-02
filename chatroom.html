@@ -134,6 +134,44 @@
         // Debug log for API base resolution
         console.info('[PF][chatroom] Using API:', window.getApiBase && window.getApiBase());
         
+        // --- 带回退的 VEO-3 调用函数 ---
+        async function postVeoPrompt(projectId, body, token) {
+            const h = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+            // 先打旧修订版一定存在的无连字符路由
+            let res = await window.apiFetch(`/v1/director/veo3-prompt?project_id=${encodeURIComponent(projectId)}`, {
+                method: 'POST', headers: h, body: JSON.stringify(body)
+            });
+            // 如 404（某些新修订只开了有连字符），再回退到有连字符
+            if (res.status === 404) {
+                res = await window.apiFetch(`/v1/director/veo-3-prompt?project_id=${encodeURIComponent(projectId)}`, {
+                    method: 'POST', headers: h, body: JSON.stringify(body)
+                });
+            }
+            return res;
+        }
+
+        // --- 自动补齐 storyboard 的业务流程 ---
+        async function ensureStoryboard({ projectId, userText, token }) {
+            // 1) 先喂一条用户文本给 /v1/director/chat，收集 slots（goal/audience/platform/duration_sec/key_message/cta 等）
+            const chatRes = await window.apiFetch('/v1/director/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ user_text: userText || 'Please build storyboard for me.' })
+            });
+            if (chatRes.status === 401) throw new Error('auth');
+            // 2) 直接用默认选项索引 0 生成 storyboard（也可先渲染选项给用户选）
+            const sbRes = await window.apiFetch('/v1/director/storyboard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ project_id: projectId, selected_option_index: 0 })
+            });
+            if (!sbRes.ok) {
+                const e = await sbRes.json().catch(()=> ({}));
+                throw new Error(e.error || 'storyboard_failed');
+            }
+            return true;
+        }
+        
         // --- 核心修正：在所有代码运行前，先进行登录状态检查 ---
         const token = localStorage.getItem('jwtToken');
         const username = localStorage.getItem('username');
@@ -343,20 +381,13 @@
                     } else {
                         // For text-only, use apiFetch with project_id
                         // Backend compat handler expects project_id in query
-                        response = await window.apiFetch(`/v1/director/veo-3-prompt?project_id=${encodeURIComponent(projectId)}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${this.token}`
-                            },
-                            body: JSON.stringify({ 
-                                text: userMessageContent,
-                                source: 'chatroom'
-                            })
-                        });
+                        response = await postVeoPrompt(projectId, { 
+                            text: userMessageContent,
+                            source: 'chatroom'
+                        }, this.token);
                     }
 
-                    const result = await response.json().catch(()=>({}));
+                    let result = await response.json().catch(()=>({}));
                     
                     if (response.status === 401) {
                         this.addMessage('Session expired, please login again', 'model', null, true);
@@ -371,6 +402,23 @@
                         // Auto-retry once
                         setTimeout(() => this.sendMessage(), 1000);
                         return;
+                    }
+
+                    // 自动补齐 storyboard 逻辑：当 postVeoPrompt 返回 404 且 body.error 包含 "Storyboard not found" 时，自动补齐再重试
+                    if (response.status === 404 && /Storyboard not found/i.test(result?.error || '')) {
+                        try {
+                            this.addMessage('Creating storyboard for your project...', 'model', null, true);
+                            await ensureStoryboard({ projectId, userText: userMessageContent, token: this.token });
+                            // 重试 VEO-3 调用
+                            response = await postVeoPrompt(projectId, { 
+                                text: userMessageContent,
+                                source: 'chatroom'
+                            }, this.token);
+                            result = await response.json().catch(()=>({}));
+                        } catch (storyboardError) {
+                            this.addMessage('Failed to create storyboard: ' + storyboardError.message, 'model', null, true);
+                            return;
+                        }
                     }
 
                     let aiResponse = result.response || result.script || result.reply || result.message;
@@ -534,11 +582,10 @@
     async function sendText(message){
       try {
         const projectId = await window.ensureProjectId();
-        const response = await window.apiFetch('/v1/director/veo-3-prompt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ project_id: projectId, text: message, source: 'chatroom' })
-        });
+        const response = await postVeoPrompt(projectId, { 
+          text: message, 
+          source: 'chatroom' 
+        }, localStorage.getItem('jwtToken'));
         
         if (response.status === 401) {
           append('sys', 'Session expired, please login again');
@@ -553,11 +600,10 @@
             window.clearProjectId();
             await window.ensureProjectId();
             // Retry once
-            return await window.apiFetch('/v1/director/veo-3-prompt', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ project_id: await window.ensureProjectId(), text: message, source: 'chatroom' })
-            });
+            return await postVeoPrompt(await window.ensureProjectId(), { 
+              text: message, 
+              source: 'chatroom' 
+            }, localStorage.getItem('jwtToken'));
           }
         }
         
