@@ -15,12 +15,22 @@
   async function apiFetch(path, options = {}) {
     const url = (API_BASE || '') + (String(path).startsWith('/') ? path : '/' + path);
     const init = { credentials: "include", ...options };
-    init.headers = {
-      'Content-Type': 'application/json',
-      ...(options.headers || {})
-    };
-    const res = await fetch(url, init);
-    return res;
+    const headers = { ...(options.headers || {}) };
+
+    // 自动加 JSON Content-Type（FormData 场景由调用方自己传）
+    if (!(init.body instanceof FormData) && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+    // 自动加 Authorization
+    try {
+      const token = localStorage.getItem('jwtToken');
+      if (token && !headers['Authorization']) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    } catch (e) {}
+
+    init.headers = headers;
+    return await fetch(url, init);
   }
 
   // Project ID management functions
@@ -40,12 +50,15 @@
       // Create new project if none found
       const newProject = await apiJson('/v1/projects', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title: 'Untitled', source: 'chatroom'})
+        body: JSON.stringify({
+          project_title: 'Untitled Project',
+          video_length_sec: 30,
+          source: 'chatroom'
+        })
       });
       
-      if (newProject && newProject.id) {
-        projectId = newProject.id;
+      if (newProject && newProject.project_id) {
+        projectId = newProject.project_id;
         localStorage.setItem('pf_project_id', projectId);
         return projectId;
       }

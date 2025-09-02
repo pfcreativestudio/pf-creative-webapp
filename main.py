@@ -1742,10 +1742,11 @@ def director_session_reset():
         conn = get_conn()
         if sid:
             cur = conn.cursor()
-            cur.execute("UPDATE director_sessions SET archived=TRUE WHERE id=%s", (_canon_session_uuid(sid),))
+            cur.execute("UPDATE sessions SET archived=TRUE WHERE id=%s", (_canon_session_uuid(sid),))
             conn.commit()
             cur.close()
-        new_sess = _director_create_session(conn, None, user_id=payload.get("uid"))
+        username = (payload.get("username") or payload.get("user_id") or "guest")
+        new_sess = _director_create_session(conn, None, user_id=username)
         return json_response({"session_id": new_sess["id"]})
     except Exception as e:
         log.exception("director_session_reset error")
@@ -1780,8 +1781,12 @@ def director_chat():
     try:
         conn = get_conn()
         _ensure_director_tables(conn)
+        cur = conn.cursor()
+        ensure_schema(cur)
+        cur.close()
 
-        sess = _director_get_or_create_active_session(conn, user_id=payload.get("uid"), session_id=_canon_session_uuid(raw_session_id) if raw_session_id else None)
+        username = (payload.get("username") or payload.get("user_id") or "guest")
+        sess = _director_get_or_create_active_session(conn, user_id=username, session_id=_canon_session_uuid(raw_session_id) if raw_session_id else None)
         session_id = sess["id"]
 
         if user_text:
@@ -1914,53 +1919,78 @@ def director_commit_brief():
 @app.route("/v1/director/storyboard", methods=["POST", "OPTIONS"])
 
 def director_storyboard():
+    if request.method == "OPTIONS":
+        return ("", 204)
     payload = _jwt_decode(request)
     if not payload:
         return json_response({"error": "Invalid token"}, 401)
-    username = (payload.get("username") or payload.get("user_id") or "guest")  # ★
+    username = (payload.get("username") or payload.get("user_id") or "guest")
 
     data = request.get_json(silent=True) or {}
     raw_session_id = (data.get("session_id") or "").strip()
     project_id = (data.get("project_id") or "").strip()
+    selected_creative_id = (data.get("selected_creative_id") or "").strip()
     selected_option_index = data.get("selected_option_index")
 
-    if not project_id or selected_option_index is None:
-        return json_response({"error": "Missing project_id or selected_option_index"}, 400)
+    if not project_id:
+        return json_response({"error": "Missing project_id"}, 400)
 
-    session_id = _canon_session_uuid(raw_session_id) if raw_session_id else None  # ★
+    session_id = _canon_session_uuid(raw_session_id) if raw_session_id else None
 
     conn = None
     try:
         conn = get_conn()
-        
-        # First, get the creative_id from the selected_option_index
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT id FROM creative_options 
-            WHERE project_id = %s 
-            ORDER BY created_at ASC 
-            LIMIT 1 OFFSET %s
-        """, (project_id, int(selected_option_index)))
-        row = cur.fetchone()
-        if not row:
-            return json_response({"error": "Creative option not found"}, 404)
-        creative_id = str(row[0])
-        cur.close()
-        
-        # Now call the correct function
-        storyboard, qa_critique = services.select_creative_and_generate_storyboard(
+        _ensure_director_tables(conn)
+
+        # 如果没给 creative_id，就用 index → id 的映射（默认 0）
+        if not selected_creative_id:
+            if selected_option_index is None:
+                selected_option_index = 0
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT id FROM creative_options
+                WHERE project_id=%s AND option_index=%s
+                ORDER BY created_at ASC
+                LIMIT 1
+            """, (project_id, int(selected_option_index)))
+            r = cur.fetchone()
+            cur.close()
+            if not r:
+                return json_response({"error": "Selected creative option not found for this project"}, 404)
+            selected_creative_id = str(r[0])
+
+        # 按 services 的签名调用： (db_conn, project_id, selected_creative_id)
+        storyboard_json, qa_feedback = services.select_creative_and_generate_storyboard(
             db_conn=conn,
             project_id=project_id,
-            selected_creative_id=creative_id
+            selected_creative_id=selected_creative_id
         )
-        
+
+        # 可选：更新会话状态
         if session_id:
             try:
-                _director_update_session(conn, session_id, state="G11", step=12)
+                _director_update_session(conn, session_id, state="G11", step=12, project_id=project_id)
             except Exception:
                 pass
-        flags = _ready_flags({}, project_id)
-        return json_response({"storyboard": storyboard, "qa_critique": qa_critique, "next_state": "G11", "ready_flags": flags})
+
+        # 统一返回：直接把 VEO-3 Prompt 放在 veo3_prompt 字段
+        # 如果 services 已经把 scenes 存到 storyboards，我们再读一次以构造稳定的 VEO-3 JSON
+        cur = conn.cursor()
+        cur.execute("SELECT scenes FROM storyboards WHERE project_id=%s ORDER BY created_at DESC LIMIT 1", (project_id,))
+        r = cur.fetchone()
+        cur.close()
+        if not r:
+            return json_response({"error":"Storyboard not found after generation"}, 500)
+        scenes_obj = r[0]
+        scenes = scenes_obj.get("scenes") if isinstance(scenes_obj, dict) else scenes_obj
+        prompt_json = {"scenes": scenes}
+
+        return json_response({
+            "veo3_prompt": json.dumps(prompt_json, ensure_ascii=False),
+            "storyboard": storyboard_json,
+            "qa_feedback": qa_feedback
+        }, 200)
+
     except Exception as e:
         log.exception("director_storyboard error")
         return json_response({"error": "Internal error", "detail": str(e)}, 500)
@@ -2044,20 +2074,7 @@ def _sql_table_has_columns(conn, table, cols):
 
 def _ensure_director_tables(conn):
     cur = conn.cursor()
-    
-    # Create director_sessions table if missing
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS director_sessions (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id TEXT NOT NULL,
-            selections JSONB DEFAULT '{}',
-            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            updated_at TIMESTAMP,
-            archived BOOLEAN NOT NULL DEFAULT FALSE
-        )
-    """)
-    
-    # Create table if missing (new schema: speaker/content)
+    # 1) 会话消息表（新的字段名 speaker/content）
     cur.execute("""
         CREATE TABLE IF NOT EXISTS director_messages (
             id BIGSERIAL PRIMARY KEY,
@@ -2067,24 +2084,33 @@ def _ensure_director_tables(conn):
             created_at TIMESTAMP NOT NULL DEFAULT NOW()
         )
     """)
-    # Back-compat: if older columns "role"/"text" exist but new ones don't, add them.
+
+    # 2) 尝试把任何遗留的 director_sessions 重命名为 sessions（存在则忽略错误）
     try:
-        if not _sql_table_has_columns(conn, "director_messages", ["speaker","content"]):
-            try:
-                cur.execute("ALTER TABLE director_messages ADD COLUMN IF NOT EXISTS speaker TEXT")
-            except Exception:
-                pass
-            try:
-                cur.execute("ALTER TABLE director_messages ADD COLUMN IF NOT EXISTS content TEXT")
-            except Exception:
-                pass
+        cur.execute("ALTER TABLE director_sessions RENAME TO sessions")
     except Exception:
         pass
-    # Add archived flag to sessions if not exists
+
+    # 3) 确保 sessions 表存在（与 ensure_schema 同步）
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id TEXT NOT NULL,
+            state TEXT NOT NULL DEFAULT 'init',
+            selections JSONB NOT NULL DEFAULT '{}'::jsonb,
+            step INT NOT NULL DEFAULT 1,
+            project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+        )
+    """)
+
+    # 4) 给 sessions 增加 archived 字段（如果没有）
     try:
-        cur.execute("ALTER TABLE director_sessions ADD COLUMN IF NOT EXISTS archived BOOLEAN NOT NULL DEFAULT FALSE")
+        cur.execute("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS archived BOOLEAN NOT NULL DEFAULT FALSE")
     except Exception:
         pass
+
     conn.commit()
     cur.close()
 
@@ -2125,7 +2151,7 @@ def _director_get_or_create_active_session(conn, user_id, session_id=None):
     cur = conn.cursor()
     cur.execute("""
         SELECT id, selections, created_at, updated_at, archived
-        FROM director_sessions
+        FROM sessions
         WHERE user_id = %s AND archived = FALSE AND (NOW() - COALESCE(updated_at, created_at)) <= INTERVAL '24 hours'
         ORDER BY COALESCE(updated_at, created_at) DESC
         LIMIT 1
