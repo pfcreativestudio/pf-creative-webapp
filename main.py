@@ -1967,7 +1967,7 @@ def director_veo3_prompt_post():
     # Delegate to the canonical handler (expects query args; POST body is ignored for compatibility)
     return director_veo3_prompt()
 
-@app.route("/v1/director/veo3-prompt", methods=["GET", "OPTIONS"])
+@app.route("/v1/director/veo3-prompt", methods=["GET", "POST", "OPTIONS"])
 
 def director_veo3_prompt():
     payload = _jwt_decode(request)
