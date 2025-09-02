@@ -103,33 +103,39 @@ app = Flask(__name__)
 from health import health_bp
 app.register_blueprint(health_bp)
 
-# ===== CORS（一次性修好预检 + 带凭据）===========================
-# ★ 允许带 cookie/Authorization 的跨域；必须是具体来源，不能用 '*'
-#   这里把你的 vercel 线上域、以及 FRONTEND_BASE_URL（如果设置）加入白名单
-# Robust CORS implementation with credentialed request support
-FRONTEND_SET = set(u.strip() for u in os.getenv('FRONTEND_BASE_URLS','').split(',') if u.strip())
-if not FRONTEND_SET:
-    FRONTEND_SET = {"https://pfcreativeaistudio.vercel.app", "http://localhost:3000", "http://127.0.0.1:3000"}
+# ===== CORS WSGI MIDDLEWARE (handles preflight before auth) ================
+ALLOWED_ORIGINS = {o.strip() for o in os.environ.get("FRONTEND_BASE_URLS","").split(",") if o.strip()}
+if not ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS = {"https://pfcreativeaistudio.vercel.app", "http://localhost:3000", "http://127.0.0.1:3000"}
 
-def _add_cors(resp):
-    origin = request.headers.get('Origin')
-    if origin and origin in FRONTEND_SET:
-        resp.headers['Access-Control-Allow-Origin'] = origin
-        resp.headers['Vary'] = 'Origin'
-        resp.headers['Access-Control-Allow-Credentials'] = 'true'
-        resp.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-        resp.headers['Access-Control-Allow-Headers'] = 'content-type, authorization'
-    return resp
+class PreflightMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+    def __call__(self, environ, start_response):
+        method = environ.get("REQUEST_METHOD","")
+        origin = environ.get("HTTP_ORIGIN","")
+        req_hdrs = environ.get("HTTP_ACCESS_CONTROL_REQUEST_HEADERS","")
+        def cors_headers():
+            h=[("Vary","Origin")]
+            if origin in ALLOWED_ORIGINS:
+                h += [
+                    ("Access-Control-Allow-Origin", origin),
+                    ("Access-Control-Allow-Credentials","true"),
+                ]
+            return h
+        if method == "OPTIONS":
+            headers = cors_headers()+[
+                ("Access-Control-Allow-Methods","GET,POST,PUT,PATCH,DELETE,OPTIONS"),
+                ("Access-Control-Allow-Headers", req_hdrs or "content-type, authorization, x-admin-password"),
+                ("Access-Control-Max-Age","600"),
+            ]
+            start_response("204 No Content", headers)
+            return [b""]
+        def cors_start_response(status, resp_headers, exc_info=None):
+            return start_response(status, resp_headers + cors_headers(), exc_info)
+        return self.wsgi_app(environ, cors_start_response)
 
-@app.after_request
-def _after(resp):
-    return _add_cors(resp)
-
-@app.route('/<path:_any>', methods=['OPTIONS'])
-def any_options(_any):
-    from flask import make_response
-    resp = make_response('', 200)
-    return _add_cors(resp)
+app.wsgi_app = PreflightMiddleware(app.wsgi_app)
 
 # Request logging for debugging CORS and API calls
 @app.before_request

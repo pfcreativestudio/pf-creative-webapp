@@ -131,7 +131,7 @@
 
     <script>
         // Debug log for API base resolution
-        console.info('[PF][chatroom] Using API:', window.PF_API_BASE);
+        console.info('[PF][chatroom] Using API:', window.getApiBase && window.getApiBase());
         
         // --- 核心修正：在所有代码运行前，先进行登录状态检查 ---
         const token = localStorage.getItem('jwtToken');

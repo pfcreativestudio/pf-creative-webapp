@@ -1,0 +1,20 @@
+=== VERIFYING CURRENT FAILURES (BEFORE FIX) ===
+Origin: https://pfcreativeaistudio.vercel.app
+URL: https://pfsystem-api-app-rjali3wdrq-as.a.run.app
+
+Testing OPTIONS /v1/projects?recent=1:
+Status: Unauthorized (401)
+- ISSUE: Preflight requests are being handled by auth middleware instead of CORS middleware
+- Expected: 200/204 with proper CORS headers
+
+Testing OPTIONS /v1/director/veo-3-prompt:
+Status: Unauthorized (401)  
+- ISSUE: Same problem - auth middleware intercepts OPTIONS before CORS can handle
+- Expected: 200/204 with Access-Control-Allow-Origin, Allow-Credentials, Allow-Headers
+
+Testing GET /ping:
+Status: 200
+- OK: Basic endpoints work
+
+ROOT CAUSE: CORS middleware is not intercepting OPTIONS requests early enough in the WSGI stack.
+OPTIONS requests hit authentication middleware first, which returns 401 before CORS headers can be added.
