@@ -1952,19 +1952,13 @@ def director_storyboard():
         put_conn(conn)
 
 
-@app.route("/v1/director/veo-3-prompt", methods=["GET", "OPTIONS"])
+@app.route("/v1/director/veo-3-prompt", methods=["GET", "POST", "OPTIONS"])
 
 def director_veo3_prompt_compat():
-    # 兼容路由（旧前端若调用 /v1/director/veo-3-prompt）
-    return director_veo3_prompt()
-
-# POST compatibility: forward POST to the same underlying handler
-@app.route("/v1/director/veo-3-prompt", methods=["POST", "OPTIONS"], endpoint="director_veo3_prompt_post")
-
-def director_veo3_prompt_post():
     if request.method == "OPTIONS":
         return ("", 204)
-    # Delegate to the canonical handler (expects query args; POST body is ignored for compatibility)
+    # 兼容路由（旧前端若调用 /v1/director/veo-3-prompt）
+    # 支持 GET 和 POST 方法，都委托给主处理函数
     return director_veo3_prompt()
 
 @app.route("/v1/director/veo3-prompt", methods=["GET", "POST", "OPTIONS"])
