@@ -1982,8 +1982,24 @@ def director_veo3_prompt():
     try:
         conn = get_conn()
         cur = conn.cursor()
-        # fetch storyboard scenes
-        cur.execute("SELECT scenes FROM storyboards WHERE project_id=%s ORDER BY created_at DESC LIMIT 1", (project_id,))
+        
+        # Convert project_id to UUID format if it's not already
+        try:
+            # Try to convert to UUID format
+            if not project_id.startswith('proj_'):
+                # If it's already a UUID, use it directly
+                uuid.UUID(project_id)
+                uuid_project_id = project_id
+            else:
+                # If it's in proj_ format, convert to UUID
+                # Use the canonical UUID mapping function
+                uuid_project_id = _canon_session_uuid(project_id)
+        except ValueError:
+            # If conversion fails, use the original project_id
+            uuid_project_id = project_id
+        
+        # fetch storyboard scenes with proper UUID handling
+        cur.execute("SELECT scenes FROM storyboards WHERE project_id::text = %s ORDER BY created_at DESC LIMIT 1", (uuid_project_id,))
         row = cur.fetchone()
         if not row:
             return json_response({"error": "Storyboard not found for project"}, 404)
