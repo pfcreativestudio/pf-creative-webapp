@@ -211,7 +211,7 @@
                     return;
                 }
                 try {
-                    const response = await window.window.window.window.apiFetch('/admin/verify-password', {
+                    const response = await window.apiFetch('/admin/verify-password', {
                         method: 'POST',
                         headers: {
                             'X-Admin-Password': inputPassword
@@ -264,7 +264,7 @@
                 if (body) {
                     options.body = JSON.stringify(body);
                 }
-                return window.window.window.window.apiFetch(endpoint, options);
+                return window.apiFetch(endpoint, options);
             }
 
             async addUser() {

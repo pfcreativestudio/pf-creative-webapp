@@ -1168,6 +1168,13 @@ def create_bill():
         "reference_2": plan_id,
         "deliver": True,
     }
+    # Guard: missing Billplz config
+    if not (BILLPLZ_API_KEY and BILLPLZ_COLLECTION_ID):
+        return json_response({
+            "error": "Payment service not configured",
+            "detail": "BILLPLZ_API_KEY or BILLPLZ_COLLECTION_ID is missing"
+        }, 400)
+
     headers = {"Content-Type": "application/json", "Authorization": _billplz_basic_auth_header()}
 
     try:

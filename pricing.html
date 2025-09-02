@@ -338,7 +338,7 @@ async function handlePurchase(btn){
   const allButtons = document.querySelectorAll('.cta .btn');
   allButtons.forEach(b => { b.disabled = true; if(b && b.dataset) b.dataset.orig = b.textContent; b.textContent = 'Processing…'; b.style.opacity='0.7'; b.style.cursor='wait'; });
   try {
-    const res = await window.window.window.window.window.apiFetch('/create-bill', {
+    const res = await window.apiFetch('/create-bill', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ plan: planKey })

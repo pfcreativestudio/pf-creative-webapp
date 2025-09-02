@@ -471,7 +471,7 @@
       if(!token){ clearAllTokens(); window.location.href='login.html'; return; }
       try{
         modalConfirm.disabled = true; modalConfirm.textContent = 'Redirecting…';
-        const resp = await window.window.window.window.apiFetch('/create-bill', {
+        const resp = await window.apiFetch('/create-bill', {
           method:'POST',
           headers:{ 'Authorization':'Bearer ' + token },
           body: JSON.stringify({ plan: pendingPlan.id })
@@ -531,12 +531,12 @@
       const token = getToken();
 
       try{
-        const r = await window.window.window.window.apiFetch('/v1/plans', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
+        const r = await window.apiFetch('/v1/plans', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
         if(r.ok){ const plans = await r.json().catch(()=>null); renderPlans(plans); } else renderPlans(null);
       }catch(e){ console.warn('plans fetch failed', e); renderPlans(null); }
 
       try{
-        const r = await window.window.window.window.apiFetch('/v1/projects?recent=6', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
+        const r = await window.apiFetch('/v1/projects?recent=6', { method:'GET', headers:{ 'Authorization':'Bearer ' + token }});
         if(r.ok){ const projects = await r.json().catch(()=>[]); renderProjects(projects); } else renderProjects([]);
       }catch(e){ console.warn('projects fetch failed', e); renderProjects([]); }
 

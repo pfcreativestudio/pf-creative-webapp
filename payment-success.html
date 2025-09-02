@@ -176,7 +176,7 @@
         return;
       }
       try {
-        var resp = await window.window.window.window.apiFetch('/get-user-status', { headers: { 'Authorization': 'Bearer ' + token }});
+        var resp = await window.apiFetch('/get-user-status', { headers: { 'Authorization': 'Bearer ' + token }});
         var data = await resp.json().catch(function(){ return {}; });
         if (resp.status === 401) {
           setFail('Session expired. Please log in again.');

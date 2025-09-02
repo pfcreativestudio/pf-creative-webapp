@@ -341,14 +341,14 @@
                         });
                     } else {
                         // For text-only, use apiFetch with project_id
-                        response = await window.apiFetch('/v1/director/veo-3-prompt', {
+                        // Backend compat handler expects project_id in query
+                        response = await window.apiFetch(`/v1/director/veo-3-prompt?project_id=${encodeURIComponent(projectId)}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${this.token}`
                             },
                             body: JSON.stringify({ 
-                                project_id: projectId,
                                 text: userMessageContent,
                                 source: 'chatroom'
                             })

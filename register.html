@@ -141,7 +141,7 @@
     async function pfLog(action, details) {
       if (!API_BASE) return;
       try {
-        await window.window.window.window.apiFetch('/activity/log', {
+        await window.apiFetch('/activity/log', {
           method: 'POST',
           body: JSON.stringify({ actor: 'web', action, details })
         });
@@ -178,7 +178,7 @@
       await pfLog('register_attempt', { username });
 
       try {
-        const resp = await window.window.window.window.apiFetch('/register', {
+        const resp = await window.apiFetch('/register', {
           method: 'POST',
           body: JSON.stringify({ username, password })
         });

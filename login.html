@@ -113,7 +113,7 @@
       const t = getToken();
       if (!t || !API_BASE) return false;
       try {
-        const resp = await window.window.window.window.apiFetch("/get-user-status", {
+        const resp = await window.apiFetch("/get-user-status", {
           method: "GET",
           headers: { "Authorization": "Bearer " + t }
         });
@@ -172,7 +172,7 @@
       loginBtn.disabled = true;
 
       try {
-        const resp = await window.window.window.window.apiFetch("/login", {
+        const resp = await window.apiFetch("/login", {
           method: "POST",
           body: JSON.stringify({ username, password })
         });
